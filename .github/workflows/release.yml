@@ -42,13 +42,15 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Show version
-        run: ./target/${{ matrix.target }}/release/gflow --version
+        run: ./target/${{ matrix.target }}/release/wparse --version
 
       - name: Archive (UNIX)
         run: |
           mkdir -p artifacts
-          cp -av target/${{ matrix.target }}/release/gflow artifacts/
-          cp -av target/${{ matrix.target }}/release/gprj artifacts/
+          cp -av target/${{ matrix.target }}/release/wparse artifacts/
+          cp -av target/${{ matrix.target }}/release/wpgen artifacts/
+          cp -av target/${{ matrix.target }}/release/wprescue artifacts/
+          cp -av target/${{ matrix.target }}/release/wproj artifacts/
           tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz  artifacts
         if: ${{ ! startsWith(matrix.os, 'windows') }}
 
