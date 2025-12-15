@@ -404,24 +404,16 @@ pub struct DataValidateArgs {
     pub input_cnt: Option<u64>,
 }
 
-#[derive(Args, Debug, Clone)]
+#[derive(Args, Debug, Clone, Default)]
 pub struct StatSrcArgs {
     #[clap(flatten)]
     pub common: CommonFiltArgs,
 }
 
-#[derive(Args, Debug, Clone)]
+#[derive(Args, Debug, Clone, Default)]
 pub struct StatSinkArgs {
     #[clap(flatten)]
     pub common: CommonFiltArgs,
-}
-
-impl Default for StatSinkArgs {
-    fn default() -> Self {
-        Self {
-            common: CommonFiltArgs::default(),
-        }
-    }
 }
 
 #[derive(Args, Debug, Clone, Default)]

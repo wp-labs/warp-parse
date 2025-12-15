@@ -126,6 +126,7 @@ contracts = "~0.6"
 ctor = "~0.2"
 hex = "~0.4"
 shadow-rs = "~1.2"
+rand = "0.9.2"
 
 # --- Data Structures ---
 lru = "~0.12"

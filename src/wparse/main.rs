@@ -41,8 +41,8 @@ fn register_plugins() {
     wp_engine::sources::file::register_factory_only();
     wp_engine::sources::syslog::register_syslog_factory();
 
-    #[cfg(feature = "wp-enterprise")]
-    enterprise::register();
+    //#[cfg(feature = "wp-enterprise")]
+    //enterprise::register();
     // Dev-only: register adapters (MySQL + Kafka) to enable conn_url parsing in local runs
 }
 

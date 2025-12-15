@@ -60,7 +60,7 @@ mod tests {
     use crate::args::ProjectInitArgs;
 
     use super::*;
-    use rand::{thread_rng, RngCore};
+    use rand::{rng, RngCore};
     use serial_test::serial;
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -71,7 +71,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        let rnd: u64 = thread_rng().next_u64();
+        let rnd: u64 = rng().next_u64();
         base.join(format!("wproj_project_{}_{}", ts, rnd))
             .to_string_lossy()
             .to_string()
@@ -87,7 +87,7 @@ mod tests {
             "DEBUG: Parent directory exists: {}",
             std::path::Path::new(&work)
                 .parent()
-                .map_or(false, |p| p.exists())
+                .is_some_and(|p| p.exists())
         );
 
         match init_project(ProjectInitArgs {
@@ -104,10 +104,8 @@ mod tests {
                 if std::path::Path::new(&work).exists() {
                     println!("DEBUG: Directory contents:");
                     if let Ok(entries) = std::fs::read_dir(&work) {
-                        for entry in entries {
-                            if let Ok(entry) = entry {
-                                println!("  - {}", entry.path().display());
-                            }
+                        for entry in entries.flatten() {
+                            println!("  - {}", entry.path().display());
                         }
                     }
                 }
@@ -124,10 +122,8 @@ mod tests {
         // List all files in the directory
         if let Ok(entries) = std::fs::read_dir(&work) {
             println!("DEBUG: Directory contents:");
-            for entry in entries {
-                if let Ok(entry) = entry {
-                    println!("  {}", entry.path().display());
-                }
+            for entry in entries.flatten() {
+                println!("  {}", entry.path().display());
             }
         }
 
