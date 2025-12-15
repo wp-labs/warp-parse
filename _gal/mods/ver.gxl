@@ -1,0 +1,18 @@
+mod ver {
+  flow use   {
+      gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "null"  );
+      gx.echo (  "current version : ${VERSION}"  );
+    }
+  flow build   {
+      gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "build"  );
+      gx.echo (  "current version : ${VERSION}"  );
+    }
+  flow patch {
+      gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "bugfix"  );
+      gx.echo (  "current version : ${VERSION}"  );
+    }
+  flow feature {
+      gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "feature"  );
+      gx.echo (  "current version : ${VERSION}"  );
+    }
+}

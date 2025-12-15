@@ -1,0 +1,42 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+*~
+*.pid
+*.bak
+.run
+logs
+.run.gxl
+.report
+# Docs (mdBook)
+docs/book/
+docs/SUMMARY.md.bak
+WEB
+# Generated data and temp files
+data/
+tests/*
+tmp/
+.tmp/
+*.log
+
+# Python cache (docs scripts)
+__pycache__/
+*.pyc
+
+# Node (in case tools are installed locally)
+node_modules/
+docs/node_modules/
+
+# Env files
+.env
+.env.*
+*.log
+*.dat

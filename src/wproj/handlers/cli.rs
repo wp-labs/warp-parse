@@ -1,0 +1,56 @@
+use crate::args::{KnowdbCmd, ModelCmd, StatCmd, ValidateCmd, WProj, WProjCli};
+use crate::handlers::rule::dispatch_rule_cmd;
+use crate::handlers::sinks::{list_sinks, show_sink_routes};
+use crate::handlers::sources::list_sources_for_cli;
+use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
+use crate::handlers::validate::run_sink_validation;
+use crate::handlers::{data, knowdb, project};
+use wp_error::run_error::RunResult;
+use wp_proj::sources::Sources;
+
+pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
+    match cli.cmd {
+        WProj::Rule(sub) => dispatch_rule_cmd(sub)?,
+        WProj::Init(args) => project::init_project(args)?,
+        WProj::Check(args) => project::check_project(args)?,
+        WProj::Data(sub) => data::dispatch_data_cmd(sub).await?,
+        WProj::Model(sub) => dispatch_model_cmd(sub)?,
+    }
+    Ok(())
+}
+
+fn dispatch_model_cmd(cmd: ModelCmd) -> RunResult<()> {
+    match cmd {
+        ModelCmd::Sources(args) => {
+            let sources = Sources::new();
+            list_sources_for_cli(&sources, &args)?;
+            Ok(())
+        }
+        ModelCmd::Sinks(args) => list_sinks(args),
+        ModelCmd::Route(args) => show_sink_routes(args),
+        ModelCmd::Knowdb(sub) => dispatch_knowdb_cmd(sub),
+    }
+}
+
+fn dispatch_knowdb_cmd(cmd: KnowdbCmd) -> RunResult<()> {
+    match cmd {
+        KnowdbCmd::Init(args) => knowdb::init_knowdb(&args),
+        KnowdbCmd::Check(args) => knowdb::check_knowdb(&args),
+        KnowdbCmd::Clean(args) => knowdb::clean_knowdb(&args),
+    }
+}
+
+pub fn dispatch_stat_cmd(sub: StatCmd) -> RunResult<()> {
+    match sub {
+        StatCmd::File(a) => run_combined_stat(&a.common),
+        StatCmd::SrcFile(a) => run_src_stat(&a.common),
+        StatCmd::SinkFile(a) => run_sink_stat(&a.common),
+    }
+}
+pub fn dispatch_validate_cmd(sub: ValidateCmd) -> RunResult<()> {
+    match sub {
+        ValidateCmd::SinkFile(args) => run_sink_validation(&args),
+    }
+}
+
+// No dedicated sink-init command exposed via CLI currently

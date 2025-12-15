@@ -1,0 +1,17 @@
+mod rust_flow  {
+  flow lint        {
+    gx.cmd ( "cargo fmt ", log : "1" , out:"true"  );
+    gx.cmd ( "cargo fix --allow-dirty", log : "1" , out:"true"  );
+    gx.cmd ( "cargo clippy --all-targets --all-features -- -D warnings"  );
+  }
+   #[usage(desp="rust build")]
+   flow build {
+    gx.cmd ( cmd: "cargo build  ${ENV_BUILD_FLAG} ${ENV_TARGET_FLAG} "  );
+  }
+}
+
+mod rust_env {
+  env init     { build_flag  ="" ; build_name = "debug"; target_flag  = "" ; target_name = "" ; }
+  env debug    {}  ;
+  env release  { build_flag   =" --release" ; build_name = "release" ;  }
+}

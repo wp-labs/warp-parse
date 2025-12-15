@@ -1,0 +1,2 @@
+
+extern mod rust,ver,git { path = "./_gal/mods";  }

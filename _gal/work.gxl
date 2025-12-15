@@ -1,0 +1,94 @@
+extern mod head { path = "${GXL_START_ROOT}/_gal/"; }
+
+mod envs  {
+   env _common  : rust_env.init   {
+    root      = ".";
+    target_name = "";
+    prj_key   = "warp-parse" ;
+    DIST_REPO = "unknow";
+
+  }
+
+  #[usage(desp="use debug ",color="blue")]
+  env debug :  _common,rust_env.debug {
+  }
+  #[usage(desp="use debug ",color="blue")]
+  env release :  _common,rust_env.release{
+  }
+
+
+  #[usage(desp="default mamcos", color="green")]
+  env default    : envs._common,debug;
+}
+
+mod main  {
+      bld_bins = "target/${ENV_BUILD_NAME}" ;
+      rls_bins = "target/release" ;
+      HOME_BIN = "${HOME}/bin" ;
+
+    #[auto_load(entry)]
+    flow __into | conf {
+        DIST_REPO = "unkonw";
+        if defined(${GXL_OS_SYS}) {
+             gx.echo (  "${GXL_OS_SYS} is defined " )
+        }
+        if ${GXL_OS_SYS} =* "arm64_macos_*" {
+            DIST_REPO = "macos";
+        } else if ${GXL_OS_SYS} =* "x86_64_ubuntu*" {
+            DIST_REPO = "ubuntu22";
+        }
+        else {
+            DIST_REPO = "other";
+        }
+
+    }
+    #[task(name="config")]
+    flow conf {
+    }
+        flow ver.use | @_gen_cargo {
+        gx.cmd (" rm ./Cargo.toml");
+        gx.tpl (
+            tpl : "./_gal/tpl/Cargo.toml" ,
+            dst : "Cargo.toml"
+        );
+    }
+    flow  @use_dev_code | _gen_cargo {
+        gx.read_file ( "../wp-scaffold/dev.ini")
+    }
+    flow @use_rls_code  | _gen_cargo {
+        gx.read_file ( "../wp-scaffold/rls.ini")
+    }
+
+  #[task(name="${ENV_PRJ_KEY}@build")]
+  flow ver.use | conf | rust_flow.build | @build | _pub_local {
+      gx.echo(  "${MAIN_HOME_BIN}" );
+      //os.path (  "${MAIN_HOME_BIN}" );
+  }
+  #[usage(desp="lint code")]
+  flow lint | rust_flow.lint {} ;
+
+  #[task(name="test")]
+  flow build  |   @test  {
+    gx.cmd ( "cargo test --all ${ENV_BUILD_FLAG}", log : "1" , out:"true"  );
+  }
+
+  #[task(name="pub to local")]
+  flow _pub_local   {
+
+    gx.cmd (  "mkdir -p ${MAIN_HOME_BIN}" );
+    gx.cmd (  "cp ${MAIN_BLD_BINS}/wparse ${MAIN_HOME_BIN}/"  );
+    gx.cmd (  "cp ${MAIN_BLD_BINS}/wpgen ${MAIN_HOME_BIN}/"  );
+    gx.cmd (  "cp ${MAIN_BLD_BINS}/wproj ${MAIN_HOME_BIN}/"  );
+    gx.cmd (  "cp ${MAIN_BLD_BINS}/wprescue ${MAIN_HOME_BIN}/"  );
+  }
+  flow ci_msg {
+    gx.cmd("git diff > code_diff.txt");
+    gx.ai_chat( "Generate a brief summary for the git commit message", prompt_file : "./code_diff.txt");
+  }
+
+    flow dev_ai {
+        //gx.ai_regist(flow :"ci_msg", desc: "gen git commit message");
+        //gx.ai_task( task: "生成代码提交说明", role : "developer" ) ;
+    }
+
+}

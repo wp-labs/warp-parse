@@ -1,0 +1,13 @@
+# Local cargo config for sandboxed/dev environments
+cargo-features = ["env"]
+
+# Force cargo to bypass any globally configured RUSTC_WRAPPER (often sccache)
+# because macOS seatbelt/sandbox环境会阻止 wrapper 访问用户级缓存目录。
+[build]
+rustc-wrapper = ".cargo/bin/rustc-direct.sh"
+
+# Disable sccache to avoid macOS seatbelt or sandbox "Operation not permitted"
+# errors when the compiler wrapper tries to access user-level cache dirs.
+[env]
+SCCACHE_DISABLE = "1"
+RUSTC_WRAPPER = { value = ".cargo/bin/rustc-direct.sh", force = true }
