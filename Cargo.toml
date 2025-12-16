@@ -181,7 +181,7 @@ shadow-rs = "~1.2"
 # ===========================================================================
 
 [dev-dependencies]
-serial_test = "~3.0"
+serial_test = "~3.2"
 httpmock = "~0.7"
 collection_literals = "~1.0"
 criterion = "~0.5"
