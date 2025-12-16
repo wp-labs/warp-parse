@@ -68,7 +68,7 @@ opt-level = 2  # 依赖库使用优化编译加速运行
 
 [dependencies]
 # --- System and Platform ---
-sysinfo = "~0.33"
+sysinfo = "~0.37"
 async-signal = "~0.2"
 libc = "~0.2"
 signal-hook-registry = "~1.4"
