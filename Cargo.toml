@@ -184,7 +184,7 @@ shadow-rs = "~1.2"
 serial_test = "~3.2"
 httpmock = "~0.7"
 collection_literals = "~1.0"
-criterion = "~0.5"
+criterion = "~0.8"
 tempfile = "~3.14"
 
 # ===========================================================================
