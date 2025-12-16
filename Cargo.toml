@@ -115,7 +115,7 @@ derive_more = { version = "~2.1", features = ["full"] }
 derive_builder = "~0.20"
 derive-getters = "~0.5"
 enum_dispatch = "~0.3"
-educe = { version = "~0.4", features = ["Debug", "Default"] }
+educe = { version = "~0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
