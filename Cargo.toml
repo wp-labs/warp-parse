@@ -54,13 +54,10 @@ path = "src/wprescue/main.rs"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
+panic = "abort"
 
 [profile.dev]
-opt-level = 0
-debug = true
-
-[profile.dev.package."*"]
-opt-level = 2  # 依赖库使用优化编译加速运行
+panic = "abort"
 
 # ===========================================================================
 # Dependencies
@@ -81,7 +78,7 @@ tokio-async-drop = "~0.1"
 futures-util = "~0.3"
 futures-lite = "~2.3"
 async-trait = "~0.1"
-async-broadcast = "~0.6"
+async-broadcast = "~0.7"
 
 # --- Serialization ---
 serde = { version = "~1.0", features = ["derive"] }
@@ -115,7 +112,7 @@ derive_more = { version = "~2.1", features = ["full"] }
 derive_builder = "~0.20"
 derive-getters = "~0.5"
 enum_dispatch = "~0.3"
-educe = { version = "~0.4", features = ["Debug", "Default"] }
+educe = { version = "~0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
@@ -129,7 +126,7 @@ shadow-rs = "~1.2"
 rand = "0.9.2"
 
 # --- Data Structures ---
-lru = "~0.12"
+lru = "~0.16"
 ipnet = "~2.11"
 
 # --- File System ---
@@ -182,7 +179,7 @@ shadow-rs = "~1.2"
 
 [dev-dependencies]
 serial_test = "~3.2"
-httpmock = "~0.7"
+httpmock = "~0.8"
 collection_literals = "~1.0"
 tempfile = "~3.23"
 criterion = "~0.8"
