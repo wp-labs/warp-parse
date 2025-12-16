@@ -40,11 +40,6 @@ jobs:
         with:
           toolchain: ${{ matrix.rustup_toolchain }}
 
-      - name: Cargo build (Native TLS)
-        run: |
-          cargo build --all 
-          cargo clean
-
       - name: Cargo build (Rust TLS)
         run: cargo build --all
 
