@@ -55,7 +55,7 @@ jobs:
         if: ${{ ! startsWith(matrix.os, 'windows') }}
 
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         continue-on-error: true
         with:
           subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
