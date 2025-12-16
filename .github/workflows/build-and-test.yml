@@ -2,7 +2,13 @@ name: Build & Test
 
 on:
   push:
-    branches: ["*"]
+    branches:
+      - "*"
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
 
 permissions:
   contents: read
