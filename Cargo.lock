@@ -5218,7 +5218,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "lru 0.12.5",
+ "lru 0.16.2",
  "once_cell",
  "orion-error",
  "orion_conf",
