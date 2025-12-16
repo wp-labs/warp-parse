@@ -54,13 +54,10 @@ path = "src/wprescue/main.rs"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
+panic = "abort"
 
 [profile.dev]
-opt-level = 0
-debug = true
-
-[profile.dev.package."*"]
-opt-level = 2  # 依赖库使用优化编译加速运行
+panic = abort
 
 # ===========================================================================
 # Dependencies
