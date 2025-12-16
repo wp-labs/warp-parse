@@ -360,23 +360,12 @@ dependencies = [
 
 [[package]]
 name = "async-broadcast"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "334d75cf09b33bede6cbc20e52515853ae7bee3d4eadd9540e13ce92af983d34"
-dependencies = [
- "event-listener 3.1.0",
- "event-listener-strategy 0.1.0",
- "futures-core",
-]
-
-[[package]]
-name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "435a87a52755b8f27fcf321ac4f04b2802e337c8c4872923137471ec39c37532"
 dependencies = [
  "event-listener 5.4.1",
- "event-listener-strategy 0.5.4",
+ "event-listener-strategy",
  "futures-core",
  "pin-project-lite",
 ]
@@ -399,7 +388,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "924ed96dd52d1b75e9c1a3e6275715fd320f5f9439fb5a4a11fa51f4221158d2"
 dependencies = [
  "concurrent-queue",
- "event-listener-strategy 0.5.4",
+ "event-listener-strategy",
  "futures-core",
  "pin-project-lite",
 ]
@@ -458,7 +447,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5fd03604047cee9b6ce9de9f70c6cd540a0520c813cbd49bae61f33ab80ed1dc"
 dependencies = [
  "event-listener 5.4.1",
- "event-listener-strategy 0.5.4",
+ "event-listener-strategy",
  "pin-project-lite",
 ]
 
@@ -1510,33 +1499,12 @@ checksum = "0206175f82b8d6bf6652ff7d71a1e27fd2e4efde587fd368662814d6ec1d9ce0"
 
 [[package]]
 name = "event-listener"
-version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d93877bcde0eb80ca09131a08d23f0a5c18a620b01db137dba666d18cd9b30c2"
-dependencies = [
- "concurrent-queue",
- "parking",
- "pin-project-lite",
-]
-
-[[package]]
-name = "event-listener"
 version = "5.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13b66accf52311f30a0db42147dadea9850cb48cd070028831ae5f5d4b856ab"
 dependencies = [
  "concurrent-queue",
  "parking",
- "pin-project-lite",
-]
-
-[[package]]
-name = "event-listener-strategy"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15c97b4e30ea7e4b7e7b429d6e2d8510433ba8cee4e70dfb3243794e539d29fd"
-dependencies = [
- "event-listener 3.1.0",
  "pin-project-lite",
 ]
 
@@ -5194,7 +5162,7 @@ name = "warp-parse"
 version = "0.9.2"
 dependencies = [
  "anyhow",
- "async-broadcast 0.6.0",
+ "async-broadcast",
  "async-signal",
  "async-trait",
  "chrono",
@@ -5810,7 +5778,7 @@ version = "0.5.1"
 source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.5.1-beta#2103cf372a8451a26c5f1c07584e0c5abb884250"
 dependencies = [
  "anyhow",
- "async-broadcast 0.7.2",
+ "async-broadcast",
  "async-trait",
  "derive_more",
  "once_cell",
@@ -5903,7 +5871,7 @@ version = "1.4.2"
 source = "git+https://github.com/wp-labs/wp-engine?tag=v1.4.2-alpha#1444bd52af91bfb352ffbe4e38105c1150a0dfe2"
 dependencies = [
  "anyhow",
- "async-broadcast 0.7.2",
+ "async-broadcast",
  "async-signal",
  "async-trait",
  "base64 0.22.1",
