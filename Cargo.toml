@@ -129,7 +129,7 @@ shadow-rs = "~1.2"
 rand = "0.9.2"
 
 # --- Data Structures ---
-lru = "~0.12"
+lru = "~0.16"
 ipnet = "~2.11"
 
 # --- File System ---
