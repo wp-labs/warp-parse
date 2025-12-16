@@ -81,7 +81,7 @@ tokio-async-drop = "~0.1"
 futures-util = "~0.3"
 futures-lite = "~2.3"
 async-trait = "~0.1"
-async-broadcast = "~0.6"
+async-broadcast = "~0.7"
 
 # --- Serialization ---
 serde = { version = "~1.0", features = ["derive"] }
