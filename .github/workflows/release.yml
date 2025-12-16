@@ -31,7 +31,7 @@ jobs:
             target: aarch64-apple-darwin
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -55,12 +55,12 @@ jobs:
         if: ${{ ! startsWith(matrix.os, 'windows') }}
 
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         continue-on-error: true
         with:
           subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
           path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
@@ -78,13 +78,13 @@ jobs:
         run: mkdir -p artifacts
 
       - name: Download Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           path: artifacts
           merge-multiple: true
 
       - name: Release
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
         with:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
