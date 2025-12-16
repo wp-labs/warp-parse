@@ -108,7 +108,7 @@ winnow = "~0.7"
 #regex = "~1.11"
 wildmatch = "~2.6"
 strfmt = "~0.2"
-syslog = "~6.0"
+syslog = "~7.0"
 
 # --- Derive Macros ---
 derive_more = { version = "~2.1", features = ["full"] }
