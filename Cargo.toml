@@ -185,7 +185,7 @@ serial_test = "~3.0"
 httpmock = "~0.7"
 collection_literals = "~1.0"
 criterion = "~0.5"
-tempfile = "~3.14"
+tempfile = "~3.23"
 
 # ===========================================================================
 # Package Metadata
