@@ -60,7 +60,7 @@ jobs:
         with:
           subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
           path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
