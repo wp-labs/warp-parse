@@ -57,7 +57,7 @@ codegen-units = 1
 panic = "abort"
 
 [profile.dev]
-panic = abort
+panic = "abort"
 
 # ===========================================================================
 # Dependencies
