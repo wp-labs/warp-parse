@@ -1,5 +1,10 @@
 # Warp Parse
 
+[![Build & Test](https://github.com/wp-labs/warp-parse/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/wp-labs/warp-parse/actions/workflows/build-and-test.yml)
+[![Release](https://github.com/wp-labs/warp-parse/actions/workflows/release.yml/badge.svg)](https://github.com/wp-labs/warp-parse/actions/workflows/release.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Rust Version](https://img.shields.io/badge/rust-1.75+-orange.svg)](https://www.rust-lang.org)
+
 Warp Parse is a high-performance Rust ETL engine built for log/telemetry ingestion, enrichment, and delivery. It focuses on high-throughput parsing (WPL) and transformation (OML) pipelines, unified connector APIs, and turnkey operability for security and data engineering teams.
 
 > Documentation lives in `docs/` (mdBook). The short landing page is at `docs/README.md`, while detailed performance data is in `docs/performance.md`.
@@ -63,6 +68,11 @@ Apache-2.0 (commercial use permitted).
 ---
 
 # Warp Parse（中文版）
+
+[![Build & Test](https://github.com/wp-labs/warp-parse/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/wp-labs/warp-parse/actions/workflows/build-and-test.yml)
+[![Release](https://github.com/wp-labs/warp-parse/actions/workflows/release.yml/badge.svg)](https://github.com/wp-labs/warp-parse/actions/workflows/release.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Rust Version](https://img.shields.io/badge/rust-1.75+-orange.svg)](https://www.rust-lang.org)
 
 Warp Parse 是面向安全/数据平台团队的高性能 Rust ETL 引擎，主打日志/事件接入、解析与转换。核心包括高吞吐解析（WPL）、转换（OML）、统一连接器 API 以及极简交付运维。
 
