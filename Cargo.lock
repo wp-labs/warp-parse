@@ -2765,7 +2765,7 @@ dependencies = [
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
 ]
 
 [[package]]
@@ -2799,7 +2799,7 @@ dependencies = [
  "derive-getters",
  "serde",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
 ]
 
 [[package]]
@@ -3057,7 +3057,7 @@ version = "3.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "219cb19e96be00ab2e37d6e299658a0cfa83e52429179969b0f0121b4ac46983"
 dependencies = [
- "toml_edit 0.23.9",
+ "toml_edit",
 ]
 
 [[package]]
@@ -3741,15 +3741,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8136f1a4ea815d7eac4101cfd0b16dc0cb5e1fe1b8609dfd728058656b7badf"
 dependencies = [
  "regex",
- "serde",
-]
-
-[[package]]
-name = "serde_spanned"
-version = "0.6.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf41e0cfaf7226dca15e8197172c295a782857fcb97fad1808a166870dee75a3"
-dependencies = [
  "serde",
 ]
 
@@ -4506,38 +4497,17 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.8.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc1beb996b9d83529a9e75c17a1686767d148d70663143c7854d8b4a09ced362"
-dependencies = [
- "serde",
- "serde_spanned 0.6.9",
- "toml_datetime 0.6.11",
- "toml_edit 0.22.27",
-]
-
-[[package]]
-name = "toml"
 version = "0.9.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0dc8b1fb61449e27716ec0e1bdf0f6b8f3e8f6b05391e8497b8b6d7804ea6d8"
 dependencies = [
  "indexmap",
  "serde_core",
- "serde_spanned 1.0.3",
- "toml_datetime 0.7.3",
+ "serde_spanned",
+ "toml_datetime",
  "toml_parser",
  "toml_writer",
  "winnow",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.6.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22cddaf88f4fbc13c51aebbf5f8eceb5c7c5a9da2ac40a13519eb5b0a0e8f11c"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -4551,26 +4521,12 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.22.27"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41fe8c660ae4257887cf66394862d21dbca4a6ddd26f04a3560410406a2f819a"
-dependencies = [
- "indexmap",
- "serde",
- "serde_spanned 0.6.9",
- "toml_datetime 0.6.11",
- "toml_write",
- "winnow",
-]
-
-[[package]]
-name = "toml_edit"
 version = "0.23.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d7cbc3b4b49633d57a0509303158ca50de80ae32c265093b24c414705807832"
 dependencies = [
  "indexmap",
- "toml_datetime 0.7.3",
+ "toml_datetime",
  "toml_parser",
  "winnow",
 ]
@@ -4583,12 +4539,6 @@ checksum = "c0cbe268d35bdb4bb5a56a2de88d0ad0eb70af5384a99d648cd4b3d04039800e"
 dependencies = [
  "winnow",
 ]
-
-[[package]]
-name = "toml_write"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d99f8c9a7727884afe522e9bd5edbfc91a3312b36a77b5fb8926e4c31a41801"
 
 [[package]]
 name = "toml_writer"
@@ -4908,7 +4858,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 0.8.23",
+ "toml",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -5489,7 +5439,7 @@ dependencies = [
  "orion-error",
  "orion_conf",
  "serde",
- "toml 0.9.8",
+ "toml",
  "wp-cli-utils",
  "wp-config",
  "wp-knowledge",
@@ -5505,7 +5455,7 @@ dependencies = [
  "comfy-table",
  "serde",
  "serde_json",
- "toml 0.9.8",
+ "toml",
  "walkdir",
  "wp-config",
  "wp-data-fmt",
@@ -5522,7 +5472,7 @@ dependencies = [
  "log",
  "orion_conf",
  "serde",
- "toml 0.9.8",
+ "toml",
  "wp-model-core",
 ]
 
@@ -5548,7 +5498,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "wildmatch",
  "winnow",
  "wp-conf-base",
@@ -5578,7 +5528,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "wp-model-core",
  "wp-parse-api",
 ]
@@ -5607,7 +5557,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "toml 0.9.8",
+ "toml",
  "uuid",
  "winnow",
  "wp-conf-base",
@@ -5711,7 +5661,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 0.9.8",
+ "toml",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -5785,7 +5735,7 @@ dependencies = [
  "strfmt",
  "strum_macros",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "wildmatch",
  "wp-data-fmt",
  "wp-data-utils",
@@ -5832,7 +5782,7 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "unicode-segmentation",
  "url",
  "wildmatch",
@@ -5910,7 +5860,7 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "url",
  "wildmatch",
  "winnow",
@@ -5960,7 +5910,7 @@ dependencies = [
  "orion_conf",
  "serde",
  "serde_json",
- "toml 0.9.8",
+ "toml",
  "wildmatch",
  "wp-cli-core",
  "wp-cli-utils",
@@ -5999,7 +5949,7 @@ version = "0.5.10"
 source = "git+https://github.com/wp-labs/wp-infras?tag=v0.5.10-beta#fdb472fbc5c28be2d21c15b6c28fd5641c704195"
 dependencies = [
  "serde",
- "toml 0.9.8",
+ "toml",
  "wildmatch",
 ]
 
@@ -6023,7 +5973,7 @@ dependencies = [
  "serde_json",
  "strum_macros",
  "thiserror 2.0.17",
- "toml 0.9.8",
+ "toml",
  "wildmatch",
  "wp-log",
  "wp-model-core",
