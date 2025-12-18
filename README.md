@@ -76,6 +76,9 @@ Warp Parse is a high-performance Rust ETL engine built for observability, securi
 - Advanced filtering capabilities
 - Dynamic sink configuration
 
+<p align="center">
+  <img src="docs/performance.jpg"  width="1000"/>
+</p>
 ## 🏗️ Git Repository Overview
 
 | Repository | Description |
