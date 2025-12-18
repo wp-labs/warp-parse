@@ -27,39 +27,6 @@ Warp Parse is a high-performance Rust ETL engine built for log/telemetry ingesti
 | `docs/` | mdBook documentation (`make -C docs build`). `performance.md` hosts benchmark tables. |
 | `../wp-engine`, `../wp-connectors` | Upstream sibling crates referenced as path deps for advanced features (e.g., Kafka). |
 
-## Getting Started
-
-```bash
-cargo build                   # default "community" feature
-cargo build --release         # optimized binaries
-cargo run --bin wparse -- --help
-cargo run --bin wpgen  -- --help
-cargo run --bin wpkit  -- --help
-```
-
-Feature examples:
-
-```bash
-cargo build --features kafka
-cargo build --no-default-features --features runtime-core
-```
-
-## Testing & QA
-
-- Format: `cargo fmt --all`
-- Lint: `cargo clippy --all-targets --all-features -- -D warnings`
-- Tests: `cargo test` (append feature gates like `--features sink_test` as needed)
-- Benchmarks: `cargo bench` (Criterion)
-
-Before submitting changes, run `fmt`, `clippy`, `test`, and key feature builds (`community`, `kafka`).
-
-## Documentation & Examples
-
-- Docs: `make -C docs build` or `make -C docs serve`
-- Config docs: `docs/10-user/04-sources/README.md`, `docs/10-user/03-sinks/README.md`
-- DSL guides: `docs/10-user/06-wpl/01-wpl_basics.md`, `docs/10-user/07-oml/01-oml_basics.md`
-- Performance deep dive: `docs/performance.md`
-- Sample scenarios: `examples/`
 
 ## License
 
@@ -96,39 +63,6 @@ Warp Parse 是面向安全/数据平台团队的高性能 Rust ETL 引擎，主�
 | `docs/` | mdBook 文档，含 `performance.md` 性能报告。 |
 | `../wp-engine`、`../wp-connectors` | 上游 sibling 仓库，提供引擎/连接器能力（如 Kafka）。 |
 
-## 快速开始
-
-```bash
-cargo build                   # 默认启用 community（kafka/mysql）
-cargo build --release         # 生产优化版本
-cargo run --bin wparse -- --help
-cargo run --bin wpgen  -- --help
-cargo run --bin wpkit  -- --help
-```
-
-常用特性：
-
-```bash
-cargo build --features kafka
-cargo build --no-default-features --features runtime-core
-```
-
-## 测试与质量保障
-
-- 代码格式：`cargo fmt --all`
-- 静态检查：`cargo clippy --all-targets --all-features -- -D warnings`
-- 单/集成测试：`cargo test`（按需追加 `--features sink_test` 等）
-- 基准：`cargo bench`
-
-提交前请执行 `fmt`、`clippy`、`test`，并构建关键特性集（如 `community`、`kafka`）。
-
-## 文档与示例
-
-- 文档构建：`make -C docs build` / `make -C docs serve`
-- 源/汇配置：`docs/10-user/04-sources/README.md`、`docs/10-user/03-sinks/README.md`
-- WPL/OML 指南：`docs/10-user/06-wpl/01-wpl_basics.md`、`docs/10-user/07-oml/01-oml_basics.md`
-- 性能报告：`docs/performance.md`
-- 示例：`examples/`
 
 ## 许可协议
 
