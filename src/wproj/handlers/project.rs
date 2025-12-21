@@ -134,7 +134,7 @@ mod tests {
             "connectors/source.d/00-file-default.toml",
             "connectors/sink.d/02-file-json.toml",
             "models/sinks/business.d/demo.toml",
-            "models/sources/wpsrc.toml",
+            "topology/sources/wpsrc.toml",
             "models/knowledge/knowdb.toml",
         ];
 
@@ -158,7 +158,7 @@ mod tests {
             std::path::Path::new(&format!("{}/topology/sinks/business.d/demo.toml", work)).exists()
         );
         // Temporarily comment out failing assertions for debugging
-        // assert!(std::path::Path::new(&format!("{}/models/sources/wpsrc.toml", work)).exists());
+        // assert!(std::path::Path::new(&format!("{}/topology/sources/wpsrc.toml", work)).exists());
         // assert!(std::path::Path::new(&format!("{}/models/knowledge/knowdb.toml", work)).exists());
         // Temporarily disable cleanup for debugging
         // let _ = std::fs::remove_dir_all(work);

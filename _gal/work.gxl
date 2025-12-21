@@ -16,7 +16,7 @@ mod envs  {
   #[usage(desp="use debug ",color="blue")]
   env release :  _common,rust_env.release{
   }
-  env cargo_patch  {
+  env use_patch  {
         PATCH_FLAG = " ";
   }
 

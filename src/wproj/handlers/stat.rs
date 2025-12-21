@@ -38,7 +38,9 @@ pub fn run_combined_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
     if let Some(report) = stats.src {
         wlib::print_src_files_table(&report);
     } else {
-        println!("no file sources found: missing models/sources/wpsrc.toml or no enabled entries");
+        println!(
+            "no file sources found: missing topology/sources/wpsrc.toml or no enabled entries"
+        );
     }
     println!("\n== Sinks ==");
     wlib::print_rows(&sink_rows, sink_total);

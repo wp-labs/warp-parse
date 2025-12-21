@@ -28,7 +28,7 @@ tcp_recv_bytes = 10485760  # 10 MiB
 # instances = 1             # 可选：多实例并行，默认 1，最大 16
 ```
 
-## 源配置（models/sources/wpsrc.toml）
+## 源配置（topology/sources/wpsrc.toml）
 ```toml
 [[sources]]
 key = "tcp_in"

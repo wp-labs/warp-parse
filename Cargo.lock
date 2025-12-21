@@ -1237,7 +1237,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1894,7 +1894,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.1",
+ "socket2 0.5.10",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -2683,7 +2683,6 @@ dependencies = [
 [[package]]
 name = "orion_exp"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -2694,7 +2693,6 @@ dependencies = [
 [[package]]
 name = "orion_overload"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -3361,7 +3359,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4149,7 +4147,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4912,7 +4910,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5263,7 +5261,6 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 [[package]]
 name = "wp-cli-core"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "orion-error",
@@ -5278,7 +5275,6 @@ dependencies = [
 [[package]]
 name = "wp-cli-utils"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5309,7 +5305,6 @@ dependencies = [
 [[package]]
 name = "wp-config"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5423,7 +5418,6 @@ dependencies = [
 [[package]]
 name = "wp-data-utils"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "chrono",
  "derive_builder",
@@ -5439,7 +5433,6 @@ dependencies = [
 [[package]]
 name = "wp-engine"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5540,7 +5533,6 @@ dependencies = [
 [[package]]
 name = "wp-knowledge"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5576,7 +5568,6 @@ dependencies = [
 [[package]]
 name = "wp-lang"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "ahash",
  "anyhow",
@@ -5657,7 +5648,6 @@ dependencies = [
 [[package]]
 name = "wp-oml"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5720,7 +5710,6 @@ dependencies = [
 [[package]]
 name = "wp-parser"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "orion_exp 1.5.0",
  "winnow",
@@ -5729,7 +5718,6 @@ dependencies = [
 [[package]]
 name = "wp-proj"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -5784,7 +5772,6 @@ dependencies = [
 [[package]]
 name = "wp-stats"
 version = "1.5.0"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-alpha#e62b2059eb4c176db02d3aaf705884e9a07b1160"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5949,3 +5936,7 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
+
+[[patch.unused]]
+name = "wp-enterprise"
+version = "0.1.6"

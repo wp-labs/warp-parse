@@ -4,7 +4,7 @@
 
 位置与文件名
 - 主配置：`$WORK_ROOT/conf/wparse.toml`（若不存在，wparse 会落回内置默认；兼容历史名 `dvron.toml`）
-- 源配置：`$WORK_ROOT/models/sources/wpsrc.toml`
+- 源配置：`$WORK_ROOT/topology/sources/wpsrc.toml`
 - 汇配置：`$WORK_ROOT/models/sinks/{business.d,infra.d,defaults.toml}`
 - 连接器：`$WORK_ROOT/connectors/{source.d,sink.d}/*.toml`（从工作根向上查找最近的 `connectors/*`，最多 32 层）
 
@@ -108,7 +108,7 @@ top_n  = 20
   - `fields`：聚合维度数组；`top_n`：输出条目上限（默认 20）
 
 源/汇与连接器（与主配置的关系）
-- 源（Sources）：读取路径由 `[models].sources` 决定；统一使用 `models/sources/wpsrc.toml`（兼容 `models/source/` 与 `source/`）。
+- 源（Sources）：读取路径由 `[models].sources` 决定；统一使用 `topology/sources/wpsrc.toml`（兼容 `models/source/` 与 `source/`）。
   - 写法与校验见：[源配置总览](02-sources.md)
   - 连接器查找：从工作根向上查找最近的 `connectors/source.d`（最多 32 层）
 - 汇（Sinks）：读取路径由 `[models].sinks` 决定；采用目录式 V2：`business.d/infra.d/defaults.toml`。

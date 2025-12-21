@@ -6,7 +6,7 @@
 Source（源）是 warp-flow 系统中负责数据输入的组件，支持多种数据源和协议。采用统一的连接器架构，提供灵活的数据接入能力。
 
 ### 定位与目录
-- **配置文件**：`$WORK_ROOT/models/sources/wpsrc.toml`（兼容 legacy `models/source/wpsrc.toml` 与 `source/wpsrc.toml`）
+- **配置文件**：`$WORK_ROOT/topology/sources/wpsrc.toml`（兼容 legacy `models/source/wpsrc.toml` 与 `source/wpsrc.toml`）
 - **连接器定义**：从 `$WORK_ROOT/models/sources` 起向上查找最近的 `connectors/source.d/*.toml`（≤32 层）
 
 ### 核心概念
@@ -67,7 +67,7 @@ base = "data/in_dat"
 file = "gen.dat"
 encode = "text"
 
-# models/sources/wpsrc.toml
+# topology/sources/wpsrc.toml
 [[sources]]
 key = "access_log"
 connect = "file_src"
@@ -93,7 +93,7 @@ protocol = "udp"
 header_mode = "parse"
 prefer_newline = false
 
-# models/sources/wpsrc.toml
+# topology/sources/wpsrc.toml
 [[sources]]
 key = "syslog_udp"
 connect = "syslog_udp_src"
@@ -117,7 +117,7 @@ brokers = "localhost:9092"
 topic = ["access_log"]
 group_id = "wpgen_consumer"
 
-# models/sources/wpsrc.toml
+# topology/sources/wpsrc.toml
 [[sources]]
 key = "kafka_access"
 connect = "kafka_src"
@@ -143,7 +143,7 @@ prefer_newline = true      # auto 时优先按行
 tcp_recv_bytes = 10485760  # 10MiB
 # instances = 1             # 可选：单 connectors 多实例（默认 1，最大 16）
 
-# models/sources/wpsrc.toml
+# topology/sources/wpsrc.toml
 [[sources]]
 key = "tcp_in"
 connect = "tcp_src"
@@ -163,7 +163,7 @@ params_override = {
 
 ### 复杂配置示例
 ```toml
-# models/sources/wpsrc.toml
+# topology/sources/wpsrc.toml
 
 # 文件数据源
 [[sources]]
@@ -355,7 +355,7 @@ wproj sources validate --work-root .
 本文描述源配置：在 wpsrc.toml 内以 `[[sources]]` 声明条目，并通过 `connect` 引用 `connectors/source.d/*.toml` 中定义的连接器，再用 `params_override` 做白名单覆写。
 注：为便于块表写法，支持使用 `params` 作为 `params_override` 的等价别名。推荐仍使用 `params_override` 以强调“覆写”语义。
 
-- 默认位置：`$WORK_ROOT/models/sources/wpsrc.toml`（兼容 legacy `models/source/wpsrc.toml` 与 `source/wpsrc.toml`）
+- 默认位置：`$WORK_ROOT/topology/sources/wpsrc.toml`（兼容 legacy `models/source/wpsrc.toml` 与 `source/wpsrc.toml`）
 - 连接器目录：`$WORK_ROOT/connectors/source.d/*.toml`（从 `models/sources` 起向上查找最近的该目录，≤32 层）
 - 兼容性：不再接受旧字段（如 `type/path/...`）；必须使用 `connect/params_override`（或其别名 `params`）
 - 启停：每个源通过 `enable = true|false` 控制是否启用（缺省 true）
