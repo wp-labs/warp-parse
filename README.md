@@ -42,14 +42,14 @@ WarpParse VS Vector
 | Repository | Description |
 | ---------- | ----------- |
 | [`warp-parse`](https://github.com/wp-labs/warp-parse) | ⭐ WarpParse Community Edition |
-| `wp-advanced-api` | Advanced Control Interface |
-| `wp-connectors` | Connector Library |
-| `wp-docs` | Documentation |
-| `wp-engine` | Engine Core |
-| `wp-example` | Usage Examples |
-| `wp-infras` | Infrastructure Library |
-| `wp-rule` | Rule Library |
-| `wp-open-api` | Open Extension Interface |
+| `wp-open-api` | WarpParse Open Interface |
+| `wp-connectors` | WarpParse Connector Library, where you can extend more connectors |
+| `wp-docs` | WarpParse Usage Documentation |
+| `wp-engine` | WarpParse Engine Core |
+| `wp-example` | WarpParse Usage Examples |
+| `wp-infras` | WarpParse Infrastructure Library |
+| `wp-rule` | WarpParse Rule Library |
+| `wp-advanced-api` | WarpParse Advanced Control Interface |
 
 ## 📄 License
 
