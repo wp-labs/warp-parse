@@ -51,17 +51,6 @@ WarpParse VS Vector
 | `wp-rule` | Rule Library |
 | `wp-open-api` | Open Extension Interface |
 
-## 📁 Repository Layout
-
-| Path | Description |
-| ---- | ----------- |
-| `Cargo.toml`, `build.rs` | Workspace manifest and build metadata |
-| `wparse/`, `wpgen/`, `wprescue/` | CLI main programs |
-| `connectors/` | Sample connector configurations |
-| `examples/` | Ready-to-run examples |
-| `docs/` | Comprehensive documentation |
-| `../wp-engine` | Upstream engine crate |
-
 ## 📄 License
 
 Elastic License 2.0 (ELv2) - see [LICENSE](LICENSE) for details.
@@ -94,25 +83,14 @@ Warp Parse 是面向可观测性、安全、实时风控、数据平台团队的
 | 仓库 | 说明 |
 | ---- | ---- |
 | [`warp-parse`](https://github.com/wp-labs/warp-parse) | ⭐ WarpParse 社区版 |
-| `wp-advanced-api` | 高级控制接口 |
-| `wp-connectors` | 连接器库 |
-| `wp-docs` | 使用文档 |
-| `wp-engine` | 引擎核心 |
-| `wp-example` | 使用示例 |
-| `wp-infras` | 基础库 |
-| `wp-rule` | 规则库 |
-| `wp-open-api` | 开放扩展接口 |
-
-## 📁 项目结构
-
-| 路径 | 说明 |
-| ---- | ---- |
-| `Cargo.toml`, `build.rs` | 工作区清单和构建信息 |
-| `wparse/`, `wpgen/`, `wprescue/` | CLI 主程序 |
-| `connectors/` | 连接器示例配置 |
-| `examples/` | 可运行示例 |
-| `docs/` | 完整文档 |
-| `../wp-engine` | 上游引擎库 |
+| `wp-open-api` | WarpParse 开放接口 |
+| `wp-connectors` | WarpParse 连接器库, 可以在此扩展更多的 connector |
+| `wp-docs` | WarpParse 使用文档 |
+| `wp-engine` | WarpParse 引擎核心 |
+| `wp-example` | WarpParse 使用示例 |
+| `wp-infras` | WarpParse 基础库 |
+| `wp-rule` | WarpParse 规则库 |
+| `wp-advanced-api` | WarpParse 高级控制接口 |
 
 ## 📄 许可协议
 
