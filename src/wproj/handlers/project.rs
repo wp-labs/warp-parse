@@ -155,7 +155,7 @@ mod tests {
             std::path::Path::new(&format!("{}/connectors/sink.d/02-file-json.toml", work)).exists()
         );
         assert!(
-            std::path::Path::new(&format!("{}/models/sinks/business.d/demo.toml", work)).exists()
+            std::path::Path::new(&format!("{}/topology/sinks/business.d/demo.toml", work)).exists()
         );
         // Temporarily comment out failing assertions for debugging
         // assert!(std::path::Path::new(&format!("{}/models/sources/wpsrc.toml", work)).exists());

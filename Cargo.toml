@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.9.3"
+version = "0.10.0"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -60,8 +60,81 @@ panic = "abort"
 panic = "abort"
 
 # ===========================================================================
+# Package Metadata
+# ===========================================================================
+
+[package.metadata.cargo-udeps.ignore]
+normal = ["ctor"]
+
+# ===========================================================================
+# Build Dependencies
+# ===========================================================================
+
+[build-dependencies]
+shadow-rs =  "~1.4"
+
+# ===========================================================================
+# Dev Dependencies
+# ===========================================================================
+
+[dev-dependencies]
+serial_test = "~3.2"
+httpmock = "~0.8"
+collection_literals = "~1.0"
+tempfile = "~3.23"
+criterion = "~0.8"
+
+# ===========================================================================
+# Features
+# ===========================================================================
+[features]
+# --- Default ---
+default = ["community"]
+
+# --- Runtime ---
+runtime-core = []
+
+# --- Community Edition (default) ---
+community = [
+    "runtime-core",
+    "kafka",
+    "mysql",
+    "clickhouse",
+    "elasticsearch",
+    "prometheus",
+]
+
+# --- Connectors (via wp_connectors) ---
+kafka         = ["wp_connectors/kafka"]
+mysql         = ["wp_connectors/mysql"]
+clickhouse    = ["wp_connectors/clickhouse"]
+elasticsearch = ["wp_connectors/elasticsearch"]
+prometheus    = ["wp_connectors/prometheus"]
+
+# --- Enterprise ---
+
+# --- Convenience ---
+all = ["community"]
+
+# --- Testing (cfg gates) ---
+sys_test        = []
+res_depend_test = []
+
+# --- Development ---
+examples  = []
+perf-ci   = []
+dev-tools = []
+wp-enterprise = []
+
+# --- Plugins (placeholder for compatibility) ---
+example-plugin = []
+extras         = []
+plugin-suite   = []
+
+# ===========================================================================
 # Dependencies
 # ===========================================================================
+#
 
 [dependencies]
 # --- System and Platform ---
@@ -133,8 +206,6 @@ ipnet = "~2.11"
 walkdir = "~2.5"
 glob = "~0.3"
 
-# --- Testing (also in dependencies for mockall) ---
-
 # --- Internal: Open API ---
 wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", tag = "v0.5.1-beta" }
 wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", tag = "v0.5.1-beta" }
@@ -147,111 +218,32 @@ wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-
 wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.5.10-beta" }
 wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.5.10-beta" }
 
-# --- Internal: Schema ---
-#wp_schema = { package = "wp-schema", git = "https://cnb.cool/dy-sec/core-engine/data-parse/wp-schema.git", tag = "v0.1.3" }
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.4.3-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.0-alpha" }
 
-# --- Internal: Enterprise (optional) ---
+wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.5.6-alpha" }
 
-# --- Internal: Connectors ---
-wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors.git", tag = "v0.5.6-alpha" }
-
-# ===========================================================================
-# Build Dependencies
-# ===========================================================================
-
-[build-dependencies]
-shadow-rs =  "~1.4"
-
-# ===========================================================================
-# Dev Dependencies
-# ===========================================================================
-
-[dev-dependencies]
-serial_test = "~3.2"
-httpmock = "~0.8"
-collection_literals = "~1.0"
-tempfile = "~3.23"
-criterion = "~0.8"
-
-# ===========================================================================
-# Package Metadata
-# ===========================================================================
-
-[package.metadata.cargo-udeps.ignore]
-normal = ["ctor"]
-
-# ===========================================================================
-# Features
-# ===========================================================================
-
-[features]
-# --- Default ---
-default = ["community"]
-
-# --- Runtime ---
-runtime-core = []
-
-# --- Community Edition (default) ---
-community = [
-    "runtime-core",
-    "kafka",
-    "mysql",
-    "clickhouse",
-    "elasticsearch",
-    "prometheus",
-]
-
-# --- Connectors (via wp_connectors) ---
-kafka         = ["wp_connectors/kafka"]
-mysql         = ["wp_connectors/mysql"]
-clickhouse    = ["wp_connectors/clickhouse"]
-elasticsearch = ["wp_connectors/elasticsearch"]
-prometheus    = ["wp_connectors/prometheus"]
-
-# --- Enterprise ---
-
-# --- Convenience ---
-all = ["community"]
-
-# --- Testing (cfg gates) ---
-sys_test        = []
-res_depend_test = []
-
-# --- Development ---
-examples  = []
-perf-ci   = []
-dev-tools = []
-wp-enterprise = []
-
-# --- Plugins (placeholder for compatibility) ---
-example-plugin = []
-extras         = []
-plugin-suite   = []
 
 # ===========================================================================
 # Local Development Patches (template)
 # ===========================================================================
 # Uncomment to use local paths instead of git dependencies:
 #
-# [patch."https://cnb.cool/dy-sec/core-engine/data-parse/wp-engine"]
+# [patch."https://github.com/wp-labs/wp-engine"]
 # wp-engine     = { path = "../wp-engine" }
 # wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
-## orion_common  = { path = "../wp-engine/crates/orion_common" }
 # wp-config     = { path = "../wp-engine/crates/wp-config" }
-## wp-data-model = { path = "../wp-engine/crates/wp-data-model" }
 # wp-lang       = { path = "../wp-engine/crates/wp-lang" }
 # wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
 # wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
 # wp-proj       = { path = "../wp-engine/crates/wp-proj" }
 #
-# [patch."https://cnb.cool/dy-sec/core-engine/data-parse/wp-enterprise"]
+# [patch."https://github.com/wp-labs/wp-enterprise"]
 # wp-enterprise = { path = "../wp-enterprise" }

@@ -20,9 +20,9 @@ version = "{{VERSION}}"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
-license = "Apache-2.0"
+license = "ELv2"
 description = "High-performance flow data parsing and processing system"
-repository = "{{GIT_REPO_SVR}}/warp-parse"
+repository = "https://github.com/wp-labs/warp-parse"
 keywords = ["parsing", "data-processing", "security", "log-analysis"]
 categories = ["command-line-utilities", "parsing"]
 
@@ -54,138 +54,10 @@ path = "src/wprescue/main.rs"
 opt-level = 3
 lto = "thin"
 codegen-units = 1
+panic = "abort"
 
 [profile.dev]
-opt-level = 0
-debug = true
-
-[profile.dev.package."*"]
-opt-level = 2  # 依赖库使用优化编译加速运行
-
-# ===========================================================================
-# Dependencies
-# ===========================================================================
-
-[dependencies]
-# --- System and Platform ---
-sysinfo = "~0.33"
-async-signal = "~0.2"
-libc = "~0.2"
-signal-hook-registry = "~1.4"
-tikv-jemallocator = "~0.6"
-
-# --- Async Runtime ---
-tokio = { version = "~1.48", features = ["full"] }
-tokio-util = { version = "~0.7", features = ["full"] }
-tokio-async-drop = "~0.1"
-futures-util = "~0.3"
-futures-lite = "~2.3"
-async-trait = "~0.1"
-async-broadcast = "~0.6"
-
-# --- Serialization ---
-serde = { version = "~1.0", features = ["derive"] }
-serde_json = "~1.0"
-toml = "~0.8"
-
-# --- Logging and Errors ---
-log = "~0.4"
-anyhow = "~1.0"
-thiserror = "~2.0"
-orion-error = "~0.5"
-orion_conf = { version = "~0.3", features = ["yaml", "toml"] }
-
-# --- Time ---
-chrono = "~0.4"
-time = "~0.3"
-
-# --- CLI ---
-clap = { version = "~4.5", features = ["derive"] }
-comfy-table = "~7.2"
-
-# --- Parsing ---
-winnow = "~0.7"
-#regex = "~1.11"
-wildmatch = "~2.6"
-strfmt = "~0.2"
-syslog = "~6.0"
-
-# --- Derive Macros ---
-derive_more = { version = "~2.1", features = ["full"] }
-derive_builder = "~0.20"
-derive-getters = "~0.5"
-enum_dispatch = "~0.3"
-educe = { version = "~0.4", features = ["Debug", "Default"] }
-
-# --- Utilities ---
-#bytes = "~1.7"
-uuid = { version = "~1.19", features = ["v4"] }
-once_cell = "~1.21"
-lazy_static = "~1.5"
-contracts = "~0.6"
-ctor = "~0.2"
-hex = "~0.4"
-shadow-rs = "~1.2"
-rand = "0.9.2"
-
-# --- Data Structures ---
-lru = "~0.12"
-ipnet = "~2.11"
-
-# --- File System ---
-walkdir = "~2.5"
-glob = "~0.3"
-
-# --- Testing (also in dependencies for mockall) ---
-
-# --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
-wp_parse_api     = { package = "wp-parse-api",     git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
-wp_model_core    = { package = "wp-model-core",    git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
-
-# --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-error     = { package = "wp-error",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-specs     = { package = "wp-specs",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-conf-base = { package = "wp-conf-base", git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-
-# --- Internal: Schema ---
-#wp_schema = { package = "wp-schema", git = "https://cnb.cool/dy-sec/core-engine/data-parse/wp-schema.git", tag = "v0.1.3" }
-
-# --- Internal: Engine ---
-wp-engine     = {                            git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-#orion_common  = { package = "orion_common",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp_conf       = { package = "wp-config",     git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-#wp_data_model = { package = "wp-data-model", git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wpl           = { package = "wp-lang",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp-cli-core   = { package = "wp-cli-core",   git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp-proj       = { package = "wp-proj",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-
-# --- Internal: Enterprise (optional) ---
-
-# --- Internal: Connectors ---
-wp_connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors.git", tag = "{{WP_CNN_VER}}" }
-
-# ===========================================================================
-# Build Dependencies
-# ===========================================================================
-
-[build-dependencies]
-shadow-rs = "~1.2"
-
-# ===========================================================================
-# Dev Dependencies
-# ===========================================================================
-
-[dev-dependencies]
-serial_test = "~3.0"
-httpmock = "~0.7"
-collection_literals = "~1.0"
-criterion = "~0.5"
-tempfile = "~3.14"
+panic = "abort"
 
 # ===========================================================================
 # Package Metadata
@@ -195,9 +67,26 @@ tempfile = "~3.14"
 normal = ["ctor"]
 
 # ===========================================================================
-# Features
+# Build Dependencies
 # ===========================================================================
 
+[build-dependencies]
+shadow-rs =  "~1.4"
+
+# ===========================================================================
+# Dev Dependencies
+# ===========================================================================
+
+[dev-dependencies]
+serial_test = "~3.2"
+httpmock = "~0.8"
+collection_literals = "~1.0"
+tempfile = "~3.23"
+criterion = "~0.8"
+
+# ===========================================================================
+# Features
+# ===========================================================================
 [features]
 # --- Default ---
 default = ["community"]
@@ -243,20 +132,118 @@ extras         = []
 plugin-suite   = []
 
 # ===========================================================================
+# Dependencies
+# ===========================================================================
+#
+
+[dependencies]
+# --- System and Platform ---
+sysinfo = "~0.37"
+async-signal = "~0.2"
+libc = "~0.2"
+signal-hook-registry = "~1.4"
+tikv-jemallocator = "~0.6"
+
+# --- Async Runtime ---
+tokio = { version = "~1.48", features = ["full"] }
+tokio-util = { version = "~0.7", features = ["full"] }
+tokio-async-drop = "~0.1"
+futures-util = "~0.3"
+futures-lite = "~2.6"
+async-trait = "~0.1"
+async-broadcast = "~0.7"
+
+# --- Serialization ---
+serde = { version = "~1.0", features = ["derive"] }
+serde_json = "~1.0"
+toml = "~0.9"
+
+# --- Logging and Errors ---
+log = "~0.4"
+anyhow = "~1.0"
+thiserror = "~2.0"
+orion-error = "~0.5"
+orion_conf = { version = "~0.3", features = ["yaml", "toml"] }
+
+# --- Time ---
+chrono = "~0.4"
+time = "~0.3"
+
+# --- CLI ---
+clap = { version = "~4.5", features = ["derive"] }
+comfy-table = "~7.2"
+
+# --- Parsing ---
+winnow = "~0.7"
+#regex = "~1.11"
+wildmatch = "~2.6"
+strfmt = "~0.2"
+syslog = "~7.0"
+
+# --- Derive Macros ---
+derive_more = { version = "~2.1", features = ["full"] }
+derive_builder = "~0.20"
+derive-getters = "~0.5"
+enum_dispatch = "~0.3"
+educe = { version = "~0.6", features = ["Debug", "Default"] }
+
+# --- Utilities ---
+#bytes = "~1.7"
+uuid = { version = "~1.19", features = ["v4"] }
+once_cell = "~1.21"
+lazy_static = "~1.5"
+contracts = "~0.6"
+ctor = "~0.6"
+hex = "~0.4"
+shadow-rs = "~1.4"
+rand = "0.9.2"
+
+# --- Data Structures ---
+lru = "~0.16"
+ipnet = "~2.11"
+
+# --- File System ---
+walkdir = "~2.5"
+glob = "~0.3"
+
+# --- Internal: Open API ---
+wp_connector_api = { package = "wp-connector-api", git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
+wp_parse_api     = { package = "wp-parse-api",     git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
+wp_model_core    = { package = "wp-model-core",    git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
+
+# --- Internal: Infrastructure ---
+wp-log       = { package = "wp-log",       git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+wp-error     = { package = "wp-error",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+wp-specs     = { package = "wp-specs",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+wp-conf-base = { package = "wp-conf-base", git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+
+
+# --- Internal: Engine ---
+wp-engine     = {                            git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wp_conf       = { package = "wp-config",     git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wpl           = { package = "wp-lang",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wp-cli-core   = { package = "wp-cli-core",   git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wp-proj       = { package = "wp-proj",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+
+wp_connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors", tag = "{{WP_CNN_VER}}" }
+
+
+# ===========================================================================
 # Local Development Patches (template)
 # ===========================================================================
 # Uncomment to use local paths instead of git dependencies:
 #
-{{PATCH_FLAG}} [patch."https://cnb.cool/dy-sec/core-engine/data-parse/wp-engine"]
+{{PATCH_FLAG}} [patch."{{GIT_REPO_SVR}}/wp-engine"]
 {{PATCH_FLAG}} wp-engine     = { path = "../wp-engine" }
 {{PATCH_FLAG}} wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
-#{{PATCH_FLAG}} orion_common  = { path = "../wp-engine/crates/orion_common" }
 {{PATCH_FLAG}} wp-config     = { path = "../wp-engine/crates/wp-config" }
-#{{PATCH_FLAG}} wp-data-model = { path = "../wp-engine/crates/wp-data-model" }
 {{PATCH_FLAG}} wp-lang       = { path = "../wp-engine/crates/wp-lang" }
 {{PATCH_FLAG}} wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
 {{PATCH_FLAG}} wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
 {{PATCH_FLAG}} wp-proj       = { path = "../wp-engine/crates/wp-proj" }
 {{PATCH_FLAG}}
-{{PATCH_FLAG}} [patch."https://cnb.cool/dy-sec/core-engine/data-parse/wp-enterprise"]
+{{PATCH_FLAG}} [patch."{{GIT_REPO_SVR}}/wp-enterprise"]
 {{PATCH_FLAG}} wp-enterprise = { path = "../wp-enterprise" }

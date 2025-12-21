@@ -246,9 +246,9 @@ pub struct ProjectInitArgs {
     #[clap(
         short,
         long = "mode",
-        default_value = "conf",
+        default_value = "normal",
         visible_alias = "模式",
-        help = "初始化模式：full/model/conf/data | Initialization mode: full/model/conf/data"
+        help = "初始化模式：full/normal/model/conf/data | Initialization mode: full/normal/model/conf/data"
     )]
     pub mode: String,
 }

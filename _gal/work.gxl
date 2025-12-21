@@ -6,6 +6,7 @@ mod envs  {
     target_name = "";
     prj_key   = "warp-parse" ;
     DIST_REPO = "unknow";
+    PATCH_FLAG = "#";
 
   }
 
@@ -14,6 +15,9 @@ mod envs  {
   }
   #[usage(desp="use debug ",color="blue")]
   env release :  _common,rust_env.release{
+  }
+  env cargo_patch  {
+        PATCH_FLAG = " ";
   }
 
 
@@ -46,6 +50,7 @@ mod main  {
     flow conf {
     }
         flow ver.use | @_gen_cargo {
+        PATCH_FLAG = ${ENV_PATCH_FLAG} ;
         gx.cmd (" rm ./Cargo.toml");
         gx.tpl (
             tpl : "./_gal/tpl/Cargo.toml" ,
