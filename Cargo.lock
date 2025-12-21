@@ -1237,7 +1237,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1894,7 +1894,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.5.10",
+ "socket2 0.6.1",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -2127,9 +2127,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.15"
+version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
+checksum = "7ee5b5339afb4c41626dde77b7a611bd4f2c202b897852b4bcf5d03eddc61010"
 
 [[package]]
 name = "jobserver"
@@ -2683,6 +2683,7 @@ dependencies = [
 [[package]]
 name = "orion_exp"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -2693,6 +2694,7 @@ dependencies = [
 [[package]]
 name = "orion_overload"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -3359,7 +3361,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3404,9 +3406,9 @@ checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
 name = "ryu"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
+checksum = "62049b2877bf12821e8f9ad256ee38fdc31db7387ec2d3b3f403024de2034aea"
 
 [[package]]
 name = "same-file"
@@ -4147,7 +4149,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4910,7 +4912,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -5261,6 +5263,7 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 [[package]]
 name = "wp-cli-core"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "orion-error",
@@ -5275,6 +5278,7 @@ dependencies = [
 [[package]]
 name = "wp-cli-utils"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5305,6 +5309,7 @@ dependencies = [
 [[package]]
 name = "wp-config"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5418,6 +5423,7 @@ dependencies = [
 [[package]]
 name = "wp-data-utils"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "chrono",
  "derive_builder",
@@ -5433,6 +5439,7 @@ dependencies = [
 [[package]]
 name = "wp-engine"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5533,6 +5540,7 @@ dependencies = [
 [[package]]
 name = "wp-knowledge"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5568,6 +5576,7 @@ dependencies = [
 [[package]]
 name = "wp-lang"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "ahash",
  "anyhow",
@@ -5648,6 +5657,7 @@ dependencies = [
 [[package]]
 name = "wp-oml"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5710,6 +5720,7 @@ dependencies = [
 [[package]]
 name = "wp-parser"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "orion_exp 1.5.0",
  "winnow",
@@ -5718,6 +5729,7 @@ dependencies = [
 [[package]]
 name = "wp-proj"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -5772,6 +5784,7 @@ dependencies = [
 [[package]]
 name = "wp-stats"
 version = "1.5.0"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.5.0-beta#c132804e6b748838fb6eba94036f600f2c534ea3"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5936,7 +5949,3 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
-
-[[patch.unused]]
-name = "wp-enterprise"
-version = "0.1.6"
