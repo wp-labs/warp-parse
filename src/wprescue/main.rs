@@ -1,4 +1,3 @@
-mod feats;
 use clap::Parser;
 use orion_error::ErrorConv;
 use std::env;
@@ -10,7 +9,7 @@ use wp_error::run_error::RunResult;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> RunResult<()> {
-    feats::register_sinks();
+    warp_parse::feats::register_for_runtime();
     let argv: Vec<String> = env::args().collect();
     let (_quiet, filtered_args) = split_quiet_args(argv);
 

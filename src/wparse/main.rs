@@ -1,6 +1,5 @@
 use std::env;
 use std::sync::Once;
-
 // 全局分配器：在非 Windows 平台启用 jemalloc，提升多线程分配性能
 
 //use tikv_jemallocator::Jemalloc;
@@ -19,8 +18,6 @@ use wp_engine::facade::WpApp;
 use wp_error::run_error::RunResult;
 use wpcnt_lib::banner::split_quiet_args;
 mod cli;
-#[cfg(feature = "wp-enterprise")]
-mod enterprise;
 static BUILD_INFO_ONCE: Once = Once::new();
 fn log_build_info_once() {
     BUILD_INFO_ONCE.call_once(|| {
@@ -35,15 +32,10 @@ fn log_build_info_once() {
     });
 }
 use crate::cli::WParseCLI;
-fn register_plugins() {
-    // Register built-in sinks & source factories, same as legacy wparse feats.rs
-    wp_engine::sinks::register_builtin_sinks();
-    wp_engine::sources::file::register_factory_only();
-    wp_engine::sources::syslog::register_syslog_factory();
-
-    //#[cfg(feature = "wp-enterprise")]
-    //enterprise::register();
-    // Dev-only: register adapters (MySQL + Kafka) to enable conn_url parsing in local runs
+fn register_extension() {
+    // Register all built-in sinks, sources, and optional connectors
+    // Using the shared feats module for unified registration
+    warp_parse::feats::register_for_runtime();
 }
 
 #[tokio::main(flavor = "multi_thread")]
@@ -57,7 +49,7 @@ async fn main() {
 async fn do_main() -> RunResult<()> {
     let argv: Vec<String> = env::args().collect();
     let (_quiet, filtered_args) = split_quiet_args(argv);
-    register_plugins();
+    register_extension();
     let cmd = WParseCLI::parse_from(&filtered_args);
     match cmd {
         WParseCLI::Daemon(args) => {

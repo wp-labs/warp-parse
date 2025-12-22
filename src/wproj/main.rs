@@ -1,7 +1,6 @@
 use clap::Parser;
 mod args;
 mod format;
-mod plugins;
 use libc::exit;
 use std::env;
 use wp_engine::facade::diagnostics;
@@ -22,8 +21,7 @@ async fn main() {
 
 async fn do_main() -> RunResult<()> {
     let (_pre_quiet, filtered_args) = split_quiet_args(env::args().collect());
-    plugins::register_sources_factory_only();
-    plugins::register_sinks();
+    warp_parse::feats::register_for_runtime();
     let wcl = WProjCli::parse_from(&filtered_args);
     handlers::cli::dispatch_cli(wcl).await
 }

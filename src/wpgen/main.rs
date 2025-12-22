@@ -9,7 +9,6 @@ use clap::Parser; // bring Parser trait for Cli::parse()
 mod cli;
 mod conf;
 mod data;
-mod feats;
 mod rule;
 mod sample;
 //mod wpcli;
@@ -18,8 +17,8 @@ use crate::cli::{Cli, Cmd, ConfCmd, DataCmd};
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
-    // 注册可用的 sink 工厂（内置 + 可选 kafka）
-    feats::register_connectors();
+    // 注册可用的 sink 工厂（内置）
+    warp_parse::feats::register_for_runtime();
     let cli = Cli::parse();
     match cli.cmd {
         Cmd::Rule {
@@ -28,7 +27,7 @@ async fn main() -> Result<()> {
             conf_name,
             stat_print,
             line_cnt,
-            gen_speed,
+            speed,
             stat_sec,
         } => {
             rule::run(
@@ -37,7 +36,7 @@ async fn main() -> Result<()> {
                 &conf_name,
                 stat_print,
                 line_cnt,
-                gen_speed,
+                speed,
                 stat_sec,
             )
             .await?
@@ -48,7 +47,7 @@ async fn main() -> Result<()> {
             conf_name,
             print_stat,
             line_cnt,
-            gen_speed,
+            speed,
             stat_sec,
         } => {
             sample::run(
@@ -57,7 +56,7 @@ async fn main() -> Result<()> {
                 &conf_name,
                 print_stat,
                 line_cnt,
-                gen_speed,
+                speed,
                 stat_sec,
             )
             .await?

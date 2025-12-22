@@ -32,7 +32,7 @@ pub enum Cmd {
         line_cnt: Option<usize>,
         /// Generation speed override/生成速度覆盖
         #[arg(short = 's')]
-        gen_speed: Option<usize>,
+        speed: Option<usize>,
         /// Stats interval seconds/统计输出间隔（秒）
         #[arg(long = "stat", default_value_t = 1)]
         stat_sec: usize,
@@ -56,7 +56,7 @@ pub enum Cmd {
         line_cnt: Option<usize>,
         /// Generation speed override/生成速度覆盖
         #[arg(short = 's')]
-        gen_speed: Option<usize>,
+        speed: Option<usize>,
         /// Stats interval seconds/统计输出间隔（秒）
         #[arg(long = "stat", default_value_t = 1)]
         stat_sec: usize,
