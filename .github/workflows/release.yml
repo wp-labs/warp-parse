@@ -91,7 +91,7 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
           body: |
-            Welcome to this new release of GalaxyFlow ${{ github.ref_name }}!
+            Welcome to this new release of WarpParse ${{ github.ref_name }}!
 
             All artifacts are signed with this repos identity using Sigstore.
             You can verify the signatures using the `GitHub` CLI.

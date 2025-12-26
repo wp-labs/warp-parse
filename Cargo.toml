@@ -220,13 +220,13 @@ wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.1" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.5.2-beta" }
 
 wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.5.6-alpha" }
 
