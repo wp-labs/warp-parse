@@ -11,6 +11,7 @@ use wp_engine::facade::config as constants;
 use wp_engine::facade::config::load_warp_engine_confs;
 use wp_error::run_error::RunResult;
 use wp_log::conf::log_init;
+use wp_proj::project::init::PrjScope;
 use wp_proj::project::WarpProject;
 
 pub async fn dispatch_data_cmd(sub: DataCmd) -> RunResult<()> {
@@ -45,7 +46,7 @@ pub async fn dispatch_data_cmd(sub: DataCmd) -> RunResult<()> {
 }
 
 async fn do_clean(args: DataArgs) -> RunResult<()> {
-    let project = WarpProject::new(&args.work_root);
+    let project = WarpProject::load(&args.work_root, PrjScope::Normal)?;
     project.data_clean()
 }
 

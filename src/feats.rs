@@ -10,7 +10,6 @@
 /// Register all available connector factories (sources and sinks).
 /// This includes all community edition connectors like Kafka, MySQL, etc.
 /// Controlled by feature flags.
-use wp_engine::connectors::registry;
 
 /// Register only built-in sinks (null, file, test_rescue).
 /// Used by tools that need minimal functionality (e.g., wprescue).
@@ -47,6 +46,8 @@ pub fn register_optional_connectors() {
          * Uncomment when all versions have consistent APIs.
          */
 
+        use wp_engine::connectors::registry;
+
         registry::register_source_factory(wp_connectors::kafka::KafkaSourceFactory);
         registry::register_sink_factory(wp_connectors::kafka::KafkaSinkFactory);
     }
@@ -54,6 +55,8 @@ pub fn register_optional_connectors() {
     // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
+        use wp_engine::connectors::registry;
+
         registry::register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
         registry::register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
     }

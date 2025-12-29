@@ -92,11 +92,11 @@ criterion = "~0.8"
 default = ["community"]
 
 # --- Runtime ---
-runtime-core = []
+core = []
 
 # --- Community Edition (default) ---
 community = [
-    "runtime-core",
+    "core",
     "kafka",
     "mysql",
     "clickhouse",

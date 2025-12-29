@@ -6,7 +6,6 @@ use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
 use crate::handlers::validate::run_sink_validation;
 use crate::handlers::{data, knowdb, project};
 use wp_error::run_error::RunResult;
-use wp_proj::sources::Sources;
 
 pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
     match cli.cmd {
@@ -22,8 +21,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
 fn dispatch_model_cmd(cmd: ModelCmd) -> RunResult<()> {
     match cmd {
         ModelCmd::Sources(args) => {
-            let sources = Sources::new();
-            list_sources_for_cli(&sources, &args)?;
+            list_sources_for_cli(&args)?;
             Ok(())
         }
         ModelCmd::Sinks(args) => list_sinks(args),

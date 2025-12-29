@@ -2,16 +2,20 @@ use std::str::FromStr;
 
 use orion_error::{ToStructError, UvsConfFrom};
 use wp_error::run_error::{RunReason, RunResult};
-use wp_proj::project::{checker, init::InitMode, WarpProject};
+use wp_proj::project::{checker, init::PrjScope, WarpProject};
 
 use crate::args::{ProjectCheckArgs, ProjectInitArgs};
 
 pub fn init_project(args: ProjectInitArgs) -> RunResult<()> {
-    WarpProject::new(args.work_root.clone()).init(InitMode::from_str(args.mode.as_str())?)
+    WarpProject::init(
+        args.work_root.clone(),
+        PrjScope::from_str(args.mode.as_str())?,
+    )
+    .map(|_| ())
 }
 
 pub fn check_project(args: ProjectCheckArgs) -> RunResult<()> {
-    let project = WarpProject::new(args.work_root.clone());
+    let project = WarpProject::load(args.work_root.clone(), PrjScope::Normal)?;
     let mut opts = checker::CheckOptions::new(&args.work_root);
     opts.what = args.what.clone();
     opts.console = args.console;
