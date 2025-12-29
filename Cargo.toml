@@ -236,14 +236,14 @@ wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 # ===========================================================================
 # Uncomment to use local paths instead of git dependencies:
 #
- [patch."https://github.com/wp-labs/wp-engine"]
- wp-engine     = { path = "../wp-engine" }
- wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
- wp-config     = { path = "../wp-engine/crates/wp-config" }
- wp-lang       = { path = "../wp-engine/crates/wp-lang" }
- wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
- wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
- wp-proj       = { path = "../wp-engine/crates/wp-proj" }
-
+# [patch."https://github.com/wp-labs/wp-engine"]
+# wp-engine     = { path = "../wp-engine" }
+# wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
+# wp-config     = { path = "../wp-engine/crates/wp-config" }
+# wp-lang       = { path = "../wp-engine/crates/wp-lang" }
+# wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
+# wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
+# wp-proj       = { path = "../wp-engine/crates/wp-proj" }
+#
 # [patch."https://github.com/wp-labs/wp-enterprise"]
 # wp-enterprise = { path = "../wp-enterprise" }
