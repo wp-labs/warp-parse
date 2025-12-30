@@ -216,7 +216,7 @@ wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-
 # --- Internal: Infrastructure ---
 wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
 wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
 wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
 wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
 
