@@ -61,6 +61,13 @@ pub fn register_optional_connectors() {
         registry::register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
     }
 
+     // VictoriaLogs connector (sink only)
+    #[cfg(any(feature = "community", feature = "victorialogs"))]
+    {
+        use wp_engine::connectors::registry;
+
+        registry::register_sink_factory(wp_connectors::victorialogs::VictoriaLogSinkFactory);
+    }
     // ClickHouse connector (source/sink)
     #[cfg(any(feature = "community", feature = "clickhouse"))]
     {
