@@ -228,7 +228,7 @@ wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/w
 wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
 wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
 
 wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.1-alpha" }
 
