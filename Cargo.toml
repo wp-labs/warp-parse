@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.11.1"
+version = "0.11.2"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -102,16 +102,14 @@ community = [
     "clickhouse",
     "elasticsearch",
     "prometheus",
-    "victorialogs"
 ]
 
 # --- Connectors (via wp_connectors) ---
-kafka         = ["wp_connectors/kafka"]
-mysql         = ["wp_connectors/mysql"]
-clickhouse    = ["wp_connectors/clickhouse"]
-elasticsearch = ["wp_connectors/elasticsearch"]
-prometheus    = ["wp_connectors/prometheus"]
-victorialogs  = ["wp_connectors/victorialogs"]
+kafka         = ["wp-connectors/kafka"]
+mysql         = ["wp-connectors/mysql"]
+clickhouse    = ["wp-connectors/clickhouse"]
+elasticsearch = ["wp-connectors/elasticsearch"]
+prometheus    = ["wp-connectors/prometheus"]
 
 # --- Enterprise ---
 
@@ -209,28 +207,28 @@ walkdir = "~2.5"
 glob = "~0.3"
 
 # --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.0-alpha" }
-wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.0-alpha" }
-wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.0-alpha" }
+wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.1-beta" }
+wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.1-beta" }
+wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", tag = "v0.6.1-beta" }
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
-wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.0-alpha" }
+wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
+wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
+wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.6.1-beta" }
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
 
-wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.1-alpha" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.2-alpha" }
 
 
 # ===========================================================================
@@ -249,3 +247,7 @@ wp_connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 #
 # [patch."https://github.com/wp-labs/wp-enterprise"]
 # wp-enterprise = { path = "../wp-enterprise" }
+
+
+[patch."https://github.com/wp-labs/wp-connectors"]
+wp-connectors = { path = "../wp-connectors"}

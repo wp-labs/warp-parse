@@ -105,11 +105,11 @@ community = [
 ]
 
 # --- Connectors (via wp_connectors) ---
-kafka         = ["wp_connectors/kafka"]
-mysql         = ["wp_connectors/mysql"]
-clickhouse    = ["wp_connectors/clickhouse"]
-elasticsearch = ["wp_connectors/elasticsearch"]
-prometheus    = ["wp_connectors/prometheus"]
+kafka         = ["wp-connectors/kafka"]
+mysql         = ["wp-connectors/mysql"]
+clickhouse    = ["wp-connectors/clickhouse"]
+elasticsearch = ["wp-connectors/elasticsearch"]
+prometheus    = ["wp-connectors/prometheus"]
 
 # --- Enterprise ---
 
@@ -228,7 +228,7 @@ wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine",
 wp-cli-core   = { package = "wp-cli-core",   git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
 wp-proj       = { package = "wp-proj",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
 
-wp_connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors", tag = "{{WP_CNN_VER}}" }
+wp-connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors", tag = "{{WP_CNN_VER}}" }
 
 
 # ===========================================================================
@@ -247,3 +247,7 @@ wp_connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connecto
 {{PATCH_FLAG}}
 {{PATCH_FLAG}} [patch."{{GIT_REPO_SVR}}/wp-enterprise"]
 {{PATCH_FLAG}} wp-enterprise = { path = "../wp-enterprise" }
+
+
+{{PATCH_FLAG}} [patch."{{GIT_REPO_SVR}}/wp-connectors"]
+{{PATCH_FLAG}} wp-connectors = { path = "../wp-connectors"}
