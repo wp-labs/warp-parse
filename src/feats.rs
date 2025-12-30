@@ -7,12 +7,6 @@
 // All registration functions are safe to call multiple times as the
 // registry ignores duplicate builders.
 
-/// Register all available connector factories (sources and sinks).
-/// This includes all community edition connectors like Kafka, MySQL, etc.
-/// Controlled by feature flags.
-
-/// Register only built-in sinks (null, file, test_rescue).
-/// Used by tools that need minimal functionality (e.g., wprescue).
 pub fn register_builtin() {
     wp_engine::sinks::register_builtin_sinks();
 }
@@ -61,7 +55,7 @@ pub fn register_optional_connectors() {
         registry::register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
     }
 
-     // VictoriaLogs connector (sink only)
+    // VictoriaLogs connector (sink only)
     #[cfg(any(feature = "community", feature = "victorialogs"))]
     {
         use wp_engine::connectors::registry;
