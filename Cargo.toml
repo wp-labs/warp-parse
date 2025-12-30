@@ -222,7 +222,7 @@ wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
 wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
 wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
 wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.0-alpha" }
