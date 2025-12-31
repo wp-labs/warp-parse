@@ -230,7 +230,7 @@ wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/w
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
 wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.2-alpha" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.3-alpha" }
 
 
 # ===========================================================================
