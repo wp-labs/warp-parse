@@ -102,6 +102,7 @@ community = [
     "clickhouse",
     "elasticsearch",
     "prometheus",
+    "victorialogs"
 ]
 
 # --- Connectors (via wp_connectors) ---
@@ -110,6 +111,7 @@ mysql         = ["wp-connectors/mysql"]
 clickhouse    = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus    = ["wp-connectors/prometheus"]
+victorialogs  = ["wp-connectors/victorialogs"]
 
 # --- Enterprise ---
 
@@ -249,5 +251,5 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 # wp-enterprise = { path = "../wp-enterprise" }
 
 
-[patch."https://github.com/wp-labs/wp-connectors"]
-wp-connectors = { path = "../wp-connectors"}
+# [patch."https://github.com/wp-labs/wp-connectors"]
+# wp-connectors = { path = "../wp-connectors"}
