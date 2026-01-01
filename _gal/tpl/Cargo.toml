@@ -102,7 +102,8 @@ community = [
     "clickhouse",
     "elasticsearch",
     "prometheus",
-    "victorialogs"
+    "victorialog",
+    "victoriametric"
 ]
 
 # --- Connectors (via wp_connectors) ---
@@ -111,7 +112,8 @@ mysql         = ["wp-connectors/mysql"]
 clickhouse    = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus    = ["wp-connectors/prometheus"]
-victorialogs  = ["wp-connectors/victorialogs"]
+victorialog   = ["wp-connectors/victorialog"]
+victoriametric = ["wp-connectors/victoriametric"]
 
 # --- Enterprise ---
 
@@ -209,28 +211,28 @@ walkdir = "~2.5"
 glob = "~0.3"
 
 # --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
-wp_parse_api     = { package = "wp-parse-api",     git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
-wp_model_core    = { package = "wp-model-core",    git = "{{GIT_REPO_SVR}}/wp-open-api", tag = "{{OPEN_API_VER}}" }
+wp_connector_api = { package = "wp-connector-api", git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
+wp_parse_api     = { package = "wp-parse-api",     git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
+wp_model_core    = { package = "wp-model-core",    git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-error     = { package = "wp-error",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-specs     = { package = "wp-specs",     git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-conf-base = { package = "wp-conf-base", git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "{{GIT_REPO_SVR}}/wp-infras", tag = "{{WP_IFS_VER}}" }
+wp-log       = { package = "wp-log",       git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
+wp-error     = { package = "wp-error",     git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
+wp-specs     = { package = "wp-specs",     git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
+wp-conf-base = { package = "wp-conf-base", git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp_conf       = { package = "wp-config",     git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wpl           = { package = "wp-lang",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp-cli-core   = { package = "wp-cli-core",   git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
-wp-proj       = { package = "wp-proj",       git = "{{GIT_REPO_SVR}}/wp-engine", tag = "{{WP_ENG_VER}}" }
+wp-engine     = {                            git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wp_conf       = { package = "wp-config",     git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wpl           = { package = "wp-lang",       git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wp-cli-core   = { package = "wp-cli-core",   git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
+wp-proj       = { package = "wp-proj",       git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
 
-wp-connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors", tag = "{{WP_CNN_VER}}" }
+wp-connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connectors", {{GIT_REF}} = "{{WP_CNN_VER}}" }
 
 
 # ===========================================================================

@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.11.2"
+version = "0.11.3"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -102,7 +102,8 @@ community = [
     "clickhouse",
     "elasticsearch",
     "prometheus",
-    "victorialogs"
+    "victorialog",
+    "victoriametric"
 ]
 
 # --- Connectors (via wp_connectors) ---
@@ -111,7 +112,8 @@ mysql         = ["wp-connectors/mysql"]
 clickhouse    = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus    = ["wp-connectors/prometheus"]
-victorialogs  = ["wp-connectors/victorialogs"]
+victorialog   = ["wp-connectors/victorialog"]
+victoriametric = ["wp-connectors/victoriametric"]
 
 # --- Enterprise ---
 
@@ -222,15 +224,15 @@ wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.1-beta" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.6.2-beta" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.3-alpha" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.6.3-beta" }
 
 
 # ===========================================================================

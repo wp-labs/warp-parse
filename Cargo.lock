@@ -2685,8 +2685,8 @@ dependencies = [
 
 [[package]]
 name = "orion_exp"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -2696,8 +2696,8 @@ dependencies = [
 
 [[package]]
 name = "orion_overload"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -4698,7 +4698,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.11.2"
+version = "0.11.3"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5266,8 +5266,8 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 
 [[package]]
 name = "wp-cli-core"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "orion-error",
@@ -5281,8 +5281,8 @@ dependencies = [
 
 [[package]]
 name = "wp-cli-utils"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5314,8 +5314,8 @@ dependencies = [
 
 [[package]]
 name = "wp-config"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5329,7 +5329,7 @@ dependencies = [
  "once_cell",
  "orion-error",
  "orion_conf",
- "orion_exp 1.6.1",
+ "orion_exp 1.6.2",
  "orion_overload",
  "serde",
  "serde_derive",
@@ -5393,7 +5393,7 @@ dependencies = [
 [[package]]
 name = "wp-connectors"
 version = "0.6.3"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.6.3-alpha#9a459b9f131362d99debfcb300207bf50586b7ca"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.6.3-beta#5875ea36ec2582649b6f1bd80ec50d09cd2331be"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -5449,14 +5449,14 @@ dependencies = [
 
 [[package]]
 name = "wp-data-utils"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "chrono",
  "derive_builder",
  "lru",
  "orion-error",
- "orion_exp 1.6.1",
+ "orion_exp 1.6.2",
  "serde",
  "serde_derive",
  "serde_json",
@@ -5465,8 +5465,8 @@ dependencies = [
 
 [[package]]
 name = "wp-engine"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5500,7 +5500,7 @@ dependencies = [
  "once_cell",
  "orion-error",
  "orion_conf",
- "orion_exp 1.6.1",
+ "orion_exp 1.6.2",
  "orion_overload",
  "rand 0.9.2",
  "regex",
@@ -5584,8 +5584,8 @@ dependencies = [
 
 [[package]]
 name = "wp-knowledge"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5620,8 +5620,8 @@ dependencies = [
 
 [[package]]
 name = "wp-lang"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "ahash",
  "anyhow",
@@ -5730,8 +5730,8 @@ dependencies = [
 
 [[package]]
 name = "wp-oml"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5752,7 +5752,7 @@ dependencies = [
  "once_cell",
  "orion-error",
  "orion_conf",
- "orion_exp 1.6.1",
+ "orion_exp 1.6.2",
  "parse-display",
  "parse-display-derive",
  "serde",
@@ -5807,17 +5807,17 @@ dependencies = [
 
 [[package]]
 name = "wp-parser"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
- "orion_exp 1.6.1",
+ "orion_exp 1.6.2",
  "winnow",
 ]
 
 [[package]]
 name = "wp-proj"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -5872,8 +5872,8 @@ dependencies = [
 
 [[package]]
 name = "wp-stats"
-version = "1.6.1"
-source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.1-beta#7bf4c8224f1d5f17d3d053a567ad17df04e066e9"
+version = "1.6.2"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.6.2-beta#c6837a39f4d139751a0cfc79bcb6bef5b5ac7e77"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6013,9 +6013,9 @@ dependencies = [
 
 [[package]]
 name = "zmij"
-version = "1.0.5"
+version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3280a1b827474fcd5dbef4b35a674deb52ba5c312363aef9135317df179d81b"
+checksum = "aac060176f7020d62c3bcc1cdbcec619d54f48b07ad1963a3f80ce7a0c17755f"
 
 [[package]]
 name = "zstd"
