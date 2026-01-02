@@ -211,28 +211,28 @@ walkdir = "~2.5"
 glob = "~0.3"
 
 # --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
-wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
-wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7" }
+wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
+wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
+wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", branch = "develop/0.7-smol" }
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7" }
+wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", branch = "develop/0.7-smol" }
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.7-smol" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", branch = "develop/0.7" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", branch = "develop/0.7-smol" }
 
 
 # ===========================================================================
