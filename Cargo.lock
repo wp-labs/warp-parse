@@ -2710,7 +2710,7 @@ dependencies = [
 [[package]]
 name = "orion_exp"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "arcstr",
  "chrono",
@@ -2723,7 +2723,7 @@ dependencies = [
 [[package]]
 name = "orion_overload"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -5303,7 +5303,7 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 [[package]]
 name = "wp-cli-core"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "orion-error",
@@ -5318,7 +5318,7 @@ dependencies = [
 [[package]]
 name = "wp-cli-utils"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5335,7 +5335,7 @@ dependencies = [
 [[package]]
 name = "wp-conf-base"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7-smol#8705aa8f3f71ecb5ec29042a4eb546aff8b6cbe3"
+source = "git+https://github.com/wp-labs/wp-infras?tag=v0.7.0-beta#99462d0176d59c64293e3f85f6e833beb04f6c45"
 dependencies = [
  "anyhow",
  "derive_more",
@@ -5351,7 +5351,7 @@ dependencies = [
 [[package]]
 name = "wp-config"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5409,7 +5409,7 @@ dependencies = [
 [[package]]
 name = "wp-connector-api"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7-smol#e6b58c23c870dbec205747f9389ceadc6441e461"
+source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.7.0-beta#e6b58c23c870dbec205747f9389ceadc6441e461"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5430,14 +5430,14 @@ dependencies = [
 [[package]]
 name = "wp-connectors"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-connectors?branch=develop%2F0.7-smol#9857dddf9dc8b52e43aa156689410a1a7beebe32"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.7.0-alpha#286e52c9ae50134391cf97665cf0280152b1efa6"
 dependencies = [
  "actix-web",
  "anyhow",
  "async-trait",
  "bytes",
  "chrono",
- "educe 0.4.23",
+ "educe 0.6.0",
  "lazy_static",
  "log",
  "orion-error",
@@ -5476,7 +5476,7 @@ dependencies = [
 [[package]]
 name = "wp-data-fmt"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7-smol#8705aa8f3f71ecb5ec29042a4eb546aff8b6cbe3"
+source = "git+https://github.com/wp-labs/wp-infras?tag=v0.7.0-beta#99462d0176d59c64293e3f85f6e833beb04f6c45"
 dependencies = [
  "chrono",
  "serde",
@@ -5487,7 +5487,7 @@ dependencies = [
 [[package]]
 name = "wp-data-utils"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "arcstr",
  "chrono",
@@ -5505,10 +5505,9 @@ dependencies = [
 [[package]]
 name = "wp-engine"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
- "arcstr",
  "async-broadcast",
  "async-signal",
  "async-trait",
@@ -5548,6 +5547,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "signal-hook-registry",
+ "smol_str",
  "socket2 0.6.1",
  "strfmt",
  "sysinfo",
@@ -5608,7 +5608,7 @@ dependencies = [
 [[package]]
 name = "wp-error"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7-smol#8705aa8f3f71ecb5ec29042a4eb546aff8b6cbe3"
+source = "git+https://github.com/wp-labs/wp-infras?tag=v0.7.0-beta#99462d0176d59c64293e3f85f6e833beb04f6c45"
 dependencies = [
  "chrono",
  "derive_more",
@@ -5625,7 +5625,7 @@ dependencies = [
 [[package]]
 name = "wp-knowledge"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5661,7 +5661,7 @@ dependencies = [
 [[package]]
 name = "wp-lang"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "ahash",
  "anyhow",
@@ -5729,7 +5729,7 @@ dependencies = [
 [[package]]
 name = "wp-log"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7-smol#8705aa8f3f71ecb5ec29042a4eb546aff8b6cbe3"
+source = "git+https://github.com/wp-labs/wp-infras?tag=v0.7.0-beta#99462d0176d59c64293e3f85f6e833beb04f6c45"
 dependencies = [
  "anyhow",
  "getset",
@@ -5758,7 +5758,7 @@ dependencies = [
 [[package]]
 name = "wp-model-core"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7-smol#e6b58c23c870dbec205747f9389ceadc6441e461"
+source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.7.0-beta#e6b58c23c870dbec205747f9389ceadc6441e461"
 dependencies = [
  "arcstr",
  "chrono",
@@ -5775,7 +5775,7 @@ dependencies = [
 [[package]]
 name = "wp-oml"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "arcstr",
@@ -5839,7 +5839,7 @@ dependencies = [
 [[package]]
 name = "wp-parse-api"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-open-api?branch=develop%2F0.7-smol#e6b58c23c870dbec205747f9389ceadc6441e461"
+source = "git+https://github.com/wp-labs/wp-open-api?tag=v0.7.0-beta#e6b58c23c870dbec205747f9389ceadc6441e461"
 dependencies = [
  "bytes",
  "derive_more",
@@ -5853,7 +5853,7 @@ dependencies = [
 [[package]]
 name = "wp-parser"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "orion_exp 1.7.0",
  "winnow",
@@ -5862,7 +5862,7 @@ dependencies = [
 [[package]]
 name = "wp-proj"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -5907,7 +5907,7 @@ dependencies = [
 [[package]]
 name = "wp-specs"
 version = "0.7.0"
-source = "git+https://github.com/wp-labs/wp-infras?branch=develop%2F0.7-smol#8705aa8f3f71ecb5ec29042a4eb546aff8b6cbe3"
+source = "git+https://github.com/wp-labs/wp-infras?tag=v0.7.0-beta#99462d0176d59c64293e3f85f6e833beb04f6c45"
 dependencies = [
  "serde",
  "toml",
@@ -5918,7 +5918,7 @@ dependencies = [
 [[package]]
 name = "wp-stats"
 version = "1.7.0"
-source = "git+https://github.com/wp-labs/wp-engine?branch=develop%2F1.7-smol#70904f58ac9ea244b46febc7f73ef83459977449"
+source = "git+https://github.com/wp-labs/wp-engine?tag=v1.7.0-alpha#64c61fc198c86e39243bf443c81e0cf2ec00b8a1"
 dependencies = [
  "anyhow",
  "chrono",
