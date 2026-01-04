@@ -89,6 +89,26 @@ jobs:
           body: |
             Welcome to this new release of WarpParse ${{ github.ref_name }}!
 
+            ## 📦 Installation
+
+            ### Binary Downloads
+            Download the pre-built binaries for your platform from the assets below.
+
+            ### Docker Image
+            Pull and run the Docker image:
+            ```shell
+            # Pull the specific version
+            docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+
+            # Or pull the latest version
+            docker pull ghcr.io/${{ github.repository }}:latest
+
+            # Run the container
+            docker run --rm ghcr.io/${{ github.repository }}:${{ github.ref_name }} --help
+            ```
+
+            ## 🔐 Verification
+
             All artifacts are signed with this repos identity using Sigstore.
             You can verify the signatures using the `GitHub` CLI.
 
