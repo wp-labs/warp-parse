@@ -27,7 +27,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04-arm
+          - os: ubuntu-22.04
             target: aarch64-unknown-linux-gnu
           - os: macos-14
             target: aarch64-apple-darwin
@@ -35,16 +35,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Install cross-compilation tools
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rustup_toolchain }}
+          targets: ${{ matrix.target }}
 
       - name: Cargo build (Rust TLS)
-        run: cargo build --all
+        run: cargo build --all --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
       - name: Cargo test
-        run: cargo test --all
+        if: matrix.target != 'aarch64-unknown-linux-gnu'
+        run: cargo test --all --target ${{ matrix.target }}
 
       - name: Cargo fmt
         run: cargo fmt --check
