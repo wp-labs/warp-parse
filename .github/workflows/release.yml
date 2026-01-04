@@ -24,30 +24,42 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
           - os: macos-14
             target: aarch64-apple-darwin
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Install cross-compilation tools
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
+          targets: ${{ matrix.target }}
 
       - name: Cargo build
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target }}
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
 
       - name: Show version
-        run: ./target/release/wparse --version
+        if: matrix.target != 'aarch64-unknown-linux-gnu'
+        run: ./target/${{ matrix.target }}/release/wparse --version
 
       - name: Archive
         run: |
           mkdir -p artifacts
-          cp -av target/release/wparse artifacts/
-          cp -av target/release/wpgen artifacts/
-          cp -av target/release/wprescue artifacts/
-          cp -av target/release/wproj artifacts/
+          cp -av target/${{ matrix.target }}/release/wparse artifacts/
+          cp -av target/${{ matrix.target }}/release/wpgen artifacts/
+          cp -av target/${{ matrix.target }}/release/wprescue artifacts/
+          cp -av target/${{ matrix.target }}/release/wproj artifacts/
           tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz artifacts
 
       - name: Attest Build Provenance
@@ -138,6 +150,12 @@ jobs:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}-x86_64-unknown-linux-gnu
           path: docker-build/amd64-tar
 
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-unknown-linux-gnu
+          path: docker-build/arm64-tar
+
       - name: Extract binaries
         run: |
           cd docker-build
@@ -147,8 +165,17 @@ jobs:
           mv amd64-tar/artifacts/* amd64/
           chmod +x amd64/*
           rm -rf amd64-tar
+          # Extract arm64
+          cd arm64-tar && tar -xzf *.tar.gz && cd ..
+          mkdir -p arm64
+          mv arm64-tar/artifacts/* arm64/
+          chmod +x arm64/*
+          rm -rf arm64-tar
           # Copy Dockerfile
           cp ../Dockerfile .
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -177,7 +204,7 @@ jobs:
         with:
           context: docker-build
           file: docker-build/Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
