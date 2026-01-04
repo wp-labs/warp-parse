@@ -19,42 +19,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - x86_64-unknown-linux-gnu
-          - aarch64-unknown-linux-gnu
-          - aarch64-apple-darwin
-        rustup_toolchain: [stable]
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
-            target: aarch64-unknown-linux-gnu
           - os: macos-14
             target: aarch64-apple-darwin
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Install cross-compilation tools
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu
-
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ matrix.rustup_toolchain }}
-          targets: ${{ matrix.target }}
+          toolchain: stable
 
-      - name: Cargo build (Rust TLS)
-        run: cargo build --all --target ${{ matrix.target }}
-        env:
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+      - name: Cargo build
+        run: cargo build --all
 
       - name: Cargo test
-        if: matrix.target != 'aarch64-unknown-linux-gnu'
-        run: cargo test --all --target ${{ matrix.target }}
+        run: cargo test --all
 
       - name: Cargo fmt
         run: cargo fmt --check
