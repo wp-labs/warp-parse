@@ -24,9 +24,9 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            container: ghcr.io/cross-rs/x86_64-unknown-linux-gnu:0.2.6
+            container: ghcr.io/cross-rs/x86_64-unknown-linux-gnu:0.2.5
           - target: aarch64-unknown-linux-gnu
-            container: ghcr.io/cross-rs/aarch64-unknown-linux-gnu:0.2.6
+            container: ghcr.io/cross-rs/aarch64-unknown-linux-gnu:0.2.5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
