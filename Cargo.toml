@@ -102,8 +102,8 @@ community = [
     "clickhouse",
     "elasticsearch",
     "prometheus",
-    "victorialog",
-    "victoriametric"
+    "victorialogs",
+    "victoriametrics"
 ]
 
 # --- Connectors (via wp_connectors) ---
@@ -112,8 +112,8 @@ mysql         = ["wp-connectors/mysql"]
 clickhouse    = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus    = ["wp-connectors/prometheus"]
-victorialog   = ["wp-connectors/victorialog"]
-victoriametric = ["wp-connectors/victoriametric"]
+victorialogs   = ["wp-connectors/victorialogs"]
+victoriametrics = ["wp-connectors/victoriametrics"]
 
 # --- Enterprise ---
 

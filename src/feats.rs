@@ -56,7 +56,14 @@ pub fn register_optional_connectors() {
     }
 
     // VictoriaLogs connector (sink only)
-    #[cfg(any(feature = "community", feature = "victorialog"))]
+    #[cfg(any(feature = "community", feature = "victoriametrics"))]
+    {
+        use wp_engine::connectors::registry;
+
+        registry::register_sink_factory(wp_connectors::victoriametrics::VictoriaMetricFactory);
+    }
+
+    #[cfg(any(feature = "community", feature = "victorialogs"))]
     {
         use wp_engine::connectors::registry;
 
