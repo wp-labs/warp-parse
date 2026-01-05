@@ -13,8 +13,9 @@ permissions:
   packages: write
 
 jobs:
-  Release-Build:
-    runs-on: ${{ matrix.os }}
+  Release-Build-Linux:
+    runs-on: ubuntu-22.04
+    container: ${{ matrix.container }}
     permissions:
       contents: read
       attestations: write
@@ -22,12 +23,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-22.04
-            target: x86_64-unknown-linux-gnu
-          - os: ubuntu-22.04
-            target: aarch64-unknown-linux-gnu
-          - os: macos-14
-            target: aarch64-apple-darwin
+          - target: x86_64-unknown-linux-gnu
+            container: ghcr.io/cross-rs/x86_64-unknown-linux-gnu:0.2.6
+          - target: aarch64-unknown-linux-gnu
+            container: ghcr.io/cross-rs/aarch64-unknown-linux-gnu:0.2.6
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -38,35 +37,11 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: Install cross-compilation tools for ARM
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          sudo dpkg --add-architecture arm64
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu pkg-config libssl-dev:arm64
-
-      - name: Configure cargo for cross-compilation
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          mkdir -p ~/.cargo
-          cat >> ~/.cargo/config.toml << EOF
-          [target.aarch64-unknown-linux-gnu]
-          linker = "aarch64-linux-gnu-gcc"
-          EOF
-
-      - name: Configure OpenSSL for ARM target
-        if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: |
-          echo "PKG_CONFIG_ALLOW_CROSS=1" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:${PKG_CONFIG_PATH:-/usr/lib/pkgconfig}" >> $GITHUB_ENV
-          echo "OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu" >> $GITHUB_ENV
-
       - name: Cargo build
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Show version
-        if: runner.os == 'macOS' || (runner.os == 'Linux' && matrix.target == 'x86_64-unknown-linux-gnu')
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
         run: ./target/${{ matrix.target }}/release/wparse --version
 
       - name: Archive
@@ -91,8 +66,53 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  Release-Build-Mac:
+    runs-on: macos-14
+    permissions:
+      contents: read
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: aarch64-apple-darwin
+
+      - name: Cargo build
+        run: cargo build --release --target aarch64-apple-darwin
+
+      - name: Show version
+        run: ./target/aarch64-apple-darwin/release/wparse --version
+
+      - name: Archive
+        run: |
+          mkdir -p artifacts
+          cp -av target/aarch64-apple-darwin/release/wparse artifacts/
+          cp -av target/aarch64-apple-darwin/release/wpgen artifacts/
+          cp -av target/aarch64-apple-darwin/release/wprescue artifacts/
+          cp -av target/aarch64-apple-darwin/release/wproj artifacts/
+          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz artifacts
+
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v3
+        continue-on-error: true
+        with:
+          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.*
+
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin
+          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.*
+          if-no-files-found: error
+          retention-days: 7
+
   Release:
-    needs: [Release-Build, Docker-Build]
+    needs: [Release-Build-Linux, Release-Build-Mac, Docker-Build]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -148,7 +168,7 @@ jobs:
           files: artifacts/*
 
   Docker-Build:
-    needs: [Release-Build]
+    needs: [Release-Build-Linux]
     runs-on: ubuntu-22.04
     permissions:
       contents: read
