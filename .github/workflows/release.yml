@@ -13,20 +13,29 @@ permissions:
   packages: write
 
 jobs:
-  Release-Build-Linux:
-    runs-on: ubuntu-22.04
-    container: ${{ matrix.container }}
+  build-matrix:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
     permissions:
       contents: read
       attestations: write
       id-token: write
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - target: x86_64-unknown-linux-gnu
-            container: ghcr.io/cross-rs/x86_64-unknown-linux-gnu:0.2.5
-          - target: aarch64-unknown-linux-gnu
-            container: ghcr.io/cross-rs/aarch64-unknown-linux-gnu:0.2.5
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            use-cross: false
+            can-run: true
+          - os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            use-cross: true
+            can-run: false
+          - os: macos-14
+            target: aarch64-apple-darwin
+            use-cross: false
+            can-run: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -37,90 +46,137 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
+      - name: Install cross
+        if: matrix.use-cross == true
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+
       - name: Cargo build
-        run: cargo build --release --target ${{ matrix.target }}
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.use-cross }}" = true ]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
 
       - name: Show version
-        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        if: matrix.can-run == true
         run: ./target/${{ matrix.target }}/release/wparse --version
 
-      - name: Archive
+      - name: Package artifacts
         run: |
+          set -euo pipefail
+          ARTIFACT="${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}"
           mkdir -p artifacts
           cp -av target/${{ matrix.target }}/release/wparse artifacts/
           cp -av target/${{ matrix.target }}/release/wpgen artifacts/
           cp -av target/${{ matrix.target }}/release/wprescue artifacts/
           cp -av target/${{ matrix.target }}/release/wproj artifacts/
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz artifacts
+          tar -czf "${ARTIFACT}.tar.gz" artifacts
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v3
         continue-on-error: true
         with:
-          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
+          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
 
       - uses: actions/upload-artifact@v6
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
-          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.*
+          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
           if-no-files-found: error
           retention-days: 7
 
-  Release-Build-Mac:
-    runs-on: macos-14
+  docker-build:
+    needs: [build-matrix]
+    runs-on: ubuntu-22.04
     permissions:
       contents: read
+      packages: write
       attestations: write
       id-token: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+      - name: Download amd64 artifact
+        uses: actions/download-artifact@v7
         with:
-          toolchain: stable
-          targets: aarch64-apple-darwin
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-x86_64-unknown-linux-gnu
+          path: docker-build/amd64-tar
 
-      - name: Cargo build
-        run: cargo build --release --target aarch64-apple-darwin
+      - name: Download arm64 artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-unknown-linux-gnu
+          path: docker-build/arm64-tar
 
-      - name: Show version
-        run: ./target/aarch64-apple-darwin/release/wparse --version
-
-      - name: Archive
+      - name: Extract binaries
         run: |
-          mkdir -p artifacts
-          cp -av target/aarch64-apple-darwin/release/wparse artifacts/
-          cp -av target/aarch64-apple-darwin/release/wpgen artifacts/
-          cp -av target/aarch64-apple-darwin/release/wprescue artifacts/
-          cp -av target/aarch64-apple-darwin/release/wproj artifacts/
-          tar -czf ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz artifacts
+          set -euo pipefail
+          cd docker-build
+          cd amd64-tar && tar -xzf *.tar.gz && cd ..
+          mkdir -p amd64
+          mv amd64-tar/artifacts/* amd64/
+          chmod +x amd64/*
+          rm -rf amd64-tar
+          cd arm64-tar && tar -xzf *.tar.gz && cd ..
+          mkdir -p arm64
+          mv arm64-tar/artifacts/* arm64/
+          chmod +x arm64/*
+          rm -rf arm64-tar
+          cp ../Dockerfile .
 
-      - name: Attest Build Provenance
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: docker-build
+          file: docker-build/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
         continue-on-error: true
         with:
-          subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.*
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
 
-      - uses: actions/upload-artifact@v6
-        with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin
-          path: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-apple-darwin.*
-          if-no-files-found: error
-          retention-days: 7
-
-  Release:
-    needs: [Release-Build-Linux, Release-Build-Mac, Docker-Build]
+  release:
+    needs: [build-matrix, docker-build]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
-
     steps:
-      - name: Ensure artifacts dir exists
-        run: mkdir -p artifacts
-
       - name: Download Artifact
         uses: actions/download-artifact@v7
         with:
@@ -166,86 +222,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: ${{ contains(github.ref, '-pre') }}
           files: artifacts/*
-
-  Docker-Build:
-    needs: [Release-Build-Linux]
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Download amd64 artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-x86_64-unknown-linux-gnu
-          path: docker-build/amd64-tar
-
-      - name: Download arm64 artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: ${{ github.event.repository.name }}-${{ github.ref_name }}-aarch64-unknown-linux-gnu
-          path: docker-build/arm64-tar
-
-      - name: Extract binaries
-        run: |
-          cd docker-build
-          # Extract amd64
-          cd amd64-tar && tar -xzf *.tar.gz && cd ..
-          mkdir -p amd64
-          mv amd64-tar/artifacts/* amd64/
-          chmod +x amd64/*
-          rm -rf amd64-tar
-          # Extract arm64
-          cd arm64-tar && tar -xzf *.tar.gz && cd ..
-          mkdir -p arm64
-          mv arm64-tar/artifacts/* arm64/
-          chmod +x arm64/*
-          rm -rf arm64-tar
-          # Copy Dockerfile
-          cp ../Dockerfile .
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels)
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value=latest
-
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@v6
-        with:
-          context: docker-build
-          file: docker-build/Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v3
-        continue-on-error: true
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
