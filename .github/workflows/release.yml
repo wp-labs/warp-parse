@@ -166,6 +166,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           path: artifacts
+          pattern: warp-parse-*
           merge-multiple: true
 
       - name: Release
