@@ -26,15 +26,12 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            use-cross: false
             can-run: true
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
-            use-cross: true
-            can-run: false
+            can-run: true
           - os: macos-14
             target: aarch64-apple-darwin
-            use-cross: false
             can-run: true
     steps:
       - name: Checkout repository
@@ -46,22 +43,10 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: Install cross
-        if: matrix.use-cross == true
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cross
-
       - name: Cargo build
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
-        run: |
-          set -euo pipefail
-          if [ "${{ matrix.use-cross }}" = true ]; then
-            cross build --release --target ${{ matrix.target }}
-          else
-            cargo build --release --target ${{ matrix.target }}
-          fi
+        run: cargo build --release --target ${{ matrix.target }}
 
       - name: Show version
         if: matrix.can-run == true
