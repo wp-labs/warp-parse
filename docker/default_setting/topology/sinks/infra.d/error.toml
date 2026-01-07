@@ -1,0 +1,14 @@
+version = "2.0"
+
+[sink_group]
+name = "error"
+
+[[sink_group.sinks]]
+connect = "file_json_sink"
+
+[sink_group.sinks.params]
+file = "error.dat"
+
+[sink_group.sinks.expect]
+ratio = 0.01
+tol = 0.02

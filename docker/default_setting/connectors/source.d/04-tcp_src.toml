@@ -1,0 +1,11 @@
+[[connectors]]
+allow_override = ["addr", "port", "framing", "tcp_recv_bytes", "instances"]
+id = "tcp_src"
+type = "tcp"
+
+[connectors.params]
+addr = "0.0.0.0"
+framing = "auto"
+instances = 1
+port = 9000
+tcp_recv_bytes = 256000

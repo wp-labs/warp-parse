@@ -1,0 +1,10 @@
+[[connectors]]
+allow_override = ["brokers", "topic", "group_id", "config"]
+id = "kafka_src"
+type = "kafka"
+
+[connectors.params]
+brokers = "localhost:9092"
+config = ["auto.offset.reset=latest", "enable.auto.commit=true"]
+group_id = "wp_events_group"
+topic = "wp_events"

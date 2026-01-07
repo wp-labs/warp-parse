@@ -1,0 +1,9 @@
+[[connectors]]
+allow_override = ["base", "file", "encode"]
+id = "file_src"
+type = "file"
+
+[connectors.params]
+base = "./data/in_dat"
+encode = "text"
+file = "gen.dat"

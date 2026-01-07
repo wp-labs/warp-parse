@@ -1,0 +1,8 @@
+# OML Knowledge Database Configuration
+# This file defines the OML models available for use
+
+[[models]]
+name = "example_oml"
+file = "example.oml"
+description = "Example OML model for demonstration purposes"
+rule = "/example/*"

@@ -1,0 +1,19 @@
+version = ""
+
+[generator]
+mode = "sample"
+count = 6000
+speed = 3000
+parallel = 2
+
+[output]
+connect = "file_json_sink"
+
+[output.params]
+base = "data/in_dat"
+file = "gen.dat"
+
+[logging]
+level = "debug"
+output = "file"
+file_path = "./data/logs"

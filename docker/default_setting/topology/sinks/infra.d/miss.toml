@@ -1,0 +1,14 @@
+version = "2.0"
+
+[sink_group]
+name = "miss"
+
+[[sink_group.sinks]]
+connect = "file_json_sink"
+
+[sink_group.sinks.params]
+file = "miss.dat"
+
+[sink_group.sinks.expect]
+max = 0.1
+min = 0.0

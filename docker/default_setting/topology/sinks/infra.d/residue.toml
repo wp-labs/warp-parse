@@ -1,0 +1,10 @@
+version = "2.0"
+
+[sink_group]
+name = "residue"
+
+[[sink_group.sinks]]
+connect = "file_json_sink"
+
+[sink_group.sinks.params]
+file = "residue.dat"

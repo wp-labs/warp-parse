@@ -1,0 +1,13 @@
+version = 2
+
+[[tables]]
+name = "example"
+
+[tables.columns]
+by_header = [
+    "name",
+    "pinying",
+]
+
+[tables.expected_rows]
+min = 1

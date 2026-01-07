@@ -1,0 +1,8 @@
+[[connectors]]
+allow_override = ["endpoint", "flush_interval_secs"]
+id = "victoriametric_sink"
+type = "victoriametrics"
+
+[connectors.params]
+endpoint = "http://localhost:8480"
+flush_interval_secs = 5.0

@@ -1,0 +1,9 @@
+[[connectors]]
+allow_override = ["base", "file"]
+id = "file_rescue_sink"
+type = "test_rescue"
+
+[connectors.params]
+base = "./data/out_dat"
+file = "default.kv"
+fmt = "kv"

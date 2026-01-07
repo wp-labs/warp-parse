@@ -2,7 +2,7 @@
 # Warp Parse - Runtime Docker Image (Multi-arch)
 # ===========================================================================
 
-FROM debian:bookworm-slim
+FROM ubuntu:24.04
 
 ARG TARGETARCH
 
@@ -13,7 +13,11 @@ LABEL org.opencontainers.image.licenses="ELv2"
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    libssl3 \
+    libssl3t64 \
+    libsqlite3-0 \
+    zlib1g \
+    libsasl2-2 \
+    libzstd1 \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -r -s /bin/false wparse
 

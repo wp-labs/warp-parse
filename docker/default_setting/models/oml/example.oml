@@ -1,0 +1,4 @@
+name : nginx
+rule : /nginx/*
+---
+* : auto = take() ;

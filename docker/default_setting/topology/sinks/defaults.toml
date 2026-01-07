@@ -1,0 +1,8 @@
+version = "2.0"
+
+[defaults]
+tags = ["env:dev"]
+
+[defaults.expect]
+basis = "total_input"
+mode = "warn"

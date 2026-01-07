@@ -1,0 +1,12 @@
+[[connectors]]
+allow_override = ["addr", "port", "protocol", "app_name"]
+id = "syslog_sink"
+type = "syslog"
+
+[connectors.params]
+addr = "127.0.0.1"
+attach_meta_tags = true
+port = 1514
+protocol = "udp"
+strip_header = true
+tcp_recv_bytes = 256000

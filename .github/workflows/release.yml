@@ -114,7 +114,7 @@ jobs:
           mv arm64-tar/artifacts/* arm64/
           chmod +x arm64/*
           rm -rf arm64-tar
-          cp ../Dockerfile .
+          cp ../docker/Dockerfile .
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

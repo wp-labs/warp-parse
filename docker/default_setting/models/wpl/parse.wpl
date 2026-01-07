@@ -1,0 +1,5 @@
+package /nginx/ {
+   rule example {
+        (ip:sip,_^2,time/clf:recv_time<[,]>,http/request",http/status,digit,chars",http/agent",_")
+   }
+}

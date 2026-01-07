@@ -1,0 +1,13 @@
+version = "2.0"
+
+[sink_group]
+name = "monitor"
+
+[[sink_group.sinks]]
+connect = "file_proto_sink"
+
+[sink_group.sinks.params]
+file = "monitor.dat"
+
+[sink_group.sinks.expect]
+max = 1.0

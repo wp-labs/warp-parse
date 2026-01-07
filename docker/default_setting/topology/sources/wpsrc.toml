@@ -1,0 +1,20 @@
+[[sources]]
+key = "file_1"
+enable = true
+connect = "file_src"
+tags = []
+
+[sources.params]
+encode = "text"
+file = "gen.dat"
+
+[[sources]]
+key = "syslog_1"
+enable = true
+connect = "syslog_tcp_src"
+tags = []
+
+[sources.params]
+addr = "0.0.0.0"
+port = 1514
+protocol = "tcp"

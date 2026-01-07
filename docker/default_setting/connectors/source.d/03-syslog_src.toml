@@ -1,0 +1,11 @@
+[[connectors]]
+allow_override = ["addr", "port", "protocol", "tcp_recv_bytes", "header_mode"]
+id = "syslog_src"
+type = "syslog"
+
+[connectors.params]
+addr = "0.0.0.0"
+header_mode = "strip"
+port = 514
+protocol = "udp"
+tcp_recv_bytes = 10485760
