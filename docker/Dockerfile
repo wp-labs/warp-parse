@@ -30,6 +30,9 @@ COPY ${TARGETARCH}/wprescue /usr/local/bin/
 # Create data directory
 RUN mkdir -p /data && chown wparse:wparse /data
 
+# Copy default settings
+COPY --chown=wparse:wparse default_setting/ /data/
+
 USER wparse
 WORKDIR /data
 
