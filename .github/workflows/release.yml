@@ -115,6 +115,7 @@ jobs:
           chmod +x arm64/*
           rm -rf arm64-tar
           cp ../docker/Dockerfile .
+          cp -r ../docker/default_setting .
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
