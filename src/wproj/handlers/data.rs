@@ -63,9 +63,8 @@ async fn do_data_check(args: DataArgs) -> RunResult<()> {
     })?;
 
     // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
-    let parser = wp_engine::sources::SourceConfigParser::new(
-        conf_manager.work_root().to_path_buf(),
-    );
+    let parser =
+        wp_engine::sources::SourceConfigParser::new(conf_manager.work_root().to_path_buf());
     let config_str = toml::to_string_pretty(&sources_config).map_err(|e| {
         wp_error::run_error::RunReason::from_conf(format!("Failed to serialize config: {}", e))
             .to_err()

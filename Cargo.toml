@@ -134,7 +134,6 @@ wp-enterprise = []
 example-plugin = []
 extras         = []
 plugin-suite   = []
-external-connectors = []
 
 # ===========================================================================
 # Dependencies
@@ -169,8 +168,8 @@ anyhow = "1.0"
 thiserror = "2.0"
 orion-error = "0.5"
 orion-sec = "0.3"
-orion_conf = { version = "0.3", features = ["yaml", "toml"] }
-orion-variate = "0.10"
+orion-variate= "0.10"
+orion_conf = { version = "0.4", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
@@ -219,23 +218,23 @@ wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-
 wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0" }
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.1" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.1" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.1" }
-wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.1" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.1" }
+wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
+wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
+wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
+wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
+wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
 
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", branch = "develop/1.8" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.2-beta" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.3-alpha" }
 
 
 # ===========================================================================
@@ -258,10 +257,3 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 
 # [patch."https://github.com/wp-labs/wp-connectors"]
 # wp-connectors = { path = "../wp-connectors"}
-
-[patch."https://github.com/wp-labs/wp-infras"]
-wp-log       = { path = "../wp-infras/wp-log" }
-wp-error     = { path = "../wp-infras/wp-error" }
-wp-specs     = { path = "../wp-infras/wp-specs" }
-wp-conf-base = { path = "../wp-infras/wp-conf-base" }
-wp-data-fmt  = { path = "../wp-infras/wp-data-fmt" }

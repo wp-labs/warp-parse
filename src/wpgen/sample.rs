@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use orion_error::{ErrorConv, ErrorOwe, UvsReason};
+use orion_variate::EnvDict;
 use tokio::time::sleep;
 use wp_log::info_ctrl;
 use wp_proj::wpgen::load_wpgen_resolved;
@@ -21,6 +22,7 @@ pub async fn run(
     line_cnt: Option<usize>,
     gen_speed: Option<usize>,
     stat_sec: usize,
+    dict: &EnvDict,
 ) -> RunResult<()> {
     // no direct use of SinkBackendType in direct mode
 
@@ -37,7 +39,7 @@ pub async fn run(
         "wpgen.sample: loading config from '{}'",
         conf_path.display()
     );
-    let resolved = load_wpgen_resolved(conf_name, &god).err_conv()?;
+    let resolved = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;
     log_init(&resolved.conf.logging.to_log_conf()).owe_res()?;
     log_resolved_out_sink(&resolved);
     let conf = &resolved.conf.generator;

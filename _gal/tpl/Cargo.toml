@@ -168,7 +168,8 @@ anyhow = "1.0"
 thiserror = "2.0"
 orion-error = "0.5"
 orion-sec = "0.3"
-orion_conf = { version = "0.3", features = ["yaml", "toml"] }
+orion-variate= "0.10"
+orion_conf = { version = "0.4", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"

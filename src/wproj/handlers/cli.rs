@@ -6,6 +6,7 @@ use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
 use crate::handlers::validate::run_sink_validation;
 use crate::handlers::{data, knowdb, project};
 use orion_variate::EnvDict;
+use warp_parse::load_sec_dict;
 use wp_error::run_error::RunResult;
 
 pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
@@ -20,13 +21,14 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
 }
 
 fn dispatch_model_cmd(cmd: ModelCmd) -> RunResult<()> {
+    let dict = load_sec_dict()?;
     match cmd {
         ModelCmd::Sources(args) => {
             list_sources_for_cli(&args, &EnvDict::default())?;
             Ok(())
         }
-        ModelCmd::Sinks(args) => list_sinks(args),
-        ModelCmd::Route(args) => show_sink_routes(args),
+        ModelCmd::Sinks(args) => list_sinks(args, &dict),
+        ModelCmd::Route(args) => show_sink_routes(args, &dict),
         ModelCmd::Knowdb(sub) => dispatch_knowdb_cmd(sub),
     }
 }

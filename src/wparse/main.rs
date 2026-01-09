@@ -7,19 +7,18 @@ use std::sync::Once;
 //#[global_allocator]
 //static GLOBAL: Jemalloc = Jemalloc;
 
-use orion_sec::load_sec_dict_by;
 use tikv_jemallocator::Jemalloc;
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
 use shadow_rs::shadow;
 shadow!(build);
 use clap::Parser;
-use orion_conf::ToStructError;
-use orion_conf::UvsConfFrom;
+
+use warp_parse::load_sec_dict;
+
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpApp;
 use wp_error::run_error::RunResult;
-use wp_error::RunReason;
 use wpcnt_lib::banner::split_quiet_args;
 mod cli;
 static BUILD_INFO_ONCE: Once = Once::new();
@@ -55,8 +54,7 @@ async fn do_main() -> RunResult<()> {
     let (_quiet, filtered_args) = split_quiet_args(argv);
     register_extension();
     let cmd = WParseCLI::parse_from(&filtered_args);
-    let env_dict = load_sec_dict_by(".warp_parse", "sec_key.toml", orion_sec::SecFileFmt::Toml)
-        .map_err(|e| RunReason::from_conf(format!("{}", e)).to_err())?;
+    let env_dict = load_sec_dict()?;
     match cmd {
         WParseCLI::Daemon(args) => {
             let engine_args: wp_engine::facade::args::ParseArgs = args.into();

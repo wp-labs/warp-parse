@@ -9,7 +9,7 @@ use wp_proj::sources::Sources;
 use crate::args::SourcesCommonArgs;
 
 pub fn list_sources_for_cli(args: &SourcesCommonArgs, dict: &EnvDict) -> RunResult<()> {
-    let eng_conf = Arc::new(EngineConfig::load_or_init(&args.work_root).err_conv()?);
+    let eng_conf = Arc::new(EngineConfig::load_or_init(&args.work_root, dict).err_conv()?);
     let sources = Sources::new(&args.work_root, eng_conf.clone());
     let rows =
         sources_core::route_table(&args.work_root, eng_conf.as_ref(), None, dict).err_conv()?;
