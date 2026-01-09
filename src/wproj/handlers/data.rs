@@ -6,6 +6,7 @@ use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
 use orion_conf::TomlIO;
 use orion_error::{ErrorOwe, ToStructError, UvsDataFrom};
 use orion_error::{UvsConfFrom, UvsReason}; // moved from function scope
+use orion_variate::EnvDict;
 use wp_conf::sources::types::WarpSources;
 use wp_engine::facade::config as constants;
 use wp_engine::facade::config::load_warp_engine_confs;
@@ -62,13 +63,16 @@ async fn do_data_check(args: DataArgs) -> RunResult<()> {
     })?;
 
     // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
-    let parser = wp_engine::sources::SourceConfigParser::new(conf_manager.work_root().clone());
+    let parser = wp_engine::sources::SourceConfigParser::new(
+        conf_manager.work_root().to_path_buf(),
+    );
     let config_str = toml::to_string_pretty(&sources_config).map_err(|e| {
         wp_error::run_error::RunReason::from_conf(format!("Failed to serialize config: {}", e))
             .to_err()
     })?;
 
-    match parser.parse_and_build_from(&config_str).await {
+    let vars = EnvDict::default();
+    match parser.parse_and_build_from(&config_str, &vars).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),
         Err(err) => {
             return Err(wp_error::run_error::RunReason::Uvs(UvsReason::from_data(

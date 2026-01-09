@@ -5,6 +5,7 @@ use crate::handlers::sources::list_sources_for_cli;
 use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
 use crate::handlers::validate::run_sink_validation;
 use crate::handlers::{data, knowdb, project};
+use orion_variate::EnvDict;
 use wp_error::run_error::RunResult;
 
 pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
@@ -21,7 +22,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
 fn dispatch_model_cmd(cmd: ModelCmd) -> RunResult<()> {
     match cmd {
         ModelCmd::Sources(args) => {
-            list_sources_for_cli(&args)?;
+            list_sources_for_cli(&args, &EnvDict::default())?;
             Ok(())
         }
         ModelCmd::Sinks(args) => list_sinks(args),
