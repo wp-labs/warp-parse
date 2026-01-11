@@ -9,17 +9,44 @@ use wp_error::{run_error::RunReason, RunResult};
 use wp_log::conf::log_init;
 use wp_proj::wpgen::load_wpgen_resolved;
 
-// Handler for `wpgen rule` subcommand.
+#[derive(Debug, Clone, Copy)]
+pub struct RuleRunOpts {
+    pub stat_print: bool,
+    pub line_cnt: Option<usize>,
+    pub gen_speed: Option<usize>,
+    pub stat_sec: usize,
+}
+
+impl RuleRunOpts {
+    pub fn new(
+        stat_print: bool,
+        line_cnt: Option<usize>,
+        gen_speed: Option<usize>,
+        stat_sec: usize,
+    ) -> Self {
+        Self {
+            stat_print,
+            line_cnt,
+            gen_speed,
+            stat_sec,
+        }
+    }
+}
+
+// Handler for `wpgen rule` subcommand。
 pub async fn run(
     work_root: &str,
     wpl_dir: Option<&str>,
     conf_name: &str,
-    stat_print: bool,
-    line_cnt: Option<usize>,
-    gen_speed: Option<usize>,
-    stat_sec: usize,
+    opts: RuleRunOpts,
     dict: &EnvDict,
 ) -> RunResult<()> {
+    let RuleRunOpts {
+        stat_print,
+        line_cnt,
+        gen_speed,
+        stat_sec,
+    } = opts;
     // no direct use of SinkBackendType when using direct runner
 
     let god = WarpConf::new(work_root);

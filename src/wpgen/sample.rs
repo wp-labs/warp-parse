@@ -13,17 +13,44 @@ use wp_error::run_error::{RunError, RunReason};
 use wp_error::RunResult;
 use wp_log::conf::log_init;
 
+#[derive(Debug, Clone, Copy)]
+pub struct SampleRunOpts {
+    pub print_stat: bool,
+    pub line_cnt: Option<usize>,
+    pub gen_speed: Option<usize>,
+    pub stat_sec: usize,
+}
+
+impl SampleRunOpts {
+    pub fn new(
+        print_stat: bool,
+        line_cnt: Option<usize>,
+        gen_speed: Option<usize>,
+        stat_sec: usize,
+    ) -> Self {
+        Self {
+            print_stat,
+            line_cnt,
+            gen_speed,
+            stat_sec,
+        }
+    }
+}
+
 // Handler for `wpgen sample` subcommand.
 pub async fn run(
     work_root: &str,
     wpl_dir: Option<&str>,
     conf_name: &str,
-    print_stat: bool,
-    line_cnt: Option<usize>,
-    gen_speed: Option<usize>,
-    stat_sec: usize,
+    opts: SampleRunOpts,
     dict: &EnvDict,
 ) -> RunResult<()> {
+    let SampleRunOpts {
+        print_stat,
+        line_cnt,
+        gen_speed,
+        stat_sec,
+    } = opts;
     // no direct use of SinkBackendType in direct mode
 
     let god = WarpConf::new(work_root);

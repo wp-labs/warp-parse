@@ -15,6 +15,8 @@ mod sample;
 //mod wpcli;
 
 use crate::cli::{Cli, Cmd, ConfCmd, DataCmd};
+use crate::rule::RuleRunOpts;
+use crate::sample::SampleRunOpts;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() -> Result<()> {
@@ -36,10 +38,7 @@ async fn main() -> Result<()> {
                 &work_root,
                 wpl_dir.as_deref(),
                 &conf_name,
-                stat_print,
-                line_cnt,
-                speed,
-                stat_sec,
+                RuleRunOpts::new(stat_print, line_cnt, speed, stat_sec),
                 &env_dict,
             )
             .await?
@@ -57,10 +56,7 @@ async fn main() -> Result<()> {
                 &work_root,
                 wpl_dir.as_deref(),
                 &conf_name,
-                print_stat,
-                line_cnt,
-                speed,
-                stat_sec,
+                SampleRunOpts::new(print_stat, line_cnt, speed, stat_sec),
                 &env_dict,
             )
             .await?
