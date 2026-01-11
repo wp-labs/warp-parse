@@ -1,20 +1,21 @@
 use crate::format::print_json;
+use orion_variate::EnvDict;
 use serde_json::json;
+use wp_cli_core as wlib;
 use wp_error::run_error::RunResult;
 use wp_proj::sinks::stat::stat_file_combined;
 use wp_proj::sinks::stat::stat_sink_files;
 use wp_proj::sinks::stat::SinkStatFilters;
 use wp_proj::sources::stat::stat_file_sources;
-use wpcnt_lib as wlib;
 
-pub fn run_combined_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
+pub fn run_combined_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> RunResult<()> {
     let filters = SinkStatFilters::new(
         args.work_root.as_str(),
         &args.group_names,
         &args.sink_names,
         &args.path_like,
     );
-    let stats = stat_file_combined(&filters)?;
+    let stats = stat_file_combined(&filters, dict)?;
     let sink_rows = stats.sink.rows;
     let sink_total = stats.sink.total;
     if args.json {
@@ -47,8 +48,8 @@ pub fn run_combined_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
     Ok(())
 }
 
-pub fn run_src_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
-    let stats = stat_file_sources(args.work_root.as_str())?;
+pub fn run_src_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> RunResult<()> {
+    let stats = stat_file_sources(args.work_root.as_str(), dict)?;
     if let Some(report) = stats.report {
         if args.json {
             print_json(&report)?;
@@ -72,14 +73,14 @@ pub fn run_src_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
     Ok(())
 }
 
-pub fn run_sink_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
+pub fn run_sink_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> RunResult<()> {
     let filters = SinkStatFilters::new(
         args.work_root.as_str(),
         &args.group_names,
         &args.sink_names,
         &args.path_like,
     );
-    let stats = stat_sink_files(&filters)?;
+    let stats = stat_sink_files(&filters, dict)?;
     if args.json {
         print_json(&wlib::JsonOut {
             total: stats.total,
@@ -95,6 +96,7 @@ pub fn run_sink_stat(args: &crate::args::CommonFiltArgs) -> RunResult<()> {
 mod tests {
     use crate::args::{CommonFiltArgs, StatCmd, StatSinkArgs, StatSrcArgs};
     use crate::handlers::cli::dispatch_stat_cmd;
+    use orion_variate::EnvDict;
 
     #[test]
     fn wproj_stat_src_file_runs() {
@@ -117,7 +119,7 @@ mod tests {
         };
         let cmd = StatCmd::SrcFile(args);
         // Just ensure it does not error in repo context
-        let _ = dispatch_stat_cmd(cmd);
+        let _ = dispatch_stat_cmd(cmd, &EnvDict::default());
     }
 
     #[test]
@@ -140,6 +142,6 @@ mod tests {
             },
         };
         let cmd = StatCmd::SinkFile(args);
-        let _ = dispatch_stat_cmd(cmd);
+        let _ = dispatch_stat_cmd(cmd, &EnvDict::default());
     }
 }

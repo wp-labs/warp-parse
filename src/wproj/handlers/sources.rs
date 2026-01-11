@@ -1,7 +1,7 @@
 use orion_error::ErrorConv;
 use orion_variate::EnvDict;
 use std::sync::Arc;
-use wp_cli_core::connectors::sources as sources_core;
+use wp_cli_core::business::connectors::sources as sources_core;
 use wp_conf::engine::EngineConfig;
 use wp_error::run_error::RunResult;
 use wp_proj::sources::Sources;

@@ -2,7 +2,7 @@ use clap::Parser;
 use orion_error::ErrorConv;
 use std::env;
 use warp_parse::load_sec_dict;
-use wpcnt_lib::banner::split_quiet_args;
+use wp_cli_core::split_quiet_args;
 
 use wp_engine::facade::cli::WParseCLI;
 use wp_engine::facade::WpRescueApp;

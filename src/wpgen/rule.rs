@@ -82,6 +82,7 @@ pub async fn run(
         rule_root,
         (RuleGRA { gen_conf }, rt.out_sink.clone()),
         gen_speed.unwrap_or(0),
+        dict,
     )
     .await?;
     sleep(Duration::from_secs(2)).await;

@@ -212,29 +212,31 @@ ipnet = "2.11"
 walkdir = "2.5"
 glob = "0.3"
 
+
 # --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0" }
-wp_parse_api     = { package = "wp-parse-api",     git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0" }
-wp_model_core    = { package = "wp-model-core",    git = "https://github.com/wp-labs/wp-open-api", tag = "v0.7.0" }
+
+wp-connector-api =  "0.7"
+wp-parse-api     =  "0.7"
+wp-model-core    =  "0.7"
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
-wp-error     = { package = "wp-error",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
-wp-specs     = { package = "wp-specs",     git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
-wp-conf-base = { package = "wp-conf-base", git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "https://github.com/wp-labs/wp-infras", tag = "v0.7.3" }
+wp-log       =  "0.1"
+wp-error     =  "0.7"
+wp-specs     =  "0.7"
+wp-conf-base =  "0.1"
+wp-data-fmt  =  "0.1"
+
 
 
 # --- Internal: Engine ---
 wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.3-alpha" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.4-alpha" }
 
 
 # ===========================================================================
@@ -242,14 +244,13 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 # ===========================================================================
 # Uncomment to use local paths instead of git dependencies:
 #
-# [patch."https://github.com/wp-labs/wp-engine"]
-# wp-engine     = { path = "../wp-engine" }
-# wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
-# wp-config     = { path = "../wp-engine/crates/wp-config" }
-# wp-lang       = { path = "../wp-engine/crates/wp-lang" }
-# wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
-# wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
-# wp-proj       = { path = "../wp-engine/crates/wp-proj" }
+ [patch."https://github.com/wp-labs/wp-engine"]
+ wp-engine     = { path = "../wp-engine" }
+ wp-config     = { path = "../wp-engine/crates/wp-config" }
+ wp-lang       = { path = "../wp-engine/crates/wp-lang" }
+ wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
+ wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
+ wp-proj       = { path = "../wp-engine/crates/wp-proj" }
 #
 # [patch."https://github.com/wp-labs/wp-enterprise"]
 # wp-enterprise = { path = "../wp-enterprise" }

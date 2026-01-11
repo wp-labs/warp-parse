@@ -244,7 +244,7 @@ sink_key_format   = "(?P<rule>.)_(?P<sink_type>.)_sink"
 
 ## 适配器与 conn_url（进阶）
 
-- 若应用注册了连接器适配器（wp-connector-api::config::adapter），可以通过 `conn_url` 简写来生成连接参数，避免手写繁琐的 `params`：
+- 若应用注册了连接器适配器（wp_connector_api::config::adapter），可以通过 `conn_url` 简写来生成连接参数，避免手写繁琐的 `params`：
   - MySQL（sink）：`mysql://user:pass@host:3306/db` → 解析为 `{ endpoint, username, password, database, ... }`
   - Kafka（sink）：`kafka://broker1,broker2?topic=xxx&num_partitions=3` → 解析为 `{ brokers, topic, num_partitions, ... }`
 - 本仓库的 wparse/wproj/wprescue 已默认注册开发期适配器（dev adapters），便于本地验证与示例；生产环境建议改为接入正式的连接器扩展并在应用启动时注册相应适配器。

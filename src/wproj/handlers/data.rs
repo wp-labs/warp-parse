@@ -15,16 +15,16 @@ use wp_log::conf::log_init;
 use wp_proj::project::init::PrjScope;
 use wp_proj::project::WarpProject;
 
-pub async fn dispatch_data_cmd(sub: DataCmd) -> RunResult<()> {
+pub async fn dispatch_data_cmd(sub: DataCmd, dict: &EnvDict) -> RunResult<()> {
     match sub {
-        DataCmd::Clean(args) => do_clean(args).await?,
-        DataCmd::Check(args) => do_data_check(args).await?,
+        DataCmd::Clean(args) => do_clean(args, dict).await?,
+        DataCmd::Check(args) => do_data_check(args, dict).await?,
         DataCmd::Stat(args) => {
             let DataStatArgs { common, command } = args;
             if let Some(sub) = command {
-                dispatch_stat_cmd(sub)?;
+                dispatch_stat_cmd(sub, dict)?;
             } else {
-                dispatch_stat_cmd(StatCmd::File(StatSinkArgs { common }))?;
+                dispatch_stat_cmd(StatCmd::File(StatSinkArgs { common }), dict)?;
             }
         }
         DataCmd::Validate(args) => {
@@ -36,23 +36,26 @@ pub async fn dispatch_data_cmd(sub: DataCmd) -> RunResult<()> {
                 work_root,
                 ..Default::default()
             };
-            dispatch_validate_cmd(ValidateCmd::SinkFile(ValidateSinkArgs {
-                common,
-                input_cnt,
-                ..Default::default()
-            }))?;
+            dispatch_validate_cmd(
+                ValidateCmd::SinkFile(ValidateSinkArgs {
+                    common,
+                    input_cnt,
+                    ..Default::default()
+                }),
+                dict,
+            )?;
         }
     }
     Ok(())
 }
 
-async fn do_clean(args: DataArgs) -> RunResult<()> {
-    let project = WarpProject::load(&args.work_root, PrjScope::Normal)?;
-    project.data_clean()
+async fn do_clean(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
+    let project = WarpProject::load(&args.work_root, PrjScope::Normal, dict)?;
+    project.data_clean(dict)
 }
 
-async fn do_data_check(args: DataArgs) -> RunResult<()> {
-    let (conf_manager, main_conf) = load_warp_engine_confs(args.work_root.as_str())?;
+async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
+    let (conf_manager, main_conf) = load_warp_engine_confs(args.work_root.as_str(), dict)?;
     log_init(main_conf.log_conf()).owe_conf()?;
 
     // 使用 WarpSources::load_toml 读取 wpsrc.toml 配置

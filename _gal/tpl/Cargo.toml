@@ -213,21 +213,20 @@ walkdir = "2.5"
 glob = "0.3"
 
 # --- Internal: Open API ---
-wp_connector_api = { package = "wp-connector-api", git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
-wp_parse_api     = { package = "wp-parse-api",     git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
-wp_model_core    = { package = "wp-model-core",    git = "{{GIT_REPO_SVR}}/wp-open-api", {{GIT_REF}} = "{{OPEN_API_VER}}" }
+
+wp-connector-api =  "0.7"
+wp-parse-api     =  "0.7"
+wp-model-core    =  "0.7"
 
 # --- Internal: Infrastructure ---
-wp-log       = { package = "wp-log",       git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
-wp-error     = { package = "wp-error",     git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
-wp-specs     = { package = "wp-specs",     git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
-wp-conf-base = { package = "wp-conf-base", git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
-wp-data-fmt  = { package = "wp-data-fmt",  git = "{{GIT_REPO_SVR}}/wp-infras", {{GIT_REF}} = "{{WP_IFS_VER}}" }
-
+wp-log       =  "0.1"
+wp-error     =  "0.7"
+wp-specs     =  "0.7"
+wp-conf-base =  "0.1"
+wp-data-fmt  =  "0.1"
 
 # --- Internal: Engine ---
 wp-engine     = {                            git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
-wpcnt_lib     = { package = "wp-cli-utils",  git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
 wp_conf       = { package = "wp-config",     git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
 wpl           = { package = "wp-lang",       git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }
 wp_knowledge  = { package = "wp-knowledge",  git = "{{GIT_REPO_SVR}}/wp-engine", {{GIT_REF}} = "{{WP_ENG_VER}}" }

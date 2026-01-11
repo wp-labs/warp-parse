@@ -16,10 +16,10 @@ use clap::Parser;
 
 use warp_parse::load_sec_dict;
 
+use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpApp;
 use wp_error::run_error::RunResult;
-use wpcnt_lib::banner::split_quiet_args;
 mod cli;
 static BUILD_INFO_ONCE: Once = Once::new();
 fn log_build_info_once() {

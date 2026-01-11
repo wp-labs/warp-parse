@@ -1,18 +1,19 @@
 use orion_error::ErrorOwe;
+use orion_variate::EnvDict;
 use wp_error::run_error::RunResult;
 use wp_proj::wparse::samples::parse_wpl_samples;
 
 use crate::args::{ParseArgs, RuleCmd};
 
-pub fn dispatch_rule_cmd(sub: RuleCmd) -> RunResult<()> {
+pub fn dispatch_rule_cmd(sub: RuleCmd, dict: &EnvDict) -> RunResult<()> {
     match sub {
-        RuleCmd::Parse(args) => run_rule_parse(args),
+        RuleCmd::Parse(args) => run_rule_parse(args, dict),
     }
 }
 
-fn run_rule_parse(_args: ParseArgs) -> RunResult<()> {
+fn run_rule_parse(_args: ParseArgs, dict: &EnvDict) -> RunResult<()> {
     wp_log::conf::log_init(&wp_log::conf::LogConf::log_to_console("error")).owe_conf()?;
-    parse_wpl_samples("./")
+    parse_wpl_samples("./", dict)
 }
 
 #[cfg(test)]

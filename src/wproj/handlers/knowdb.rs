@@ -1,5 +1,6 @@
 use orion_conf::ToStructError;
 use orion_error::UvsConfFrom;
+use orion_variate::EnvDict;
 use std::path::PathBuf;
 use wp_error::run_error::{RunReason, RunResult};
 
@@ -15,8 +16,8 @@ pub fn init_knowdb(a: &KnowdbInitArgs) -> RunResult<()> {
     Ok(())
 }
 
-pub fn check_knowdb(a: &KnowdbCheckArgs) -> RunResult<()> {
-    let rep = wp_cli_core::knowdb::check(&a.work_root)
+pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
+    let rep = wp_cli_core::knowdb::check(&a.work_root, dict)
         .map_err(|e| RunReason::from_conf(e.to_string()).to_err())?;
     println!("提示: 按配置顺序加载（[[tables]] 出现顺序）");
     for t in &rep.tables {
