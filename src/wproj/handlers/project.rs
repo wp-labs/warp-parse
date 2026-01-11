@@ -69,6 +69,7 @@ mod tests {
     use rand::{rng, RngCore};
     use serial_test::serial;
     use std::time::{SystemTime, UNIX_EPOCH};
+    use wp_conf::test_support::ForTest;
 
     fn uniq_tmp_dir() -> String {
         let base = std::path::PathBuf::from("./tmp");
@@ -101,7 +102,7 @@ mod tests {
                 work_root: work.clone(),
                 mode: "full".into(),
             },
-            &orion_variate::EnvDict::default(),
+            &orion_variate::EnvDict::test_default(),
         ) {
             Ok(_) => println!("DEBUG: Project init succeeded"),
             Err(e) => {

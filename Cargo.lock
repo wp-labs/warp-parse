@@ -2880,9 +2880,9 @@ dependencies = [
 
 [[package]]
 name = "orion-variate"
-version = "0.10.6"
+version = "0.10.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72580af18d09b2029047ffe0179bb9dc0415efac973c890f0c70fc9306a16041"
+checksum = "e58ed46b74ea517bf302b236b0f9d4b18c5ad0b655695dd15a2c8b0f51508e71"
 dependencies = [
  "contracts",
  "derive-getters",
@@ -2904,12 +2904,13 @@ dependencies = [
 
 [[package]]
 name = "orion_conf"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b16e99adb699664d84f731aa48ff8e00ec69a2ee8020a40edcf8da72fb2de4c0"
+checksum = "3d577af921038370732906724bbda4b88d9bf50fb607cc6ba34dc9b73089df94"
 dependencies = [
  "derive-getters",
  "derive_more",
+ "log",
  "orion-error",
  "orion-variate",
  "serde",

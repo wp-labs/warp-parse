@@ -73,8 +73,7 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
             .to_err()
     })?;
 
-    let vars = EnvDict::default();
-    match parser.parse_and_build_from(&config_str, &vars).await {
+    match parser.parse_and_build_from(&config_str, &dict).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),
         Err(err) => {
             return Err(wp_error::run_error::RunReason::Uvs(UvsReason::from_data(

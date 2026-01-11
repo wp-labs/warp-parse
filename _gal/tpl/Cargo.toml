@@ -243,7 +243,6 @@ wp-connectors = { package = "wp-connectors", git = "{{GIT_REPO_SVR}}/wp-connecto
 #
 {{PATCH_FLAG}} [patch."{{GIT_REPO_SVR}}/wp-engine"]
 {{PATCH_FLAG}} wp-engine     = { path = "../wp-engine" }
-{{PATCH_FLAG}} wp-cli-utils  = { path = "../wp-engine/crates/wp-cli-utils" }
 {{PATCH_FLAG}} wp-config     = { path = "../wp-engine/crates/wp-config" }
 {{PATCH_FLAG}} wp-lang       = { path = "../wp-engine/crates/wp-lang" }
 {{PATCH_FLAG}} wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
