@@ -212,7 +212,6 @@ ipnet = "2.11"
 walkdir = "2.5"
 glob = "0.3"
 
-
 # --- Internal: Open API ---
 
 wp-connector-api =  "0.7"
@@ -226,15 +225,13 @@ wp-specs     =  "0.7"
 wp-conf-base =  "0.1"
 wp-data-fmt  =  "0.1"
 
-
-
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.0-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.4-alpha" }
 
@@ -244,13 +241,13 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 # ===========================================================================
 # Uncomment to use local paths instead of git dependencies:
 #
- [patch."https://github.com/wp-labs/wp-engine"]
- wp-engine     = { path = "../wp-engine" }
- wp-config     = { path = "../wp-engine/crates/wp-config" }
- wp-lang       = { path = "../wp-engine/crates/wp-lang" }
- wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
- wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
- wp-proj       = { path = "../wp-engine/crates/wp-proj" }
+# [patch."https://github.com/wp-labs/wp-engine"]
+# wp-engine     = { path = "../wp-engine" }
+# wp-config     = { path = "../wp-engine/crates/wp-config" }
+# wp-lang       = { path = "../wp-engine/crates/wp-lang" }
+# wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
+# wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
+# wp-proj       = { path = "../wp-engine/crates/wp-proj" }
 #
 # [patch."https://github.com/wp-labs/wp-enterprise"]
 # wp-enterprise = { path = "../wp-enterprise" }
