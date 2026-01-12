@@ -1,24 +1,30 @@
-extern mod cfm { git = "https://github.com/galaxy-operators/cfm-gxl.git", branch = "${GXL_CHANNEL:develop}" }
+//extern mod cfm { git = "https://github.com/galaxy-operators/cfm-gxl.git", branch = "${GXL_CHANNEL:develop}" }
+extern mod ver { path = "./_gal/mods" }
 mod  envs {
   env default {
   }
 }
-mod main  : ver_adm {
-  flow setup_depends {
+mod main   : ver {
+  flow _setup_depends {
     gx.cmd (  "cargo install cargo-semver --vers 1.0.0-alpha.3" );
   }
-  #[auto_load(exit)]
-  flow _set_ver {
-    gx.cmd (  "cargo semver set ${VERSION}" );
-    gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
+  flow release_stable {
+        VERSION_MTU = "v${VERSION}" ;
+        gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest.json" );
+        gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
+        gx.cmd (  "git commit -a -m  'ci  stable ${VERSION_MTU}'"  );
+        gx.cmd (  "git push "  );
+        gx.cmd (  "git tag ${VERSION_MTU}"  );
+        gx.cmd (  "git push --tags "  );
   }
-  flow tag_mtu | _dist {
+  flow release_mtu | _dist {
         gx.read_stdin ( name : "MTU", prompt : "pls input maturity, ex : alpha.3" );
         gx.echo ( "${VERSION}-${MTU}" );
   }
   flow _dist {
     VERSION_MTU = "v${VERSION}-${MTU}" ;
     gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest.json" );
+    gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
     gx.cmd (  "git commit -a -m  'ci maturity ${VERSION_MTU}'"  );
     gx.cmd (  "git push "  );
     gx.cmd (  "git tag ${VERSION_MTU}"  );

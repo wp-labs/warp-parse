@@ -1,18 +1,21 @@
 mod ver {
-  flow use   {
+  flow _use   {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "null"  );
       gx.echo (  "current version : ${VERSION}"  );
     }
-  flow build   {
+  flow _build   {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "build"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
-  flow patch {
+  flow v_patch {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "bugfix"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
-  flow feature {
+  flow v_feature {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "feature"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
 }
