@@ -1,19 +1,20 @@
 use orion_conf::ToStructError;
+use orion_variate::EnvDict;
 use serde_json::json;
+use wp_cli_core as wlib;
 use wp_error::run_error::RunResult;
 use wp_proj::sinks::{stat::SinkStatFilters, validate::prepare_validate_context};
-use wpcnt_lib as wlib;
 
 use crate::{args::ValidateSinkArgs, format::print_json};
 
-pub fn run_sink_validation(args: &ValidateSinkArgs) -> RunResult<()> {
+pub fn run_sink_validation(args: &ValidateSinkArgs, dict: &EnvDict) -> RunResult<()> {
     let filters = SinkStatFilters::new(
         args.common.work_root.as_str(),
         &args.common.group_names,
         &args.common.sink_names,
         &args.common.path_like,
     );
-    let ctx = prepare_validate_context(&filters, args.stats_file.as_deref())?;
+    let ctx = prepare_validate_context(&filters, args.stats_file.as_deref(), dict)?;
     let input_override = args.input_cnt.or(ctx.input_from_sources);
 
     let report = match ctx.stats.as_ref() {
@@ -62,12 +63,21 @@ mod tests {
         args::{CommonFiltArgs, ValidateCmd, ValidateSinkArgs},
         handlers::cli::dispatch_validate_cmd,
     };
+    use orion_variate::EnvDict;
 
     #[test]
     fn wproj_validate_sink_file_runs() {
+        let work_root = std::path::Path::new("usecase/core/getting_started");
+        if !work_root.exists() {
+            eprintln!(
+                "skip wproj_validate_sink_file_runs: sample work_root {:?} 不存在",
+                work_root
+            );
+            return;
+        }
         let args = ValidateSinkArgs {
             common: CommonFiltArgs {
-                work_root: "usecase/core/getting_started".into(),
+                work_root: work_root.to_string_lossy().into_owned(),
                 group_names: vec![],
                 sink_names: vec![],
                 path_like: None,
@@ -78,6 +88,6 @@ mod tests {
             verbose: false,
         };
         let cmd = ValidateCmd::SinkFile(args);
-        let _ = dispatch_validate_cmd(cmd);
+        let _ = dispatch_validate_cmd(cmd, &EnvDict::default());
     }
 }

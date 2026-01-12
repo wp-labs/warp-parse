@@ -3,9 +3,9 @@ mod args;
 mod format;
 use libc::exit;
 use std::env;
+use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics;
 use wp_error::run_error::RunResult;
-use wpcnt_lib::banner::split_quiet_args;
 
 use crate::args::WProjCli;
 mod handlers;

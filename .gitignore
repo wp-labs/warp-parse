@@ -26,6 +26,7 @@ tests/*
 tmp/
 .tmp/
 *.log
+my_example
 
 # Python cache (docs scripts)
 __pycache__/

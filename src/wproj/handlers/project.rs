@@ -1,21 +1,23 @@
 use std::str::FromStr;
 
 use orion_error::{ToStructError, UvsConfFrom};
+use orion_variate::EnvDict;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::project::{checker, init::PrjScope, WarpProject};
 
 use crate::args::{ProjectCheckArgs, ProjectInitArgs};
 
-pub fn init_project(args: ProjectInitArgs) -> RunResult<()> {
+pub fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
     WarpProject::init(
         args.work_root.clone(),
         PrjScope::from_str(args.mode.as_str())?,
+        dict,
     )
     .map(|_| ())
 }
 
-pub fn check_project(args: ProjectCheckArgs) -> RunResult<()> {
-    let project = WarpProject::load(args.work_root.clone(), PrjScope::Normal)?;
+pub fn check_project(args: ProjectCheckArgs, dict: &EnvDict) -> RunResult<()> {
+    let project = WarpProject::load(args.work_root.clone(), PrjScope::Normal, dict)?;
     let mut opts = checker::CheckOptions::new(&args.work_root);
     opts.what = args.what.clone();
     opts.console = args.console;
@@ -23,7 +25,7 @@ pub fn check_project(args: ProjectCheckArgs) -> RunResult<()> {
     opts.json = args.json;
     opts.only_fail = args.only_fail;
     let comps = build_components(&args)?;
-    checker::check_with(&project, &opts, &comps)
+    checker::check_with(&project, &opts, &comps, dict)
 }
 
 fn build_components(args: &ProjectCheckArgs) -> RunResult<checker::CheckComponents> {
@@ -67,6 +69,7 @@ mod tests {
     use rand::{rng, RngCore};
     use serial_test::serial;
     use std::time::{SystemTime, UNIX_EPOCH};
+    use wp_conf::test_support::ForTest;
 
     fn uniq_tmp_dir() -> String {
         let base = std::path::PathBuf::from("./tmp");
@@ -94,10 +97,13 @@ mod tests {
                 .is_some_and(|p| p.exists())
         );
 
-        match init_project(ProjectInitArgs {
-            work_root: work.clone(),
-            mode: "full".into(),
-        }) {
+        match init_project(
+            ProjectInitArgs {
+                work_root: work.clone(),
+                mode: "full".into(),
+            },
+            &orion_variate::EnvDict::test_default(),
+        ) {
             Ok(_) => println!("DEBUG: Project init succeeded"),
             Err(e) => {
                 println!("DEBUG: Project init failed with error: {:?}", e);

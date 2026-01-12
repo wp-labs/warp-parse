@@ -1,16 +1,18 @@
 use orion_error::ErrorConv;
+use orion_variate::EnvDict;
 use std::sync::Arc;
-use wp_cli_core::connectors::sources as sources_core;
+use wp_cli_core::business::connectors::sources as sources_core;
 use wp_conf::engine::EngineConfig;
 use wp_error::run_error::RunResult;
 use wp_proj::sources::Sources;
 
 use crate::args::SourcesCommonArgs;
 
-pub fn list_sources_for_cli(args: &SourcesCommonArgs) -> RunResult<()> {
-    let eng_conf = Arc::new(EngineConfig::load_or_init(&args.work_root).err_conv()?);
+pub fn list_sources_for_cli(args: &SourcesCommonArgs, dict: &EnvDict) -> RunResult<()> {
+    let eng_conf = Arc::new(EngineConfig::load_or_init(&args.work_root, dict).err_conv()?);
     let sources = Sources::new(&args.work_root, eng_conf.clone());
-    let rows = sources_core::route_table(&args.work_root, eng_conf.as_ref(), None).err_conv()?;
+    let rows =
+        sources_core::route_table(&args.work_root, eng_conf.as_ref(), None, dict).err_conv()?;
     if args.json {
         sources.display_as_json(&rows);
     } else {

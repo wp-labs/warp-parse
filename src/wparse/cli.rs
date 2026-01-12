@@ -20,8 +20,8 @@ pub enum WParseCLI {
 
 #[derive(Args, Debug, Default, Clone)]
 pub struct CliParseArgs {
-    #[clap(long, default_value = ".")]
-    pub work_root: String,
+    #[clap(long, default_value = None)]
+    pub work_root: Option<String>,
     #[clap(short, long, default_value = "p")]
     pub mode: String,
     #[clap(short = 'n', long, default_value = None)]

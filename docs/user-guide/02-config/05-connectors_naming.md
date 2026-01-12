@@ -44,7 +44,7 @@
   - kafka：`brokers`、`topic`（string/array 皆可）
 
 ### 可选：conn_url 辅助写法（需启用适配器）
-- 当应用注册了连接器适配器（wp-connector-api::config::adapter），可在生成流程或工具侧通过 `conn_url` 提供简写，由适配器解析为 `params`：
+- 当应用注册了连接器适配器（wp_connector_api::config::adapter），可在生成流程或工具侧通过 `conn_url` 提供简写，由适配器解析为 `params`：
   - MySQL（sink）：`mysql://user:pass@host:port/dbname` → `{ endpoint, username, password, database, table?, batch? }`
   - Kafka（sink）：`kafka://broker1,broker2?topic=xxx&num_partitions=3&replication=1` → `{ brokers, topic, ... }`
 - 注意：当前 route 层不直接解析 `params.conn_url`；建议在生成/CLI 侧使用（本仓库的 `wparse/wproj/wprescue` 已默认注册开发期适配器）。

@@ -49,7 +49,7 @@ mod main  {
     #[task(name="config")]
     flow conf {
     }
-        flow ver.use | @_gen_cargo {
+    flow ver.use | @_gen_cargo {
         PATCH_FLAG = ${ENV_PATCH_FLAG} ;
         gx.cmd (" rm ./Cargo.toml");
         gx.tpl (

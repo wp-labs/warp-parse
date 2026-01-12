@@ -1,7 +1,8 @@
 use clap::Parser;
 use orion_error::ErrorConv;
 use std::env;
-use wpcnt_lib::banner::split_quiet_args;
+use warp_parse::load_sec_dict;
+use wp_cli_core::split_quiet_args;
 
 use wp_engine::facade::cli::WParseCLI;
 use wp_engine::facade::WpRescueApp;
@@ -12,6 +13,7 @@ async fn main() -> RunResult<()> {
     warp_parse::feats::register_for_runtime();
     let argv: Vec<String> = env::args().collect();
     let (_quiet, filtered_args) = split_quiet_args(argv);
+    let env_dict = load_sec_dict()?;
 
     let cmd = WParseCLI::parse_from(&filtered_args);
     match cmd {
@@ -20,7 +22,7 @@ async fn main() -> RunResult<()> {
             std::process::exit(2);
         }
         WParseCLI::Batch(args) => {
-            let mut app = WpRescueApp::try_from(args).err_conv()?;
+            let mut app = WpRescueApp::try_from(args, env_dict).err_conv()?;
             if let Err(e) = app.run_batch().await {
                 wp_engine::facade::diagnostics::print_run_error("wprescue", &e);
                 std::process::exit(wp_engine::facade::diagnostics::exit_code_for(e.reason()));

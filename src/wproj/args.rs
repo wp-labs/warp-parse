@@ -74,7 +74,7 @@ pub struct WProjCli {
         help = "安静模式，减少输出信息 | Quiet mode with reduced output"
     )]
     // 说明：-q/--quiet 在 apps/wproj/main.rs 中于 clap 解析前被提前消费
-    //（通过 wpcnt_lib::banner::split_quiet_args 过滤），此处保留仅用于 help 展示与向后兼容。
+    //（通过 wp_cli_core::split_quiet_args 过滤），此处保留仅用于 help 展示与向后兼容。
     pub quiet: bool,
     #[command(subcommand)]
     pub cmd: WProj,
