@@ -10,5 +10,6 @@ mod main  : ver_adm {
   #[auto_load(exit)]
   flow _set_ver {
     gx.cmd (  "cargo semver set ${VERSION}" );
+    gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
   }
 }
