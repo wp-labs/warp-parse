@@ -2,23 +2,7 @@
 set -euo pipefail
 
 REPO="wp-labs/warp-parse"
-API_URL="https://api.github.com/repos/${REPO}/releases"
-USER_AGENT="warp-parse-installer"
-curl_api() {
-    if [ -n "${WARP_PARSE_GITHUB_TOKEN:-}" ]; then
-        AUTH_HEADER="-H Authorization: Bearer ${WARP_PARSE_GITHUB_TOKEN}"
-    else
-        AUTH_HEADER=""
-    fi
-    if ! curl -fsSL \
-        -H "Accept: application/vnd.github+json" \
-        -H "User-Agent: ${USER_AGENT}" \
-        ${AUTH_HEADER} \
-        "$1" -o "$2"; then
-        echo "[warp-parse] github api request failed" >&2
-        exit 1
-    fi
-}
+MANIFEST_URL="${WARP_PARSE_MANIFEST_URL:-https://raw.githubusercontent.com/wp-labs/warp-parse/main/dist/install-manifest.json}"
 INSTALL_DIR="${WARP_PARSE_INSTALL_DIR:-$HOME/.local/bin}"
 REQUESTED_TAG="${WARP_PARSE_VERSION:-latest}"
 
@@ -58,86 +42,71 @@ case "$ARCH" in
 esac
 
 TMP_DIR=$(mktemp -d)
-RELEASE_DATA=$(mktemp)
+MANIFEST_FILE=$(mktemp)
 cleanup() {
     rm -rf "$TMP_DIR"
-    rm -f "$RELEASE_DATA"
+    rm -f "$MANIFEST_FILE"
 }
 trap cleanup EXIT
 
-if [ "$REQUESTED_TAG" = "latest" ]; then
-    echo "[warp-parse] resolving latest release tag..."
-    curl_api "$API_URL/latest" "$RELEASE_DATA"
-else
-    TAG_QUERY="$REQUESTED_TAG"
-    case "$TAG_QUERY" in
-        v*) : ;;
-        *) TAG_QUERY="v$TAG_QUERY" ;;
-    esac
-    echo "[warp-parse] resolving release for $TAG_QUERY ..."
-    curl_api "$API_URL/tags/$TAG_QUERY" "$RELEASE_DATA"
-fi
-
-TARGET_SUFFIX="${OS}-${ARCH}"
-PYTHON_OUT=$(python3 - "$OS" "$ARCH" "$RELEASE_DATA" <<'PY'
-import json
-import sys
-
-OS_TOKEN = sys.argv[1]
-ARCH_TOKEN = sys.argv[2]
-PATH = sys.argv[3]
-
-OS_ALIASES = {
-    "darwin": ["darwin", "apple-darwin", "macos", "osx"],
-    "linux": ["linux", "gnu", "unknown-linux-gnu"],
-}
-
-ARCH_ALIASES = {
-    "x86_64": ["x86_64", "amd64"],
-    "arm64": ["arm64", "aarch64"],
-}
-
-def normalize(key, mapping):
-    return [token.lower() for token in mapping.get(key, [key])]
-
-os_tokens = normalize(OS_TOKEN, OS_ALIASES)
-arch_tokens = normalize(ARCH_TOKEN, ARCH_ALIASES)
-
-with open(PATH, "r", encoding="utf-8") as fh:
-    data = json.load(fh)
-
-tag = data.get("tag_name")
-if not tag:
-    sys.exit("missing tag_name in release metadata")
-
-def matches(name):
-    lower = name.lower()
-    if not lower.endswith(".tar.gz"):
-        return False
-    return any(tok in lower for tok in os_tokens) and any(tok in lower for tok in arch_tokens)
-
-for asset in data.get("assets", []):
-    name = asset.get("name", "")
-    url = asset.get("browser_download_url", "")
-    if matches(name) and url:
-        print(tag)
-        print(name)
-        print(url)
-        sys.exit(0)
-
-sys.exit(f"no asset matching tokens {os_tokens} + {arch_tokens}")
-PY
-)
-
-TAG=$(printf '%s' "$PYTHON_OUT" | sed -n '1p')
-ASSET=$(printf '%s' "$PYTHON_OUT" | sed -n '2p')
-DOWNLOAD_URL=$(printf '%s' "$PYTHON_OUT" | sed -n '3p')
-
-if [ -z "$ASSET" ] || [ -z "$DOWNLOAD_URL" ]; then
-    echo "[warp-parse] failed to locate release artifact for $TARGET_SUFFIX" >&2
+printf '[warp-parse] fetching manifest %s\n' "$MANIFEST_URL"
+if ! curl -fsSL "$MANIFEST_URL" -o "$MANIFEST_FILE"; then
+    echo "[warp-parse] failed to download manifest" >&2
     exit 1
 fi
 
+PY_OUT=$(python3 - "$REQUESTED_TAG" "$OS" "$ARCH" "$MANIFEST_FILE" <<'PY'
+import json
+import sys
+
+requested = sys.argv[1]
+os_key = sys.argv[2]
+arch_key = sys.argv[3]
+manifest_path = sys.argv[4]
+
+with open(manifest_path, "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+releases = data.get("releases", [])
+if not releases:
+    sys.exit("manifest contains no releases")
+
+def normalize(ver: str) -> str:
+    return ver if ver.startswith("v") else f"v{ver}"
+
+selected = None
+if requested == "latest":
+    selected = releases[0]
+else:
+    needle = normalize(requested)
+    for rel in releases:
+        ver = rel.get("version", "")
+        if ver == needle or ver.lstrip("v") == requested.lstrip("v"):
+            selected = rel
+            break
+
+if selected is None:
+    sys.exit(f"version '{requested}' not found in manifest")
+
+key = f"{os_key}-{arch_key}"
+asset = selected.get("artifacts", {}).get(key)
+if not asset:
+    sys.exit(f"no artifact entry for {key}")
+
+print(selected.get("version", ""))
+print(asset)
+PY
+)
+
+TAG=$(printf '%s' "$PY_OUT" | sed -n '1p')
+ASSET=$(printf '%s' "$PY_OUT" | sed -n '2p')
+
+if [ -z "$TAG" ] || [ -z "$ASSET" ]; then
+    echo "[warp-parse] failed to resolve download artifact" >&2
+    exit 1
+fi
+
+DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}/${ASSET}"
 ARCHIVE_PATH="$TMP_DIR/$ASSET"
 printf '[warp-parse] downloading %s\n' "$DOWNLOAD_URL"
 if ! curl -fL "$DOWNLOAD_URL" -o "$ARCHIVE_PATH"; then
@@ -166,4 +135,4 @@ fi
 printf '[warp-parse] installed binaries:%s\n' "$INSTALLED"
 printf '[warp-parse] location: %s\n' "$INSTALL_DIR"
 printf '\nEnsure %s is on your PATH, e.g.:\n  export PATH="%s":\\$PATH\n\n' "$INSTALL_DIR" "$INSTALL_DIR"
-printf 'Optional env vars:\n  WARP_PARSE_VERSION=v0.13.0\n  WARP_PARSE_INSTALL_DIR=/usr/local/bin\n  WARP_PARSE_GITHUB_TOKEN=<token>  # to avoid API rate limit\n'
+printf 'Optional env vars:\n  WARP_PARSE_VERSION=v0.13.0\n  WARP_PARSE_INSTALL_DIR=/usr/local/bin\n  WARP_PARSE_MANIFEST_URL=https://example.com/custom-manifest.json\n'
