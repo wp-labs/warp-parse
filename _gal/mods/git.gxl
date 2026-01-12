@@ -2,12 +2,12 @@ mod git {
   flow tag_ver  {
     gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "null"  );
     gx.cmd (  "git tag v${VERSION}"  );
-    gx.cmd (  "git push --tags"  );
+    gx.cmd (  "git push --tag ${VERSION}"  );
   }
   flow tag_ver_pre  {
     gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "null"  );
     gx.cmd (  "git tag v${VERSION}-pre"  );
-    gx.cmd (  "git push --tags"  );
+    gx.cmd (  "git push --tag ${VERSION}-pre"  );
   }
 
   flow ci_ver {

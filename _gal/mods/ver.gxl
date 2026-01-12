@@ -5,14 +5,17 @@ mod ver {
     }
   flow build   {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "build"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
   flow patch {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "bugfix"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
   flow feature {
       gx.ver ( file : "${ENV_ROOT}/version.txt" ,  inc : "feature"  );
+      gx.cmd (  "cargo semver set ${VERSION}" );
       gx.echo (  "current version : ${VERSION}"  );
     }
 }
