@@ -19,7 +19,7 @@ mod main  : ver_adm {
   flow _dist {
     VERSION_MTU = "v${VERSION}-${MTU}" ;
     gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest.json" );
-    gx.cmd (  "git commit -a -m " ci maturity ${VERSION_MTU}"  );
+    gx.cmd (  "git commit -a -m  'ci maturity ${VERSION_MTU}'"  );
     gx.cmd (  "git tag ${VERSION_MTU}"  );
     gx.cmd (  "git push --tag ${VERSION_MTU}"  );
   }
