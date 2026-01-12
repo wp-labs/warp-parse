@@ -13,25 +13,26 @@ sinks = "./topology/sinks"
 
 [performance]
 rate_limit_rps = 10000
-parse_workers = 4
+parse_workers = 2
 
 [rescue]
 path = "./data/rescue"
 
 [log_conf]
-level = "warn,ctrl=info,dfx=info"
+level = "warn,ctrl=info,data=error,matrc=error,dfx=warn,kdb=warn"
 output = "File"
 
 [log_conf.file]
 path = "./data/logs/"
 
-[stat]
 [[stat.pick]]
 key = "pick_stat"
 target = "*"
+
 [[stat.parse]]
 key = "parse_stat"
 target = "*"
+
 [[stat.sink]]
 key = "sink_stat"
 target = "*"
