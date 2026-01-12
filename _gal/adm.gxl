@@ -2,6 +2,7 @@
 extern mod ver { path = "./_gal/mods" }
 mod  envs {
   env default {
+    root = "./" ;
   }
 }
 mod main    {
