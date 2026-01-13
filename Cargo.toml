@@ -226,7 +226,7 @@ wp-conf-base =  "0.1"
 wp-data-fmt  =  "0.1"
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1" }
 wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
 wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
 wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.1-alpha" }
