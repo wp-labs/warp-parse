@@ -1,9 +1,22 @@
 # Changelog
 
+[English](./CHANGELOG.en.md) | 中文
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.13.1] - 2026-01-14
+
+### Changed
+- 升级 `wp-engine` 核心引擎到 v1.8.2-beta 版本，获取最新的运行时特性与性能优化。
+- 升级 `wp-connectors` 连接器到 v0.7.5-alpha 版本，提升数据源适配稳定性。
+- 更新 CI 工作流，新增基于 wp-examples 仓库的集成测试步骤，确保发布质量。
+- 清理未使用的模板文件 `_gal/tpl/Cargo.toml` 和工作流配置，简化项目结构。
+- 更新 README 中的性能测试相关说明与示例。
+
+[0.13.1]: https://github.com/wp-labs/warp-parse/releases/tag/v0.13.1
 
 ## [0.13.0] - 2024-05-09
 
