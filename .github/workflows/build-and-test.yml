@@ -39,3 +39,15 @@ jobs:
 
       - name: Cargo fmt
         run: cargo fmt --check
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Clone wp-examples
+        run: git clone https://github.com/wp-labs/wp-examples /tmp/wp-examples
+
+      - name: Run integration tests
+        run: |
+          export PATH="$PWD/target/release:$PATH"
+          cd /tmp/wp-examples/core
+          bash run_all.sh

@@ -32,9 +32,9 @@ Warp Parse is a high-performance Rust ETL engine built for observability, securi
 - **🎯 Data routing:** Routes data based on rules and transformation models, supports multi-path replication and filters.
 
 ## Performance
-WarpParse VS Vector
+WarpParse VS Vector、LogStash [Report](https://example.warpparse.ai/benchmark/report/report_mac.html)
 <p align="center">
-  <img src="docs/performance.jpg"  width="1200"/>
+  <img src="images/wp-pk3.jpg"  width="1200"/>
 </p>
 
 ## 🏗️ Git Repository Overview

@@ -52,6 +52,17 @@ jobs:
         if: matrix.can-run == true
         run: ./target/${{ matrix.target }}/release/wparse --version
 
+      - name: Clone wp-examples
+        if: matrix.can-run == true
+        run: git clone https://github.com/wp-labs/wp-examples /tmp/wp-examples
+
+      - name: Run integration tests
+        if: matrix.can-run == true
+        run: |
+          export PATH="$PWD/target/${{ matrix.target }}/release:$PATH"
+          cd /tmp/wp-examples/core
+          bash run_all.sh
+
       - name: Package artifacts
         run: |
           set -euo pipefail

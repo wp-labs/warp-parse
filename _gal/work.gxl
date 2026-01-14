@@ -49,20 +49,6 @@ mod main  {
     #[task(name="config")]
     flow conf {
     }
-    flow ver.use | @_gen_cargo {
-        PATCH_FLAG = ${ENV_PATCH_FLAG} ;
-        gx.cmd (" rm ./Cargo.toml");
-        gx.tpl (
-            tpl : "./_gal/tpl/Cargo.toml" ,
-            dst : "Cargo.toml"
-        );
-    }
-    flow  @gen_cargo_dev | _gen_cargo {
-        gx.read_file ( "../wp-scaffold/dev.ini")
-    }
-    flow @gen_cargo | _gen_cargo {
-        gx.read_file ( "../wp-scaffold/rls.ini")
-    }
 
   #[task(name="${ENV_PRJ_KEY}@build")]
   flow ver.use | conf | rust_flow.build | @build | _pub_local {
