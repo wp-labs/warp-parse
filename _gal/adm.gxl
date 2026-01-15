@@ -9,28 +9,34 @@ mod main    {
   flow _setup_depends {
     gx.cmd (  "cargo install cargo-semver --vers 1.0.0-alpha.3" );
   }
-  flow v_patch | ver.patch {
+  flow up_patch | ver.patch {
   }
-  flow v_feat |  ver.feature {
+  flow up_feat |  ver.feature {
   }
-  flow ver.use | @release_stable   {
+  flow ver.use | @release_stable  | _dist {
+        MTU_CNN = "";
         VERSION_MTU = "v${VERSION}" ;
-        gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest.json" );
-        gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
-        gx.cmd (  "git commit -a -m  'ci  stable ${VERSION_MTU}'"  );
-        gx.cmd (  "git push "  );
-        gx.cmd (  "git tag ${VERSION_MTU}"  );
-        gx.cmd (  "git push --tags "  );
   }
-  flow ver.use | @release_mtu | _dist {
+  flow _read_alpha_mtu {
         gx.read_stdin ( name : "MTU", prompt : "pls input maturity, ex : alpha.3" );
         gx.echo ( "${VERSION}-${MTU}" );
   }
+  flow _read_beta_mtu {
+        gx.read_stdin ( name : "MTU", prompt : "pls input maturity, ex : beta.1" );
+        gx.echo ( "${VERSION}-${MTU}" );
+  }
+  flow ver.use | _read_alpha_mtu | @release_alpha | _dist {
+        MTU_CNN = "-alpha";
+        VERSION_MTU = "v${VERSION}-${MTU}" ;
+  }
+  flow ver.use | _read_beta_mtu | @release_beta | _dist {
+        MTU_CNN = "-beta";
+        VERSION_MTU = "v${VERSION}-${MTU}" ;
+  }
+
   flow _dist {
-    VERSION_MTU = "v${VERSION}-${MTU}" ;
-    gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest.json" );
-    gx.tpl ( tpl: "./.github/release-please/manifest_tpl.json", dst: "./.github/release-please/manifest.json" );
-    gx.cmd (  "git commit -a -m  'ci maturity ${VERSION_MTU}'"  );
+    gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst: "./dist/install-manifest${MTU_CNN}.json" );
+    gx.cmd (  "git commit -a -m  'ci ${VERSION_MTU}'"    );
     gx.cmd (  "git push "  );
     gx.cmd (  "git tag ${VERSION_MTU}"  );
     gx.cmd (  "git push --tags "  );

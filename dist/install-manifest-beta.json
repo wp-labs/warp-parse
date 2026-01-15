@@ -1,0 +1,12 @@
+{
+  "releases": [
+    {
+      "version": "v0.13.1-alpha",
+      "artifacts": {
+        "darwin-arm64": "warp-parse-v0.13.1-alpha-aarch64-apple-darwin.tar.gz",
+        "linux-arm64": "warp-parse-v0.13.1-alpha-aarch64-unknown-linux-gnu.tar.gz",
+        "linux-x86_64": "warp-parse-v0.13.1-alpha-x86_64-unknown-linux-gnu.tar.gz"
+      }
+    }
+  ]
+}
