@@ -53,7 +53,7 @@ pub fn register_optional_connectors() {
 
         registry::register_sink_factory(wp_connectors::doris::DorisSinkFactory);
     }
-    
+
     // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
