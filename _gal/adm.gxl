@@ -9,9 +9,11 @@ mod main    {
   flow _setup_depends {
     gx.cmd (  "cargo install cargo-semver --vers 1.0.0-alpha.3" );
   }
-  flow up_patch | ver.patch {
+  flow ver.patch|  @up_patch    {
+    gx.cmd (  "cargo semver set ${VERSION}" );
   }
-  flow up_feat |  ver.feature {
+  flow ver.feature| @up_feat    {
+    gx.cmd (  "cargo semver set ${VERSION}" );
   }
   flow ver.use | @release_stable  | _dist {
         MTU_CNN = "";
