@@ -177,6 +177,27 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          bash scripts/extract-changelog.sh ${{ github.ref_name }}
+
+          # Read the extracted changelogs
+          CHANGELOG_ZH=$(cat /tmp/changelog-zh.md)
+          CHANGELOG_EN=$(cat /tmp/changelog-en.md)
+
+          # Save to output (escape for multiline)
+          echo "changelog_zh<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_ZH" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "changelog_en<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG_EN" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Download Artifact
         uses: actions/download-artifact@v7
         with:
@@ -189,15 +210,33 @@ jobs:
         with:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          generate_release_notes: true
+          generate_release_notes: false
           fail_on_unmatched_files: true
           body: |
-            Welcome to this new release of WarpParse ${{ github.ref_name }}!
+            # WarpParse ${{ github.ref_name }}
+
+            ${{ steps.changelog.outputs.changelog_en }}
+
+            ---
+
+            <details>
+            <summary>中文版 Changelog / Chinese Version</summary>
+
+            ${{ steps.changelog.outputs.changelog_zh }}
+
+            </details>
+
+            ---
 
             ## 📦 Installation
 
             ### Binary Downloads
             Download the pre-built binaries for your platform from the assets below.
+
+            ### Quick Install Script
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/main/scripts/install.sh | bash
+            ```
 
             ### Docker Image
             Pull and run the Docker image:
@@ -209,17 +248,28 @@ jobs:
             docker pull ghcr.io/${{ github.repository }}:latest
 
             # Run the container
-            docker run --rm ghcr.io/${{ github.repository }}:${{ github.ref_name }} --help
+            docker run --rm ghcr.io/${{ github.repository }}:${{ github.ref_name }} wparse --help
             ```
 
             ## 🔐 Verification
 
-            All artifacts are signed with this repos identity using Sigstore.
-            You can verify the signatures using the `GitHub` CLI.
+            All artifacts are signed with this repo's identity using Sigstore.
+            You can verify the signatures using the GitHub CLI:
 
             ```shell
-            gh attestation verify --owner ${{ github.repository_owner }} <my-artifact>
+            gh attestation verify --owner ${{ github.repository_owner }} <artifact-file>
             ```
+
+            ## 📚 Documentation
+
+            - [Release Management](https://github.com/wp-labs/warp-parse/blob/main/docs/RELEASE_MANAGEMENT.md)
+            - [User Guide](https://github.com/wp-labs/warp-parse/tree/main/docs/user-guide)
+            - [Performance Benchmarks](https://github.com/wp-labs/warp-parse/blob/main/docs/performance.md)
+
+            ## 🐛 Found an Issue?
+
+            Please report it at: https://github.com/wp-labs/warp-parse/issues
+
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           files: artifacts/*
