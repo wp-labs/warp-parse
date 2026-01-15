@@ -108,26 +108,30 @@ jobs:
             const branch = '${{ steps.branch.outputs.name }}';
             const newTag = '${{ steps.check.outputs.new_tag }}';
 
+            const body = [
+              '### ❌ PR Closed Automatically',
+              '',
+              '**Branch:** `' + branch + '`',
+              '**New Version:** `' + newTag + '`',
+              '**Reason:** ' + reason,
+              '',
+              'This dependency version is not appropriate for the `' + branch + '` branch.',
+              '',
+              '---',
+              '**Branch maturity levels:**',
+              '- `alpha`: accepts all versions (including -alpha, -beta)',
+              '- `beta`: accepts -beta and stable only',
+              '- `main`: accepts stable versions only',
+              '',
+              'This version will be automatically accepted when it reaches the appropriate maturity level on this branch, or you can manually merge it from a less restrictive branch.'
+            ].join('\n');
+
             // Add comment
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### ❌ PR Closed Automatically
-
-**Branch:** \`${branch}\`
-**New Version:** \`${newTag}\`
-**Reason:** ${reason}
-
-This dependency version is not appropriate for the \`${branch}\` branch.
-
----
-**Branch maturity levels:**
-- \`alpha\`: accepts all versions (including -alpha, -beta)
-- \`beta\`: accepts -beta and stable only
-- \`main\`: accepts stable versions only
-
-This version will be automatically accepted when it reaches the appropriate maturity level on this branch, or you can manually merge it from a less restrictive branch.`
+              body: body
             });
 
             // Close the PR
