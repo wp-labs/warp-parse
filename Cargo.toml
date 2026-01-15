@@ -98,6 +98,7 @@ core = []
 community = [
     "core",
     "kafka",
+    "doris",
     "mysql",
     "clickhouse",
     "elasticsearch",
@@ -109,6 +110,7 @@ community = [
 # --- Connectors (via wp_connectors) ---
 kafka         = ["wp-connectors/kafka"]
 mysql         = ["wp-connectors/mysql"]
+doris         = ["wp-connectors/doris"]
 clickhouse    = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus    = ["wp-connectors/prometheus"]
@@ -233,7 +235,7 @@ wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/w
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
 wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.5-alpha" }
+# wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.5-alpha" }
 
 
 # ===========================================================================
@@ -254,4 +256,4 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 
 
 # [patch."https://github.com/wp-labs/wp-connectors"]
-# wp-connectors = { path = "../wp-connectors"}
+wp-connectors = { path = "../wp-connectors"}
