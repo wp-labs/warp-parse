@@ -1,0 +1,167 @@
+name: Dependabot Branch Filter
+
+# Automatically closes Dependabot PRs that don't match branch maturity level
+# - alpha branch: accepts all versions
+# - beta branch: rejects -alpha versions
+# - main branch: rejects -alpha and -beta versions
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - alpha
+      - beta
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  filter:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Get branch name
+        id: branch
+        run: |
+          BRANCH="${{ github.base_ref }}"
+          echo "name=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Branch: $BRANCH"
+
+      - name: Check dependency version
+        id: check
+        run: |
+          set -e
+
+          BRANCH="${{ steps.branch.outputs.name }}"
+
+          # Get diff to extract new version
+          git fetch origin $BRANCH
+          DIFF=$(git diff origin/$BRANCH..HEAD -- Cargo.toml Cargo.lock)
+
+          # Extract tag version from diff (for git dependencies)
+          NEW_TAG=$(echo "$DIFF" | grep '+.*tag = ' | head -1 | sed -E 's/.*tag = "([^"]+)".*/\1/')
+
+          echo "Branch: $BRANCH"
+          echo "New tag: $NEW_TAG"
+
+          SHOULD_CLOSE="false"
+          REASON=""
+
+          case "$BRANCH" in
+            alpha)
+              # Alpha: accept everything
+              SHOULD_CLOSE="false"
+              REASON="Alpha branch accepts all versions"
+              ;;
+
+            beta)
+              # Beta: reject alpha
+              if echo "$NEW_TAG" | grep -q -- "-alpha"; then
+                SHOULD_CLOSE="true"
+                REASON="Beta branch does not accept alpha versions"
+              else
+                SHOULD_CLOSE="false"
+                REASON="Beta branch accepts beta and stable versions"
+              fi
+              ;;
+
+            main)
+              # Main: reject alpha and beta
+              if echo "$NEW_TAG" | grep -qE -- "-(alpha|beta)"; then
+                SHOULD_CLOSE="true"
+                REASON="Main branch only accepts stable versions"
+              else
+                SHOULD_CLOSE="false"
+                REASON="Main branch accepts stable versions"
+              fi
+              ;;
+
+            *)
+              SHOULD_CLOSE="false"
+              REASON="Unknown branch: $BRANCH"
+              ;;
+          esac
+
+          echo "Should close: $SHOULD_CLOSE"
+          echo "Reason: $REASON"
+
+          echo "should_close=$SHOULD_CLOSE" >> $GITHUB_OUTPUT
+          echo "reason=$REASON" >> $GITHUB_OUTPUT
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Comment and close PR
+        if: steps.check.outputs.should_close == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reason = '${{ steps.check.outputs.reason }}';
+            const branch = '${{ steps.branch.outputs.name }}';
+            const newTag = '${{ steps.check.outputs.new_tag }}';
+
+            // Add comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `### ❌ PR Closed Automatically
+
+**Branch:** \`${branch}\`
+**New Version:** \`${newTag}\`
+**Reason:** ${reason}
+
+This dependency version is not appropriate for the \`${branch}\` branch.
+
+---
+**Branch maturity levels:**
+- \`alpha\`: accepts all versions (including -alpha, -beta)
+- \`beta\`: accepts -beta and stable only
+- \`main\`: accepts stable versions only
+
+This version will be automatically accepted when it reaches the appropriate maturity level on this branch, or you can manually merge it from a less restrictive branch.`
+            });
+
+            // Close the PR
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: 'closed'
+            });
+
+      - name: Approve PR
+        if: steps.check.outputs.should_close == 'false'
+        run: |
+          gh pr review ${{ github.event.pull_request.number }} \
+            --approve \
+            --body "✅ This dependency version is appropriate for the ${{ steps.branch.outputs.name }} branch."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge
+        if: steps.check.outputs.should_close == 'false'
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --auto \
+            --squash \
+            --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add label
+        if: steps.check.outputs.should_close == 'false'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --add-label "✅ auto-approved" \
+            --add-label "branch:${{ steps.branch.outputs.name }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

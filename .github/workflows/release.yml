@@ -221,5 +221,5 @@ jobs:
             gh attestation verify --owner ${{ github.repository_owner }} <my-artifact>
             ```
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ contains(github.ref, '-pre') }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           files: artifacts/*
