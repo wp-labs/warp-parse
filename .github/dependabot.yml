@@ -1,8 +1,42 @@
 version: 2
+
+# ===========================================================================
+# WarpParse Dependabot Configuration - Three-Branch Strategy
+# ===========================================================================
+#
+# This configuration implements dependency management for three maturity levels:
+#
+#   alpha  → Development (accepts all: -alpha, -beta, stable)
+#   beta   → Testing (accepts: -beta, stable; rejects: -alpha)
+#   main   → Production (accepts: stable only; rejects: -alpha, -beta)
+#
+# IMPORTANT NOTES:
+#
+# 1. Dependabot CANNOT filter Git dependencies by tag suffix (-alpha, -beta)
+#    - All versions will create PRs regardless of branch
+#    - Filtering is enforced by:
+#      a) dependabot-branch-filter.yml workflow (auto-closes bad PRs)
+#      b) Branch protection rules (requires status checks + reviews)
+#
+# 2. Each branch is configured separately with its own schedule to avoid conflicts
+#
+# 3. See docs/BRANCH_SOURCE_AND_MATURITY_CONTROL.md for detailed policy
+#
+# ===========================================================================
+
 updates:
   # ===========================================================================
-  # Alpha Branch - Accept ALL dependency versions
+  # Alpha Branch - Development
   # ===========================================================================
+  #
+  # Maturity Level: Development
+  # Accept: -alpha, -beta, stable (ALL versions)
+  # Auto-merge: YES (all Dependabot PRs)
+  # Review Required: NO
+  #
+  # This is the default development branch where all dependency updates are
+  # accepted automatically to catch issues early.
+  #
   - package-ecosystem: cargo
     directory: "/"
     target-branch: alpha
@@ -17,7 +51,7 @@ updates:
       - "alpha"
 
     groups:
-      # Group wp-labs dependencies
+      # Group wp-labs dependencies together
       wp-dependencies:
         patterns:
           - "wp-*"
@@ -35,11 +69,21 @@ updates:
           - "minor"
           - "patch"
 
-    # Alpha accepts everything, no ignore rules
+    # Alpha: No ignore rules - accept everything for fast iteration
 
   # ===========================================================================
-  # Beta Branch - Accept BETA and STABLE only (reject alpha)
+  # Beta Branch - Testing
   # ===========================================================================
+  #
+  # Maturity Level: Pre-production Testing
+  # Accept: -beta, stable (NO -alpha versions)
+  # Auto-close: -alpha versions (via dependabot-branch-filter workflow)
+  # Auto-approve: -beta and stable versions
+  # Review Required: YES (1 approval)
+  #
+  # Beta is for stabilization. Alpha dependencies are automatically rejected.
+  # All dependency updates require manual review even if auto-approved.
+  #
   - package-ecosystem: cargo
     directory: "/"
     target-branch: beta
@@ -70,14 +114,24 @@ updates:
           - "minor"
           - "patch"
 
-    # Beta: ignore alpha versions
-    # Note: Dependabot cannot filter by tag suffix, so alpha versions
-    # will still create PRs, but they should be manually reviewed
-    # Consider using GitHub Actions to auto-close alpha version PRs
+    # Beta: Cannot ignore by tag suffix here
+    # Alpha versions will create PRs but will be auto-closed by
+    # dependabot-branch-filter.yml workflow
+    # See: .github/workflows/dependabot-branch-filter.yml
 
   # ===========================================================================
-  # Main Branch - Accept STABLE only (reject alpha and beta)
+  # Main Branch - Production
   # ===========================================================================
+  #
+  # Maturity Level: Production
+  # Accept: stable ONLY (NO -alpha or -beta versions)
+  # Auto-close: -alpha and -beta versions (via dependabot-branch-filter workflow)
+  # Auto-approve: stable versions only
+  # Review Required: YES (2 approvals)
+  #
+  # Main is the production branch. Only stable, battle-tested dependencies
+  # are allowed. All updates require thorough review by 2 team members.
+  #
   - package-ecosystem: cargo
     directory: "/"
     target-branch: main
@@ -90,6 +144,7 @@ updates:
     labels:
       - "📦 dependencies"
       - "stable"
+      - "production"
 
     groups:
       wp-dependencies:
@@ -108,10 +163,15 @@ updates:
           - "minor"
           - "patch"
 
-    # Main: ignore alpha and beta versions
-    # Note: Dependabot cannot filter by tag suffix, so alpha/beta versions
-    # will still create PRs, but they should be manually reviewed
-    # Consider using GitHub Actions to auto-close non-stable version PRs
+    # Main: Cannot ignore by tag suffix here
+    # Alpha and beta versions will create PRs but will be auto-closed by
+    # dependabot-branch-filter.yml workflow
+    # See: .github/workflows/dependabot-branch-filter.yml
+    #
+    # CRITICAL: Ensure branch protection rules are configured:
+    # - Require 2 approvals
+    # - Require status checks: Tests, filter
+    # - See: docs/BRANCH_PROTECTION_RULES.md
 
   # ===========================================================================
   # GitHub Actions - All branches
