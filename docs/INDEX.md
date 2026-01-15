@@ -22,25 +22,6 @@
    - Immediate actions for setup
    - Long-term automation solutions
 
-### Technical Design
-
-4. **[Field Pipe Design](field-pipe-design.md)**
-   - Field collection pipe and single-field pipe architecture
-   - Execution model for selectors and functions
-
-5. **[Performance Benchmarks](performance.md)**
-   - Comprehensive performance comparison with Vector
-   - Test methodology and results
-   - Resource characteristics
-
-### User Guides
-
-6. **[User Guide Directory](user-guide/)**
-   - CLI usage
-   - Configuration guides
-   - Sources and sinks
-   - WPL and OML language references
-
 ---
 
 ## 🗂️ Document Categories

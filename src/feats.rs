@@ -47,6 +47,14 @@ pub fn register_optional_connectors() {
     }
 
     // MySQL connector (source/sink)
+    #[cfg(any(feature = "community", feature = "doris"))]
+    {
+        use wp_engine::connectors::registry;
+
+        registry::register_sink_factory(wp_connectors::doris::DorisSinkFactory);
+    }
+
+    // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
         use wp_engine::connectors::registry;
