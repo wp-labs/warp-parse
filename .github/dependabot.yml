@@ -1,16 +1,127 @@
 version: 2
 updates:
+  # ===========================================================================
+  # Alpha Branch - Accept ALL dependency versions
+  # ===========================================================================
   - package-ecosystem: cargo
     directory: "/"
+    target-branch: alpha
     schedule:
-      interval: daily
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Shanghai
     open-pull-requests-limit: 10
     labels:
-      - "\U0001F4E6 dependencies"
+      - "📦 dependencies"
+      - "alpha"
+
+    groups:
+      # Group wp-labs dependencies
+      wp-dependencies:
+        patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      # Group external dependencies
+      external-deps:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Alpha accepts everything, no ignore rules
+
+  # ===========================================================================
+  # Beta Branch - Accept BETA and STABLE only (reject alpha)
+  # ===========================================================================
+  - package-ecosystem: cargo
+    directory: "/"
+    target-branch: beta
+    schedule:
+      interval: weekly
+      day: monday
+      time: "10:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 10
+    labels:
+      - "📦 dependencies"
+      - "beta"
+
+    groups:
+      wp-dependencies:
+        patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      external-deps:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Beta: ignore alpha versions
+    # Note: Dependabot cannot filter by tag suffix, so alpha versions
+    # will still create PRs, but they should be manually reviewed
+    # Consider using GitHub Actions to auto-close alpha version PRs
+
+  # ===========================================================================
+  # Main Branch - Accept STABLE only (reject alpha and beta)
+  # ===========================================================================
+  - package-ecosystem: cargo
+    directory: "/"
+    target-branch: main
+    schedule:
+      interval: weekly
+      day: monday
+      time: "11:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 5
+    labels:
+      - "📦 dependencies"
+      - "stable"
+
+    groups:
+      wp-dependencies:
+        patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+      external-deps:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "wp-*"
+        update-types:
+          - "minor"
+          - "patch"
+
+    # Main: ignore alpha and beta versions
+    # Note: Dependabot cannot filter by tag suffix, so alpha/beta versions
+    # will still create PRs, but they should be manually reviewed
+    # Consider using GitHub Actions to auto-close non-stable version PRs
+
+  # ===========================================================================
+  # GitHub Actions - All branches
+  # ===========================================================================
   - package-ecosystem: github-actions
     directory: "/"
+    target-branch: alpha
     schedule:
-      interval: daily
-    open-pull-requests-limit: 10
+      interval: monthly
+    open-pull-requests-limit: 5
     labels:
-      - "\U0001F4E6 dependencies"
+      - "📦 dependencies"
+      - "ci"
