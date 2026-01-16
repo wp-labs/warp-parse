@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2025-01-16
+
+### Added
+- New `wproj rescue stat` command for statistics on rescue directory data:
+  - Supports per-sink grouped statistics for file count, line count, and file size
+  - Supports `--detail` flag to show file details
+  - Supports `--json` and `--csv` output formats
+
+### Changed
+- Upgraded `wp-engine` core engine to v1.9.0-alpha.1 with dynamic rate control (SpeedProfile) support.
+
+### Fixed
+- Fixed `speed_profile` dynamic rate configuration not taking effect in wpgen config. Now correctly reads and applies sinusoidal, stepped, burst and other dynamic rate modes from configuration files.
+- Fixed compilation error caused by missing `speed_profile` field in `GenGRA` after wp-engine upgrade.
+
+[0.14.0]: https://github.com/wp-labs/warp-parse/releases/tag/v0.14.0
+
 ## [0.13.1] - 2026-01-14
 
 ### Changed

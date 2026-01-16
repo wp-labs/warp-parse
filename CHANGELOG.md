@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2025-01-16
+
+### Added
+- 新增 `wproj rescue stat` 命令，用于统计 rescue 目录中的数据：
+  - 支持按 sink 分组统计文件数量、记录条数和文件大小
+  - 支持 `--detail` 显示文件详情
+  - 支持 `--json` 和 `--csv` 多种输出格式
+
+### Changed
+- 升级 `wp-engine` 核心引擎到 v1.9.0-alpha.1 版本，支持动态速率控制（SpeedProfile）。
+
+### Fixed
+- 修复 wpgen 配置中 `speed_profile` 动态生成率未生效的问题，现在可以正确从配置文件读取并应用 sinusoidal、stepped、burst 等动态速率模式。
+- 修复升级 wp-engine 后 `GenGRA` 缺少 `speed_profile` 字段导致的编译错误。
+
+[0.14.0]: https://github.com/wp-labs/warp-parse/releases/tag/v0.14.0
+
 ## [0.13.1] - 2026-01-14
 
 ### Changed
