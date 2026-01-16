@@ -1,4 +1,5 @@
 use crate::args::{KnowdbCmd, ModelCmd, StatCmd, ValidateCmd, WProj, WProjCli};
+use crate::handlers::rescue::dispatch_rescue_cmd;
 use crate::handlers::rule::dispatch_rule_cmd;
 use crate::handlers::sinks::{list_sinks, show_sink_routes};
 use crate::handlers::sources::list_sources_for_cli;
@@ -17,6 +18,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
         WProj::Check(args) => project::check_project(args, &dict)?,
         WProj::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
         WProj::Model(sub) => dispatch_model_cmd(sub, &dict)?,
+        WProj::Rescue(sub) => dispatch_rescue_cmd(sub)?,
     }
     Ok(())
 }
