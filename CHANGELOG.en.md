@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2025-01-17
+
+### Changed
+- Upgraded `wp-engine` core engine to v1.10.0-alpha with the following key changes:
+  - **New KvArr Parser**: Added key=value array format parser supporting flexible separators (comma, space, or mixed), automatic type inference, and automatic array indexing for duplicate keys
+  - **Fixed Meta Fields Issue**: Fixed meta fields being ignored in sub-parser context
+  - **API Improvements**: Fixed `validate_groups` function export in wp-cli-core, now exported from `wp_cli_core::utils::validate` module
+- Upgraded `wp-model-core` to 0.7.1.
+
 ## [0.14.0] - 2025-01-16
 
 ### Added
@@ -14,13 +23,27 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - Supports per-sink grouped statistics for file count, line count, and file size
   - Supports `--detail` flag to show file details
   - Supports `--json` and `--csv` output formats
+- Added Doris connector support, enabling direct data writes to Apache Doris database.
+- GitHub Release workflow now includes automatic CHANGELOG extraction:
+  - Automatically extracts version-specific entries from CHANGELOG.md and CHANGELOG.en.md
+  - English changelog shown by default, with Chinese content in collapsible section
+  - Implemented via scripts/extract-changelog.sh script
 
 ### Changed
-- Upgraded `wp-engine` core engine to v1.9.0-alpha.1 with dynamic rate control (SpeedProfile) support.
+- Upgraded `wp-engine` core engine to v1.9.0-alpha.2 with the following key changes:
+  - **Dynamic Speed Control Module**: Added `SpeedProfile` supporting multiple rate modes (constant, sinusoidal, stepped, burst, ramp, random walk, composite) for realistic traffic simulation
+  - **Rescue Statistics Module**: New rescue data statistics functionality with per-sink grouping and multiple output formats (table, JSON, CSV)
+  - **wpgen.toml Configuration Enhancement**: Support for defining `speed_profile` dynamic rate configuration in config files
+  - **BlackHoleSink Enhancement**: Added `sink_sleep_ms` parameter to control delay per sink operation
 
 ### Fixed
 - Fixed `speed_profile` dynamic rate configuration not taking effect in wpgen config. Now correctly reads and applies sinusoidal, stepped, burst and other dynamic rate modes from configuration files.
 - Fixed compilation error caused by missing `speed_profile` field in `GenGRA` after wp-engine upgrade.
+- Fixed YAML syntax error in dependabot-branch-filter workflow.
+- Fixed issues related to adm.gxl configuration file.
+
+### Documentation
+- Removed outdated technical design and user guide documentation, cleaning up documentation structure.
 
 [0.14.0]: https://github.com/wp-labs/warp-parse/releases/tag/v0.14.0
 

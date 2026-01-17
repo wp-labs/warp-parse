@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2025-01-17
+
+### Changed
+- 升级 `wp-engine` 核心引擎到 v1.10.0-alpha 版本，主要变化包括：
+  - **新增 KvArr 解析器**：支持键值对数组格式解析（`key=value` 或 `key:value`），支持灵活的分隔符（逗号、空格或混合），自动类型推断，重复键自动数组索引
+  - **修复 meta 字段问题**：修复了 meta fields 在 sub-parser 上下文中被忽略的问题
+  - **API 改进**：修复了 wp-cli-core 中 `validate_groups` 函数导出问题，现在从 `wp_cli_core::utils::validate` 模块导出
+- 升级 `wp-model-core` 到 0.7.1 版本。
+
 ## [0.14.0] - 2025-01-16
 
 ### Added
@@ -14,13 +23,27 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - 支持按 sink 分组统计文件数量、记录条数和文件大小
   - 支持 `--detail` 显示文件详情
   - 支持 `--json` 和 `--csv` 多种输出格式
+- 新增 Doris 连接器支持，现在可以直接将数据写入 Apache Doris 数据库。
+- GitHub Release 发布流程新增自动提取 CHANGELOG 功能：
+  - 自动从 CHANGELOG.md 和 CHANGELOG.en.md 提取对应版本的更新内容
+  - 默认展示英文 changelog，中文内容以折叠区域形式显示
+  - 通过 scripts/extract-changelog.sh 脚本实现
 
 ### Changed
-- 升级 `wp-engine` 核心引擎到 v1.9.0-alpha.1 版本，支持动态速率控制（SpeedProfile）。
+- 升级 `wp-engine` 核心引擎到 v1.9.0-alpha.2 版本，主要变化包括：
+  - **动态速率控制模块**：新增 `SpeedProfile` 支持多种速率模式（恒定、正弦波、阶梯、突发、斜坡、随机游走、复合模式），用于模拟真实流量场景
+  - **Rescue 统计模块**：新增 rescue 数据统计功能，支持按 sink 分组统计、多种输出格式（表格、JSON、CSV）
+  - **wpgen.toml 配置增强**：支持在配置文件中定义 `speed_profile` 动态速率配置
+  - **BlackHoleSink 增强**：新增 `sink_sleep_ms` 参数，支持控制每次 sink 操作的延迟
 
 ### Fixed
 - 修复 wpgen 配置中 `speed_profile` 动态生成率未生效的问题，现在可以正确从配置文件读取并应用 sinusoidal、stepped、burst 等动态速率模式。
 - 修复升级 wp-engine 后 `GenGRA` 缺少 `speed_profile` 字段导致的编译错误。
+- 修复 dependabot-branch-filter 工作流中的 YAML 语法错误。
+- 修复 adm.gxl 配置文件相关问题。
+
+### Documentation
+- 移除过时的技术设计和用户指南文档，清理文档结构。
 
 [0.14.0]: https://github.com/wp-labs/warp-parse/releases/tag/v0.14.0
 
