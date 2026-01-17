@@ -1,7 +1,10 @@
 use orion_conf::ToStructError;
 use orion_variate::EnvDict;
 use serde_json::json;
-use wp_cli_core as wlib;
+use wp_cli_core::{
+    self as wlib,
+    utils::validate::{validate_groups, validate_with_stats},
+};
 use wp_error::run_error::RunResult;
 use wp_proj::sinks::{stat::SinkStatFilters, validate::prepare_validate_context};
 
@@ -18,8 +21,8 @@ pub fn run_sink_validation(args: &ValidateSinkArgs, dict: &EnvDict) -> RunResult
     let input_override = args.input_cnt.or(ctx.input_from_sources);
 
     let report = match ctx.stats.as_ref() {
-        Some(stats) => wlib::validate_with_stats(&ctx.groups, Some(stats), input_override),
-        None => wlib::validate_groups(&ctx.groups, input_override),
+        Some(stats) => validate_with_stats(&ctx.groups, Some(stats), input_override),
+        None => validate_groups(&ctx.groups, input_override),
     };
 
     if args.common.json {
