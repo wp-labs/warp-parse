@@ -1,11 +1,12 @@
 use clap::{Args, Parser};
+use warp_parse::build::CLAP_LONG_VERSION;
 use wp_error::error_handling::RobustnessMode;
 
 /// Local CLI definition so we can control metadata/version independently.
 #[derive(Parser)]
 #[command(
     name = "wparse",
-    version = env!("CARGO_PKG_VERSION"),
+    version = CLAP_LONG_VERSION,
     about = "Warp Parse CLI"
 )]
 pub enum WParseCLI {
