@@ -1,5 +1,4 @@
 use std::env;
-use std::sync::Once;
 // 全局分配器：在非 Windows 平台启用 jemalloc，提升多线程分配性能
 
 //use tikv_jemallocator::Jemalloc;
@@ -10,30 +9,16 @@ use std::sync::Once;
 use tikv_jemallocator::Jemalloc;
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;
-use shadow_rs::shadow;
-shadow!(build);
 use clap::Parser;
 
-use warp_parse::load_sec_dict;
+use warp_parse::{load_sec_dict, log_build_info_once};
 
 use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpApp;
 use wp_error::run_error::RunResult;
 mod cli;
-static BUILD_INFO_ONCE: Once = Once::new();
-fn log_build_info_once() {
-    BUILD_INFO_ONCE.call_once(|| {
-        wp_log::info_ctrl!(
-            "wparse version {} (branch {}, commit {}, built {} via {})",
-            build::PKG_VERSION,
-            build::BRANCH,
-            build::SHORT_COMMIT,
-            build::BUILD_TIME_3339,
-            build::RUST_VERSION,
-        );
-    });
-}
+
 use crate::cli::WParseCLI;
 fn register_extension() {
     // Register all built-in sinks, sources, and optional connectors
