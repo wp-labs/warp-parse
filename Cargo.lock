@@ -1845,7 +1845,7 @@ dependencies = [
  "similar",
  "stringmetrics",
  "tabwriter",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "tokio",
  "tracing",
  "url",
@@ -2343,7 +2343,7 @@ dependencies = [
  "serde-value",
  "serde_json",
  "serde_yaml",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "thread-id",
  "typemap-ors",
  "unicode-segmentation",
@@ -2850,7 +2850,7 @@ dependencies = [
  "derive_more",
  "log",
  "serde",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -2873,7 +2873,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_yaml",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "unicase",
  "url",
 ]
@@ -2897,7 +2897,7 @@ dependencies = [
  "serde_ini",
  "serde_json",
  "serde_yaml",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "winnow",
 ]
@@ -2916,7 +2916,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_yaml",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
 ]
 
@@ -2952,7 +2952,7 @@ dependencies = [
  "anyhow",
  "derive-getters",
  "serde",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
 ]
 
@@ -3286,7 +3286,7 @@ dependencies = [
  "memchr",
  "parking_lot",
  "protobuf",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
 ]
 
 [[package]]
@@ -3775,7 +3775,7 @@ dependencies = [
  "serde",
  "sqlx",
  "strum 0.26.3",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "tracing",
  "url",
 ]
@@ -4160,7 +4160,7 @@ dependencies = [
  "serde",
  "sha2",
  "smallvec",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "tokio",
  "tokio-stream",
  "tracing",
@@ -4241,7 +4241,7 @@ dependencies = [
  "smallvec",
  "sqlx-core",
  "stringprep",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "tracing",
  "whoami",
 ]
@@ -4468,11 +4468,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.17"
+version = "2.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f63587ca0f12b72a0600bcba1d40081f830876000bb46dd2337a3051618f4fc8"
+checksum = "4288b5bcbc7920c07a1149a35cf9590a2aa808e0bc1eafaade0b80947865fbc4"
 dependencies = [
- "thiserror-impl 2.0.17",
+ "thiserror-impl 2.0.18",
 ]
 
 [[package]]
@@ -4488,9 +4488,9 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.17"
+version = "2.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ff15c8ecd7de3849db632e14d18d2571fa09dfc5ed93479bc4485c7a517c913"
+checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -5048,7 +5048,7 @@ dependencies = [
  "sysinfo",
  "syslog",
  "tempfile",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "tikv-jemallocator",
  "time",
  "tokio",
@@ -5599,7 +5599,7 @@ dependencies = [
  "orion_conf",
  "serde",
  "serde_json",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "winnow",
  "wp-connector-api",
@@ -5629,7 +5629,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "wildmatch",
  "winnow",
@@ -5662,7 +5662,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "smol_str",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "wp-model-core 0.7.1",
  "wp-parse-api",
@@ -5724,7 +5724,7 @@ dependencies = [
  "chrono",
  "serde",
  "serde_json",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "wp-model-core 0.7.1",
 ]
 
@@ -5797,7 +5797,7 @@ dependencies = [
  "socket2 0.6.1",
  "strfmt",
  "sysinfo",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "time",
  "tokio",
  "tokio-async-drop",
@@ -5854,7 +5854,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "unicode-segmentation",
  "winnow",
@@ -5890,7 +5890,7 @@ dependencies = [
  "serde_json",
  "strfmt",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "wildmatch",
  "wp-data-fmt",
@@ -5939,7 +5939,7 @@ dependencies = [
  "strfmt",
  "strum 0.27.2",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "unicode-segmentation",
  "url",
@@ -5973,7 +5973,7 @@ dependencies = [
  "serde",
  "serde_json",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "unicode-segmentation",
  "winnow",
@@ -5992,7 +5992,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "smol_str",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "wildmatch",
 ]
 
@@ -6009,7 +6009,7 @@ dependencies = [
  "serde_json",
  "smallvec",
  "smol_str",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "wildmatch",
 ]
 
@@ -6047,7 +6047,7 @@ dependencies = [
  "strfmt",
  "strum 0.27.2",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "url",
  "wildmatch",
@@ -6074,7 +6074,7 @@ dependencies = [
  "orion-error",
  "serde",
  "serde_derive",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "wp-model-core 0.7.1",
 ]
 
@@ -6145,7 +6145,7 @@ dependencies = [
  "orion-error",
  "serde",
  "serde_json",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "wildmatch",
  "winnow",
@@ -6172,7 +6172,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "strum_macros",
- "thiserror 2.0.17",
+ "thiserror 2.0.18",
  "toml",
  "wildmatch",
  "wp-log",
