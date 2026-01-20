@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.15.0"
+version = "0.15.1"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -228,12 +228,12 @@ wp-conf-base =  "0.1"
 wp-data-fmt  =  "0.1"
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.0-alpha" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
+wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.10.1-alpha" }
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.5-alpha.1" }
 
