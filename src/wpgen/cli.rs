@@ -1,9 +1,9 @@
 use clap::{Parser, Subcommand};
-
+use warp_parse::build::CLAP_LONG_VERSION;
 #[derive(Parser, Debug)]
 #[command(
     name = "wpgen",
-    version,
+    version = CLAP_LONG_VERSION,
     about = "WarpParse generator (shim)/WarpParse 数据生成器（兼容壳）"
 )]
 pub struct Cli {

@@ -1,5 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use wp_proj::consts::{DEFAULT_ANALYSE_LINE_MAX, DEFAULT_ANALYSE_MODE, DEFAULT_WORK_ROOT};
+
+use warp_parse::build::CLAP_LONG_VERSION;
 // sinks helpers are available via facade::config
 // use wp_engine::sinks::{DebugViewer, ViewOuter}; // no longer used directly
 // use wp_conf::conf::sink::{SinkUseConf, SinksEnum}; // no longer used directly
@@ -68,7 +70,7 @@ wproj is the official CLI tool for Warp Flow Engine, providing comprehensive pro
 • Data source checking, statistics, and validation
 • Model (rules/sources/sinks) management and monitoring
 • Knowledge base (KnowDB) creation and maintenance",
-    version,
+    version = CLAP_LONG_VERSION,
     author = "Warp Flow Engine Team"
 )]
 pub struct WProjCli {
