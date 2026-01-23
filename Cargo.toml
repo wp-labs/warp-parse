@@ -71,7 +71,7 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs = "1.5"
+shadow-rs = "1.6"
 
 # ===========================================================================
 # Dev Dependencies
@@ -203,7 +203,7 @@ lazy_static = "1.5"
 contracts = "0.6"
 ctor = "0.6"
 hex = "0.4"
-shadow-rs = { version = "1.5.0", default-features = false }
+shadow-rs = { version = "1.6.0", default-features = false }
 rand = "0.9"
 
 # --- Data Structures ---
