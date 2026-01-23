@@ -9,6 +9,7 @@ use wp_proj::wpgen::{log_resolved_out_sink, sample_exec_direct_core};
 // no need to pre-build sink here; direct core builds from out_sink spec
 use wp_engine::facade::config::WarpConf;
 use wp_engine::facade::generator::{GenGRA, SampleGRA};
+use wp_engine::runtime::generator::SpeedProfile;
 use wp_error::run_error::{RunError, RunReason};
 use wp_error::RunResult;
 use wp_log::conf::log_init;
@@ -70,9 +71,16 @@ pub async fn run(
     log_init(&resolved.conf.logging.to_log_conf()).owe_res()?;
     log_resolved_out_sink(&resolved);
     let conf = &resolved.conf.generator;
+    // 如果命令行指定了 gen_speed，使用恒定速率；否则使用配置中的 speed_profile
+    let speed_profile: Option<SpeedProfile> = if gen_speed.is_some() {
+        None // 使用 gen_speed 作为恒定速率
+    } else {
+        conf.speed_profile.clone().map(|p| p.into())
+    };
     let gen_rt = GenGRA {
         total_line: line_cnt.or(conf.count),
         gen_speed: gen_speed.unwrap_or(conf.speed),
+        speed_profile,
         parallel: resolved.conf.generator.parallel,
         stat_sec,
         stat_print: print_stat,

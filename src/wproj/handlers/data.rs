@@ -7,7 +7,7 @@ use orion_conf::TomlIO;
 use orion_error::{ErrorOwe, ToStructError, UvsDataFrom};
 use orion_error::{UvsConfFrom, UvsReason}; // moved from function scope
 use orion_variate::EnvDict;
-use wp_conf::sources::types::WarpSources;
+use wp_config::sources::types::WarpSources;
 use wp_engine::facade::config as constants;
 use wp_engine::facade::config::load_warp_engine_confs;
 use wp_error::run_error::RunResult;

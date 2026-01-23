@@ -1,7 +1,7 @@
 use orion_error::ErrorConv;
 use orion_variate::EnvDict;
 use std::sync::Arc;
-use wp_conf::engine::EngineConfig;
+use wp_config::engine::EngineConfig;
 use wp_error::run_error::RunResult;
 use wp_proj::sinks::{
     collect_oml_models, expand_route_rows, render_route_rows, render_sink_list, DisplayFormat,

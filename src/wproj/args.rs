@@ -1,5 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use wp_proj::consts::{DEFAULT_ANALYSE_LINE_MAX, DEFAULT_ANALYSE_MODE, DEFAULT_WORK_ROOT};
+
+use warp_parse::build::CLAP_LONG_VERSION;
 // sinks helpers are available via facade::config
 // use wp_engine::sinks::{DebugViewer, ViewOuter}; // no longer used directly
 // use wp_conf::conf::sink::{SinkUseConf, SinksEnum}; // no longer used directly
@@ -44,6 +46,12 @@ pub enum WProj {
     /// 管理和监控项目中的各种模型组件，包括输入源、输出汇、数据流路径和知识库
     #[command(subcommand, name = "model")]
     Model(ModelCmd),
+
+    /// Rescue 数据管理工具 | Rescue data management tools
+    ///
+    /// 管理和统计 rescue 目录中的数据，包括按 sink 分组统计、文件详情等
+    #[command(subcommand, name = "rescue")]
+    Rescue(RescueCmd),
 }
 
 #[derive(Parser)]
@@ -62,7 +70,7 @@ wproj is the official CLI tool for Warp Flow Engine, providing comprehensive pro
 • Data source checking, statistics, and validation
 • Model (rules/sources/sinks) management and monitoring
 • Knowledge base (KnowDB) creation and maintenance",
-    version,
+    version = CLAP_LONG_VERSION,
     author = "Warp Flow Engine Team"
 )]
 pub struct WProjCli {
@@ -277,6 +285,72 @@ pub enum ValidateCmd {
     /// 按 expect 对文件型 sink 做比例/区间校验 | Validate sink files by expect
     #[command(name = "sink-file", visible_aliases = ["sink文件", "汇文件"])]
     SinkFile(ValidateSinkArgs),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "rescue",
+    about = "Rescue 数据管理工具 | Rescue data management tools"
+)]
+pub enum RescueCmd {
+    /// 统计 rescue 目录中的数据 | Statistics of rescue directory data
+    #[command(
+        name = "stat",
+        visible_alias = "统计",
+        about = "统计 rescue 目录中的数据 | Statistics of rescue directory data"
+    )]
+    Stat(RescueStatArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct RescueStatArgs {
+    /// 工作目录 | Work directory
+    #[clap(
+        short,
+        long,
+        default_value = DEFAULT_WORK_ROOT,
+        visible_alias = "工作目录",
+        help = "工作目录 | Work directory"
+    )]
+    pub work_root: String,
+
+    /// Rescue 目录路径（相对于工作目录或绝对路径）| Rescue directory path
+    #[clap(
+        short,
+        long,
+        default_value = "./data/rescue",
+        visible_alias = "rescue路径",
+        help = "Rescue 目录路径 | Rescue directory path"
+    )]
+    pub rescue_path: String,
+
+    /// 显示文件详情 | Show file details
+    #[clap(
+        short = 'd',
+        long = "detail",
+        default_value_t = false,
+        visible_alias = "详情",
+        help = "显示文件详情 | Show file details"
+    )]
+    pub detail: bool,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+
+    /// CSV 输出 | CSV output
+    #[clap(
+        long = "csv",
+        default_value_t = false,
+        visible_alias = "输出CSV",
+        help = "CSV 输出 | CSV output"
+    )]
+    pub csv: bool,
 }
 
 #[derive(Subcommand, Debug)]

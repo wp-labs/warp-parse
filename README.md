@@ -37,19 +37,19 @@ WarpParse VS Vector、LogStash [Report](https://example.warpparse.ai/benchmark/r
   <img src="images/wp-pk3.jpg"  width="1200"/>
 </p>
 
-## 🏗️ Git Repository Overview
+## Setup
 
-| Repository | Description |
-| ---------- | ----------- |
-| [`warp-parse`](https://github.com/wp-labs/warp-parse) | ⭐ WarpParse Community Edition |
-| `wp-open-api` | WarpParse Open Interface |
-| `wp-connectors` | WarpParse Connector Library, where you can extend more connectors |
-| `wp-docs` | WarpParse Usage Documentation |
-| `wp-engine` | WarpParse Engine Core |
-| `wp-example` | WarpParse Usage Examples |
-| `wp-infras` | WarpParse Infrastructure Library |
-| `wp-rule` | WarpParse Rule Library |
-| `wp-advanced-api` | WarpParse Advanced Control Interface |
+```bash
+#stable version:
+curl  -sSf https://get.warpparse.ai/setup.sh | bash
+#beta version:
+curl  -sSf https://get.warpparse.ai/beta_setup.sh | bash
+#alpha version: 
+curl  -sSf https://get.warpparse.ai/alpha_setup.sh | bash
+
+```
+
+
 
 ## 📄 License
 
@@ -78,19 +78,7 @@ Warp Parse 是面向可观测性、安全、实时风控、数据平台团队的
 - **🧠 知识转换：** 通过内存数据库支持 SQL 查询，实现数据富化。
 - **🎯 数据路由：** 基于规则和转换模型进行路由，支持多路复制与过滤器。
 
-## 🏗️ Git 仓库说明
 
-| 仓库 | 说明 |
-| ---- | ---- |
-| [`warp-parse`](https://github.com/wp-labs/warp-parse) | ⭐ WarpParse 社区版 |
-| `wp-open-api` | WarpParse 开放接口 |
-| `wp-connectors` | WarpParse 连接器库, 可以在此扩展更多的 connector |
-| `wp-docs` | WarpParse 使用文档 |
-| `wp-engine` | WarpParse 引擎核心 |
-| `wp-example` | WarpParse 使用示例 |
-| `wp-infras` | WarpParse 基础库 |
-| `wp-rule` | WarpParse 规则库 |
-| `wp-advanced-api` | WarpParse 高级控制接口 |
 
 ## 📄 许可协议
 

@@ -5,6 +5,7 @@ use orion_variate::EnvDict;
 use tokio::time::sleep;
 use wp_engine::facade::config::WarpConf;
 use wp_engine::facade::generator::{GenGRA, RuleGRA};
+use wp_engine::runtime::generator::SpeedProfile;
 use wp_error::{run_error::RunReason, RunResult};
 use wp_log::conf::log_init;
 use wp_proj::wpgen::load_wpgen_resolved;
@@ -68,9 +69,16 @@ pub async fn run(
     // direct runner builds sink instances from resolved spec; no need to pre-build here
     // build GenGRA from conf (simple mapping)
     let g = &rt.conf.generator;
+    // 如果命令行指定了 gen_speed，使用恒定速率；否则使用配置中的 speed_profile
+    let speed_profile: Option<SpeedProfile> = if gen_speed.is_some() {
+        None // 使用 gen_speed 作为恒定速率
+    } else {
+        g.speed_profile.clone().map(|p| p.into())
+    };
     let gen_conf = GenGRA {
         total_line: line_cnt.or(g.count),
         gen_speed: gen_speed.unwrap_or(g.speed),
+        speed_profile,
         parallel: rt.conf.generator.parallel,
         stat_sec,
         stat_print,

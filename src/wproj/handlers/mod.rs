@@ -4,6 +4,7 @@ pub mod data;
 
 pub mod cli;
 //pub mod init;
+pub mod rescue;
 pub mod rule;
 pub mod sinks;
 pub mod sources;

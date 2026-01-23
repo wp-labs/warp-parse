@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.13.1"
+version = "0.15.3"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -71,7 +71,7 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs =  "1.5"
+shadow-rs = "1.5"
 
 # ===========================================================================
 # Dev Dependencies
@@ -108,13 +108,13 @@ community = [
 ]
 
 # --- Connectors (via wp_connectors) ---
-kafka         = ["wp-connectors/kafka"]
-mysql         = ["wp-connectors/mysql"]
-doris         = ["wp-connectors/doris"]
-clickhouse    = ["wp-connectors/clickhouse"]
+kafka = ["wp-connectors/kafka"]
+mysql = ["wp-connectors/mysql"]
+doris = ["wp-connectors/doris"]
+clickhouse = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
-prometheus    = ["wp-connectors/prometheus"]
-victorialogs   = ["wp-connectors/victorialogs"]
+prometheus = ["wp-connectors/prometheus"]
+victorialogs = ["wp-connectors/victorialogs"]
 victoriametrics = ["wp-connectors/victoriametrics"]
 
 # --- Enterprise ---
@@ -123,19 +123,19 @@ victoriametrics = ["wp-connectors/victoriametrics"]
 all = ["community"]
 
 # --- Testing (cfg gates) ---
-sys_test        = []
+sys_test = []
 res_depend_test = []
 
 # --- Development ---
-examples  = []
-perf-ci   = []
+examples = []
+perf-ci = []
 dev-tools = []
 wp-enterprise = []
 
 # --- Plugins (placeholder for compatibility) ---
 example-plugin = []
-extras         = []
-plugin-suite   = []
+extras = []
+plugin-suite = []
 
 # ===========================================================================
 # Dependencies
@@ -170,7 +170,7 @@ anyhow = "1.0"
 thiserror = "2.0"
 orion-error = "0.5"
 orion-sec = "0.3"
-orion-variate= "0.10"
+orion-variate = "0.10"
 orion_conf = { version = "0.4", features = ["yaml", "toml"] }
 
 # --- Time ---
@@ -203,7 +203,7 @@ lazy_static = "1.5"
 contracts = "0.6"
 ctor = "0.6"
 hex = "0.4"
-shadow-rs = "1.5"
+shadow-rs = { version = "1.5.0", default-features = false }
 rand = "0.9"
 
 # --- Data Structures ---
@@ -216,24 +216,24 @@ glob = "0.3"
 
 # --- Internal: Open API ---
 
-wp-connector-api =  "0.7"
-wp-parse-api     =  "0.7"
-wp-model-core    =  "0.7"
+wp-connector-api = "0.7"
+wp-parse-api = "0.7"
+wp-model-core = "0.7"
 
 # --- Internal: Infrastructure ---
-wp-log       =  "0.1"
-wp-error     =  "0.7"
-wp-specs     =  "0.7"
-wp-conf-base =  "0.1"
-wp-data-fmt  =  "0.1"
+wp-log = "0.1"
+wp-error = "0.7"
+wp-specs = "0.7"
+wp-conf-base = "0.1"
+wp-data-fmt = "0.1"
 
 # --- Internal: Engine ---
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
-wp_conf       = { package = "wp-config",     git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
-wpl           = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-engine", tag = "v1.8.2-beta" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
+wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.10.3" }
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.5-alpha.1" }
 
@@ -244,9 +244,9 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 # Uncomment to use local paths instead of git dependencies:
 #
 #[patch."https://github.com/wp-labs/wp-engine"]
-#wp-engine     = { path = "../wp-engine" }
-#wp-config     = { path = "../wp-engine/crates/wp-config" }
-#wp-lang       = { path = "../wp-engine/crates/wp-lang" }
+#wp-engine = { path = "../wp-engine" }
+#wp-config = { path = "../wp-engine/crates/wp-config" }
+#wp-lang   = { path = "../wp-engine/crates/wp-lang" }
 #wp-knowledge  = { path = "../wp-engine/crates/wp-knowledge" }
 #wp-cli-core   = { path = "../wp-engine/crates/wp-cli-core" }
 #wp-proj       = { path = "../wp-engine/crates/wp-proj" }
