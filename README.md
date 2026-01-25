@@ -20,11 +20,9 @@
 
 Warp Parse is a high-performance Rust ETL engine built for observability, security, real-time risk control, and data platform teams. It focuses on log/telemetry ingestion, parsing, and transformation, providing extreme throughput parsing (WPL), transformation (OML), routing, unified connector APIs, and streamlined operations.
 
-> 📚 **Documentation:** `docs/` (mdBook) • 📊 **Performance:** `docs/performance.md`
-
 ## ✨ Core Features
 
-- **🚀 Extreme throughput:** EPS (Events Per Second) significantly surpasses Vector across multiple scenarios, with 2~6x performance advantages in core scenarios like fixed rate and large logs (see `docs/performance.md`).
+- **🚀 Extreme throughput:** EPS (Events Per Second) significantly surpasses Vector across multiple scenarios, with 2~6x performance advantages in core scenarios like fixed rate and large logs (see [Performance Report](https://github.com/wp-labs/wp-examples/tree/main/benchmark/report)).
 - **📝 Readable rules:** Self-developed WPL (Parse DSL) + OML (Transform DSL) offer far superior readability and maintainability compared to regular expressions and Lua scripts.
 - **🔌 Unified connectors:** Built on standardized `wp-connector-api` interface design, enabling community developers to rapidly extend multi-source log connector ecosystem.
 - **🛠️ Ops friendly:** Single binary deployment with full configuration-based management; includes `wproj`, `wpgen`, `wprescue` tool suite to reduce operational costs.
@@ -83,11 +81,9 @@ For details, please refer to the [LICENSE](LICENSE) file in the repository root.
 
 面向可观测性、安全、实时风控、数据平台团队的高性能 ETL 引擎，专注于日志/事件接入、解析与转换，提供高吞吐解析（WPL）、转换（OML）、路由、统一连接器 API 及极简运维体验。
 
-> 📚 **文档位置：** `docs/` (mdBook) • 📊 **性能数据：** `docs/performance.md`
-
 ## ✨ 核心特性
 
-- **🚀 极致吞吐：** 多场景下 EPS（事件处理速率）全面超越 Vector，固定速率/大日志等核心场景性能优势达 2~6 倍（详见 `docs/performance.md`）。
+- **🚀 极致吞吐：** 多场景下 EPS（事件处理速率）全面超越 Vector，固定速率/大日志等核心场景性能优势达 2~6 倍（详见[性能测试报告](https://github.com/wp-labs/wp-examples/tree/main/benchmark/report)）。
 - **📝 规则易编写：** 自研 WPL（解析 DSL）+ OML（转换 DSL），可读性、可维护性远超正则表达式与 Lua 脚本。
 - **🔌 连接器统一：** 基于 `wp-connector-api` 标准化接口设计，支持社区开发者快速扩展多源日志连接器生态。
 - **🛠️ 运维友好：** 单二进制文件部署，全配置化管理；配套 `wproj`、`wpgen`、`wprescue` 工具套件，降低运维成本。
