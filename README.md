@@ -11,8 +11,8 @@
   <a href="https://github.com/wp-labs/warp-parse/actions/workflows/release.yml">
     <img src="https://github.com/wp-labs/warp-parse/actions/workflows/release.yml/badge.svg" alt="Release"/>
   </a>
-  <a href="https://www.elastic.co/licensing/elastic-license">
-    <img src="https://img.shields.io/badge/License-Elastic%202.0-green.svg" alt="License: Elastic 2.0"/>
+  <a href="https://www.apache.org/licenses/LICENSE-2.0">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"/>
   </a>
 </p>
 
@@ -49,11 +49,23 @@ curl  -sSf https://get.warpparse.ai/alpha_setup.sh | bash
 
 ```
 
+## 🤝 Community & Collaboration
 
+### 1. Developer Contributions
+We welcome all developers to participate in WarpParse development, whether it's feature development, bug fixes, or documentation improvements:
+- Contribution Guide: [CONTRIBUTING.md](CONTRIBUTING.md) (For initial release, simple PR/Issue submission process)
+- Issue Tracking: [GitHub Issues](https://github.com/wp-labs/warp-parse/issues)
+- Community Discussion: GitHub Discussions
+
+### 2. Enterprise/Vendor Partnerships
+If your product is a **security threat detection platform, operations observability system, or cloud-native logging service** and requires high-performance log parsing capabilities:
+- You can directly integrate WarpParse open-source edition - we provide free technical documentation support;
+- For customized adaptation or joint solution testing, contact us via: coop@warpparse.ai
+> Note: After integration, simply mention "Built with WarpParse high-performance log parsing engine" in your product documentation - no additional authorization required.
 
 ## 📄 License
 
-Elastic License 2.0 (ELv2) - see [LICENSE](LICENSE) for details.
+Apache License 2.0 - see [LICENSE](LICENSE) for details.
 
 ---
 
@@ -78,8 +90,20 @@ Warp Parse 是面向可观测性、安全、实时风控、数据平台团队的
 - **🧠 知识转换：** 通过内存数据库支持 SQL 查询，实现数据富化。
 - **🎯 数据路由：** 基于规则和转换模型进行路由，支持多路复制与过滤器。
 
+## 🤝 社区与合作
 
+### 1. 开发者贡献
+我们欢迎所有开发者参与 WarpParse 的迭代，无论是功能开发、Bug 修复还是文档完善：
+- 贡献指南：[CONTRIBUTING.md](CONTRIBUTING.md)（首次发布可先放简单的 PR/Issue 提交流程）
+- 问题反馈：[GitHub Issues](https://github.com/wp-labs/warp-parse/issues)
+- 交流社群：GitHub Discussions
+
+### 2. 企业/厂商合作
+如果你的产品是 **安全威胁检测平台、运维观测系统、云原生日志服务**，需要高性能日志解析能力：
+- 可直接集成 WarpParse 开源版，我们提供免费的技术文档支持；
+- 如需定制化适配、联合方案测试，可通过官方邮箱联系：coop@warpparse.ai
+> 注：集成后只需在你的产品文档中注明「基于 WarpParse 高性能日志解析引擎构建」，无需额外授权。
 
 ## 📄 许可协议
 
-Elastic License 2.0 (ELv2) - 详情请参阅 [LICENSE](LICENSE)。
+Apache License 2.0 - 详情请参阅 [LICENSE](LICENSE)。
