@@ -71,7 +71,7 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs = "1.5"
+shadow-rs = "1.6"
 
 # ===========================================================================
 # Dev Dependencies
@@ -197,13 +197,13 @@ educe = { version = "0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
-uuid = { version = "1.19", features = ["v4"] }
+uuid = { version = "1.20", features = ["v4"] }
 once_cell = "1.21"
 lazy_static = "1.5"
 contracts = "0.6"
 ctor = "0.6"
 hex = "0.4"
-shadow-rs = { version = "1.5.0", default-features = false }
+shadow-rs = { version = "1.6.0", default-features = false }
 rand = "0.9"
 
 # --- Data Structures ---
