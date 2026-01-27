@@ -7,6 +7,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.4] - 2026-01-27
+
+### Changed
+- 更新所有依赖到最新版本，提升稳定性和性能。
+
+## [0.15.3] - 2026-01-23
+
+### Fixed
+- 修复 wp-motor 相关问题，提升运行时稳定性。
+
+## [0.15.2] - 2026-01-22
+
+### Changed
+- 从 `wp-engine` 迁移到 `wp-motor` v1.10.2-beta 版本：
+  - wp-engine 项目已更名为 wp-motor，所有依赖已更新指向新仓库
+  - 升级到 v1.10.2-beta 版本，包含最新的运行时特性与性能优化
+
+## [0.15.1] - 2026-01-18
+
+### Added
+- 集成 shadow-rs 构建时信息支持 (#100)：
+  - 添加 shadow-rs 作为构建依赖，在编译时生成元数据
+  - 版本命令现在显示 Git commit、构建时间和 Rust 编译器版本
+  - 提升部署二进制文件的可追溯性，便于问题排查
+
+### Changed
+- 更新项目依赖到最新版本。
+
 ## [0.15.0] - 2025-01-17
 
 ### Changed

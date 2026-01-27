@@ -7,6 +7,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.4] - 2026-01-27
+
+### Changed
+- Updated all dependencies to latest versions for improved stability and performance.
+
+## [0.15.3] - 2026-01-23
+
+### Fixed
+- Fixed wp-motor related issues to improve runtime stability.
+
+## [0.15.2] - 2026-01-22
+
+### Changed
+- Migrated from `wp-engine` to `wp-motor` v1.10.2-beta:
+  - wp-engine project has been renamed to wp-motor, all dependencies updated to point to new repository
+  - Upgraded to v1.10.2-beta with latest runtime features and performance optimizations
+
+## [0.15.1] - 2026-01-18
+
+### Added
+- Integrated shadow-rs for build-time information support (#100):
+  - Added shadow-rs as build dependency to generate metadata at compile time
+  - Version command now displays Git commit, build time, and Rust compiler version
+  - Enhanced traceability for deployed binaries to facilitate troubleshooting
+
+### Changed
+- Updated project dependencies to latest versions.
+
 ## [0.15.0] - 2025-01-17
 
 ### Changed
