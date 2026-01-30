@@ -1,7 +1,7 @@
 name: Dependabot Branch Filter
 
 # Automatically closes Dependabot PRs that don't match branch maturity level
-# - develop branch: accepts all versions (alpha)
+# - alpha branch: accepts all versions
 # - beta/release branches: rejects -alpha versions
 # - main branch: rejects -alpha, -beta and -rc versions
 
@@ -9,7 +9,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - develop
+      - alpha
       - beta
       - main
       - 'release/**'
@@ -59,10 +59,10 @@ jobs:
           REASON=""
 
           case "$BRANCH" in
-            develop)
-              # Develop: accept everything (alpha)
+            alpha)
+              # Alpha: accept everything
               SHOULD_CLOSE="false"
-              REASON="Develop branch accepts all versions"
+              REASON="Alpha branch accepts all versions"
               ;;
 
             beta|release/*)
@@ -120,7 +120,7 @@ jobs:
               '',
               '---',
               '**Branch maturity levels:**',
-              '- `develop`: accepts all versions (including -alpha, -beta, -rc)',
+              '- `alpha`: accepts all versions (including -alpha, -beta, -rc)',
               '- `beta`, `release/*`: accepts -beta, -rc and stable only',
               '- `main`: accepts stable versions only',
               '',

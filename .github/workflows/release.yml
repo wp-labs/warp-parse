@@ -180,6 +180,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Determine branch from tag
+        id: branch
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == *"-alpha"* ]]; then
+            BRANCH="alpha"
+          elif [[ "$TAG" == *"-beta"* ]]; then
+            BRANCH="beta"
+          elif [[ "$TAG" == *"-rc"* ]]; then
+            BRANCH="beta"
+          else
+            BRANCH="main"
+          fi
+          echo "name=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Tag: $TAG -> Branch: $BRANCH"
+
+      - name: Checkout branch for changelog
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.branch.outputs.name }}
+
       - name: Extract changelog
         id: changelog
         run: |
