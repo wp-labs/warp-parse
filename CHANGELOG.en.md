@@ -7,21 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.15.7] - 2026-01-30
+## [0.15.6] - 2026-01-30
 
 ### Changed
-- Upgraded `wp-motor` core engine to v1.13.1.
-- Upgraded `wp-connectors` to v0.7.5-beta.
-
-## [0.15.6] - 2026-01-29
-
-### Changed
-- Upgraded `wp-motor` core engine to v1.13.0-alpha with the following key changes:
+- Upgraded `wp-motor` core engine to v1.13.1 with the following key changes:
   - **WPL Parser Enhancement**: Added support for `\t` (tab) and `\S` (non-whitespace) separators in parsing expressions
   - **WPL Parser Enhancement**: Added support for quoted field names with special characters (e.g., `"field.name"`, `"field-name"`)
   - **New Function**: Added `chars_replace` function for character-level string replacement
   - **Logging Optimization**: High-frequency log paths now use `log_enabled!` guard to eliminate loop overhead when log level is filtered
   - **Removed Feature**: Removed `SO_REUSEPORT` multi-instance support from Syslog UDP Source (security risk and cross-platform inconsistency)
+- Upgraded `wp-connectors` to v0.7.5-beta.
 
 ## [0.15.5] - 2026-01-28
 
