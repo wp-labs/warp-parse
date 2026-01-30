@@ -17,8 +17,8 @@ Thank you for your interest in contributing to WarpParse! We welcome contributio
 This project uses a three-tier branch model:
 
 ```
-feature/* ──► alpha ──► release/x.y ──► main
-              (alpha)    (beta/rc)     (stable)
+feature/* ──► develop ──► release/x.y ──► main
+              (alpha)      (beta/rc)     (stable)
 ```
 
 ### Branch Overview
@@ -26,7 +26,7 @@ feature/* ──► alpha ──► release/x.y ──► main
 | Branch | Purpose | Stability |
 |--------|---------|-----------|
 | `main` | Production releases | Stable |
-| `alpha` | Development mainline, continuous integration | Alpha |
+| `develop` | Development mainline, continuous integration | Alpha |
 | `release/x.y` | Release branch, feature-frozen, bug fixes only | Beta/RC |
 | `feature/*` | Feature development branches | Unstable |
 | `issues/*` | Issue fix branches | Unstable |
@@ -34,23 +34,23 @@ feature/* ──► alpha ──► release/x.y ──► main
 ### Development Workflow
 
 1. **Feature Development**
-   - Create `feature/<name>` or `issues/<number>` branch from `alpha`
-   - Submit a PR to merge into `alpha` when complete
+   - Create `feature/<name>` or `issues/<number>` branch from `develop`
+   - Submit a PR to merge into `develop` when complete
 
 2. **Release Preparation**
-   - Create `release/x.y` branch from `alpha`
+   - Create `release/x.y` branch from `develop`
    - Perform beta testing and bug fixes on the release branch
    - Publish RC versions for final validation
 
 3. **Production Release**
    - Merge `release/x.y` into `main`
    - Tag on `main` (e.g. `v0.15.0`)
-   - Merge `main` back into `alpha` (sync release fixes)
+   - Merge `main` back into `develop` (sync release fixes)
    - Delete `release/x.y` branch
 
 4. **Hotfix**
    - Create `hotfix/<name>` branch from `main`
-   - After fixing, merge into both `main` and `alpha`
+   - After fixing, merge into both `main` and `develop`
 
 ### Version Naming
 
@@ -386,8 +386,8 @@ Please be respectful and constructive in all interactions with other community m
 本项目采用三层分支模型：
 
 ```
-feature/* ──► alpha ──► release/x.y ──► main
-              (alpha)    (beta/rc)     (stable)
+feature/* ──► develop ──► release/x.y ──► main
+              (alpha)      (beta/rc)     (stable)
 ```
 
 ### 分支说明
@@ -395,7 +395,7 @@ feature/* ──► alpha ──► release/x.y ──► main
 | 分支 | 用途 | 稳定性 |
 |------|------|--------|
 | `main` | 正式发布版本 | 稳定 |
-| `alpha` | 开发主线，持续集成 | Alpha |
+| `develop` | 开发主线，持续集成 | Alpha |
 | `release/x.y` | 版本发布分支，功能冻结，只修 bug | Beta/RC |
 | `feature/*` | 功能开发分支 | 不稳定 |
 | `issues/*` | Issue 修复分支 | 不稳定 |
@@ -403,23 +403,23 @@ feature/* ──► alpha ──► release/x.y ──► main
 ### 开发流程
 
 1. **功能开发**
-   - 从 `alpha` 创建 `feature/<name>` 或 `issues/<number>` 分支
-   - 完成开发后，提交 PR 合并到 `alpha`
+   - 从 `develop` 创建 `feature/<name>` 或 `issues/<number>` 分支
+   - 完成开发后，提交 PR 合并到 `develop`
 
 2. **版本发布准备**
-   - 从 `alpha` 创建 `release/x.y` 分支
+   - 从 `develop` 创建 `release/x.y` 分支
    - 在 release 分支上进行 Beta 测试和 bug 修复
    - 发布 RC 版本进行最终验证
 
 3. **正式发布**
    - `release/x.y` 合并到 `main`
    - 在 `main` 上打 tag（如 `v0.15.0`）
-   - `main` 合并回 `alpha`（同步 release 中的修复）
+   - `main` 合并回 `develop`（同步 release 中的修复）
    - 删除 `release/x.y` 分支
 
 4. **热修复**
    - 从 `main` 创建 `hotfix/<name>` 分支
-   - 修复后合并到 `main` 和 `alpha`
+   - 修复后合并到 `main` 和 `develop`
 
 ### 版本命名
 

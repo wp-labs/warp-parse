@@ -1,17 +1,18 @@
 name: Dependabot Branch Filter
 
 # Automatically closes Dependabot PRs that don't match branch maturity level
-# - alpha branch: accepts all versions
-# - beta branch: rejects -alpha versions
-# - main branch: rejects -alpha and -beta versions
+# - develop branch: accepts all versions (alpha)
+# - beta/release branches: rejects -alpha versions
+# - main branch: rejects -alpha, -beta and -rc versions
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
-      - alpha
+      - develop
       - beta
       - main
+      - 'release/**'
 
 permissions:
   contents: read
@@ -58,26 +59,26 @@ jobs:
           REASON=""
 
           case "$BRANCH" in
-            alpha)
-              # Alpha: accept everything
+            develop)
+              # Develop: accept everything (alpha)
               SHOULD_CLOSE="false"
-              REASON="Alpha branch accepts all versions"
+              REASON="Develop branch accepts all versions"
               ;;
 
-            beta)
-              # Beta: reject alpha
+            beta|release/*)
+              # Beta/Release: reject alpha
               if echo "$NEW_TAG" | grep -q -- "-alpha"; then
                 SHOULD_CLOSE="true"
-                REASON="Beta branch does not accept alpha versions"
+                REASON="$BRANCH branch does not accept alpha versions"
               else
                 SHOULD_CLOSE="false"
-                REASON="Beta branch accepts beta and stable versions"
+                REASON="$BRANCH branch accepts beta, rc and stable versions"
               fi
               ;;
 
             main)
-              # Main: reject alpha and beta
-              if echo "$NEW_TAG" | grep -qE -- "-(alpha|beta)"; then
+              # Main: reject alpha, beta and rc
+              if echo "$NEW_TAG" | grep -qE -- "-(alpha|beta|rc)"; then
                 SHOULD_CLOSE="true"
                 REASON="Main branch only accepts stable versions"
               else
@@ -119,8 +120,8 @@ jobs:
               '',
               '---',
               '**Branch maturity levels:**',
-              '- `alpha`: accepts all versions (including -alpha, -beta)',
-              '- `beta`: accepts -beta and stable only',
+              '- `develop`: accepts all versions (including -alpha, -beta, -rc)',
+              '- `beta`, `release/*`: accepts -beta, -rc and stable only',
               '- `main`: accepts stable versions only',
               '',
               'This version will be automatically accepted when it reaches the appropriate maturity level on this branch, or you can manually merge it from a less restrictive branch.'
