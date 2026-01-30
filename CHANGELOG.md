@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.7] - 2026-01-30
+
+### Changed
+- 升级 `wp-motor` 核心引擎到 v1.13.1 版本。
+- 升级 `wp-connectors` 到 v0.7.5-beta 版本。
+
 ## [0.15.6] - 2026-01-29
 
 ### Changed
