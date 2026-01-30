@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.15.7"
+version = "0.15.6"
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -144,7 +144,7 @@ plugin-suite = []
 
 [dependencies]
 # --- System and Platform ---
-sysinfo = "0.37"
+sysinfo = "0.38"
 async-signal = "0.2"
 libc = "0.2"
 signal-hook-registry = "1.4"
