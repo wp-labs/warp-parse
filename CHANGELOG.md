@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] - 2026-02-03
+
+### Changed
+- 升级 `wp-motor` 核心引擎到 v1.13.3 版本，主要变化包括：
+  - **WPL 解析器**：支持 `\t`（制表符）和 `\S`（非空白字符）分隔符
+  - **WPL 解析器**：支持带引号的特殊字符字段名（如 `"field.name"`、`"field-name"`）
+  - **WPL 函数增强**：新增 `regex_match` 正则匹配函数
+  - **WPL 函数增强**：新增 `digit_range` 数字范围验证函数
+  - **WPL 函数增强**：新增 `chars_replace` 字符级字符串替换函数
+  - **日志优化**：高频日志路径使用 `log_enabled!` 守卫，消除日志级别过滤时的循环开销
+  - **修复问题**：修复 WPL 模式解析器的编译错误
+  - **修复问题**：修复数据救援功能的数据丢失问题
+  - **修复问题**：移除 Miss Sink 原始数据显示中的 base64 编码，直接显示实际内容
+- 更新所有依赖到最新版本。
+- **许可证变更**：项目许可证从 Elastic License 2.0 变更为 Apache 2.0。
+- **文档改进**：新增 CONTRIBUTING.md 贡献指南，更新 README.md 说明文档。
+
 ## [0.15.7] - 2026-01-30
 
 ### Changed

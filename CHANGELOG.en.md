@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.8] - 2026-02-03
+
+### Changed
+- Upgraded `wp-motor` core engine to v1.13.3 with the following key changes:
+  - **WPL Parser**: Added support for `\t` (tab) and `\S` (non-whitespace) separators in parsing expressions
+  - **WPL Parser**: Added support for quoted field names with special characters (e.g., `"field.name"`, `"field-name"`)
+  - **WPL Functions**: Added `regex_match` function for regex pattern matching
+  - **WPL Functions**: Added `digit_range` function for numeric range validation
+  - **WPL Functions**: Added `chars_replace` function for character-level string replacement
+  - **Logging Optimization**: High-frequency log paths now use `log_enabled!` guard to eliminate loop overhead when log level is filtered
+  - **Bug Fixes**: Fixed compilation errors in WPL pattern parser implementations
+  - **Bug Fixes**: Fixed data rescue functionality data loss issue
+  - **Bug Fixes**: Removed base64 encoding from Miss Sink raw data display to show actual content
+- Updated all dependencies to latest versions.
+- **License Change**: Project license changed from Elastic License 2.0 to Apache 2.0.
+- **Documentation**: Added CONTRIBUTING.md and updated README.md.
+
 ## [0.15.7] - 2026-01-30
 
 ### Changed
