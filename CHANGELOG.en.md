@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-02-04
+
+### Changed
+- Upgraded `wp-motor` core engine to v1.14.0 with the following key changes:
+  - **WPL Functions**: Added `starts_with` pipe function for efficient string prefix matching
+  - **OML Pipe Functions**: Added `starts_with` function for prefix matching in OML query language
+  - **OML Pipe Functions**: Added `map_to` function for type-aware conditional value assignment (supports string, integer, float, boolean)
+  - **OML Match Expression**: Added function-based pattern matching support (`match read(field) { starts_with('prefix') => result }`)
+    - String matching functions: `starts_with`, `ends_with`, `contains`, `regex_match`, `is_empty`, `iequals`
+    - Numeric comparison functions: `gt`, `lt`, `eq`, `in_range`
+  - **OML Parser**: Added quoted string support for `chars()` and other value constructors (single and double quotes)
+  - **OML Transformer**: Added automatic temporary field filtering (fields starting with `__` are converted to ignore type)
+  - **OML Syntax**: Made `pipe` keyword optional in pipe expressions (both `take(field) | func` and `pipe take(field) | func` supported)
+  - **Bug Fixes**: Fixed `in_range` function parsing failure in OML match expressions
+  - **Bug Fixes**: Fixed large integer precision loss in `map_to` parser
+  - **Bug Fixes**: Fixed OML display output round-trip parsing compatibility
+
 ## [0.15.8] - 2026-02-03
 
 ### Changed

@@ -7,6 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-02-04
+
+### Changed
+- 升级 `wp-motor` 核心引擎到 v1.14.0 版本，主要变化包括：
+  - **WPL 函数增强**：新增 `starts_with` 管道函数，用于高效字符串前缀匹配
+  - **OML 管道函数**：新增 `starts_with` 函数用于前缀匹配
+  - **OML 管道函数**：新增 `map_to` 函数用于类型感知的条件值分配（支持 string、integer、float、boolean）
+  - **OML 匹配表达式**：支持基于函数的模式匹配（`match read(field) { starts_with('prefix') => result }`）
+    - 字符串匹配函数：`starts_with`、`ends_with`、`contains`、`regex_match`、`is_empty`、`iequals`
+    - 数值比较函数：`gt`、`lt`、`eq`、`in_range`
+  - **OML 解析器**：支持 `chars()` 等值构造器中的引号字符串（单引号和双引号）
+  - **OML 转换器**：新增临时字段自动过滤功能（以 `__` 开头的字段自动转换为 ignore 类型）
+  - **OML 语法简化**：管道表达式中 `pipe` 关键字现在为可选（`take(field) | func` 和 `pipe take(field) | func` 都支持）
+  - **修复问题**：修复 OML 匹配表达式中 `in_range` 函数解析失败的问题
+  - **修复问题**：修复 `map_to` 解析器中大整数精度丢失的问题
+  - **修复问题**：修复 OML 显示输出的往返解析兼容性问题
+
 ## [0.15.8] - 2026-02-03
 
 ### Changed
