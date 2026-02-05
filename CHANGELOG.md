@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] - 2026-02-05
+
+### Changed
+- 升级 `wp-motor` 核心引擎到 v1.14.1-alpha 版本，主要变化包括：
+  - **WPL 管道处理器**：新增 `strip/bom` 处理器用于移除 BOM（字节顺序标记）
+    - 支持 UTF-8、UTF-16 LE/BE、UTF-32 LE/BE BOM 检测和移除
+    - O(1) 快速检测（仅检查前 2-4 字节）
+    - 保留输入容器类型（String → String, Bytes → Bytes, ArcBytes → ArcBytes）
+
 ## [0.16.0] - 2026-02-04
 
 ### Changed

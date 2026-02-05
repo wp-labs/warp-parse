@@ -180,6 +180,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Determine branch
+        id: branch
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [[ "$VERSION" == *"-alpha"* ]]; then
+            BRANCH="alpha"
+          elif [[ "$VERSION" == *"-beta"* ]]; then
+            BRANCH="beta"
+          else
+            BRANCH="main"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Using branch: $BRANCH"
+
       - name: Extract changelog
         id: changelog
         run: |
@@ -235,7 +249,7 @@ jobs:
 
             ### Quick Install Script
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/main/scripts/install.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/${{ steps.branch.outputs.branch }}/scripts/install.sh | bash
             ```
 
             ### Docker Image
@@ -262,9 +276,9 @@ jobs:
 
             ## 📚 Documentation
 
-            - [Release Management](https://github.com/wp-labs/warp-parse/blob/main/docs/RELEASE_MANAGEMENT.md)
-            - [User Guide](https://github.com/wp-labs/warp-parse/tree/main/docs/user-guide)
-            - [Performance Benchmarks](https://github.com/wp-labs/warp-parse/blob/main/docs/performance.md)
+            - [Release Management](https://github.com/wp-labs/warp-parse/blob/${{ steps.branch.outputs.branch }}/docs/RELEASE_MANAGEMENT.md)
+            - [User Guide](https://github.com/wp-labs/warp-parse/tree/${{ steps.branch.outputs.branch }}/docs/user-guide)
+            - [Performance Benchmarks](https://github.com/wp-labs/warp-parse/blob/${{ steps.branch.outputs.branch }}/docs/performance.md)
 
             ## 🐛 Found an Issue?
 

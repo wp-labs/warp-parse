@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.1] - 2026-02-05
+
+### Changed
+- Upgraded `wp-motor` core engine to v1.14.1-alpha with the following key changes:
+  - **WPL Pipe Processor**: Added `strip/bom` processor for removing BOM (Byte Order Mark) from data
+    - Supports UTF-8, UTF-16 LE/BE, and UTF-32 LE/BE BOM detection and removal
+    - Fast O(1) detection by checking only first 2-4 bytes
+    - Preserves input container type (String → String, Bytes → Bytes, ArcBytes → ArcBytes)
+
 ## [0.16.0] - 2026-02-04
 
 ### Changed

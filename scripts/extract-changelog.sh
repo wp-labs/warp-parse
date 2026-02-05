@@ -33,6 +33,22 @@ fi
 # Remove 'v' prefix if present
 VERSION="${VERSION#v}"
 
+# Determine the branch from version suffix or git branch
+if [[ "$VERSION" == *"-alpha"* ]]; then
+    BRANCH="alpha"
+elif [[ "$VERSION" == *"-beta"* ]]; then
+    BRANCH="beta"
+else
+    # Try to get current branch from git, fallback to main
+    BRANCH=$(git branch --show-current 2>/dev/null || echo "main")
+    # If detached HEAD (common in CI with tags), default to main
+    if [[ -z "$BRANCH" ]]; then
+        BRANCH="main"
+    fi
+fi
+
+echo "Using branch: $BRANCH for changelog links"
+
 # ===========================================================================
 # Extract from Chinese CHANGELOG
 # ===========================================================================
@@ -59,7 +75,7 @@ if [[ -f "CHANGELOG.md" ]]; then
         echo "⚠ No Chinese changelog found for version $VERSION"
         echo "## 更新日志" > /tmp/changelog-zh.md
         echo "" >> /tmp/changelog-zh.md
-        echo "请查看完整的 [CHANGELOG.md](https://github.com/wp-labs/warp-parse/blob/main/CHANGELOG.md)" >> /tmp/changelog-zh.md
+        echo "请查看完整的 [CHANGELOG.md](https://github.com/wp-labs/warp-parse/blob/$BRANCH/CHANGELOG.md)" >> /tmp/changelog-zh.md
     fi
 else
     echo "⚠ CHANGELOG.md not found"
@@ -93,7 +109,7 @@ if [[ -f "CHANGELOG.en.md" ]]; then
         echo "⚠ No English changelog found for version $VERSION"
         echo "## Changelog" > /tmp/changelog-en.md
         echo "" >> /tmp/changelog-en.md
-        echo "Please see the full [CHANGELOG.en.md](https://github.com/wp-labs/warp-parse/blob/main/CHANGELOG.en.md)" >> /tmp/changelog-en.md
+        echo "Please see the full [CHANGELOG.en.md](https://github.com/wp-labs/warp-parse/blob/$BRANCH/CHANGELOG.en.md)" >> /tmp/changelog-en.md
     fi
 else
     echo "⚠ CHANGELOG.en.md not found"
