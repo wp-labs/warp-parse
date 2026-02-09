@@ -5547,9 +5547,9 @@ dependencies = [
 
 [[package]]
 name = "wp-conf-base"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e845eac0bce6ebfcd8edfa7d07ec2c428080a464b1c9cb4c88c7650a0860e7c9"
+checksum = "f833ce43b32338b71e599e1f5fdee1a882fd3dfd9aee1b8e27e14ef82c751001"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5565,7 +5565,7 @@ dependencies = [
  "toml",
  "winnow",
  "wp-connector-api",
- "wp-model-core 0.7.1",
+ "wp-model-core 0.8.1",
 ]
 
 [[package]]
@@ -5609,9 +5609,9 @@ dependencies = [
 
 [[package]]
 name = "wp-connector-api"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33e3f335256a4d2e6cd969aa93993b0b55070d0018bc583ef682efdf252e8d3c"
+checksum = "cdf637d54e32cb7d86299b1b9719438d2af7439619b206f29940b2a4edb546ca"
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -5626,7 +5626,7 @@ dependencies = [
  "smol_str",
  "thiserror 2.0.18",
  "toml",
- "wp-model-core 0.7.1",
+ "wp-model-core 0.8.1",
  "wp-parse-api",
 ]
 
@@ -5800,9 +5800,9 @@ dependencies = [
 
 [[package]]
 name = "wp-error"
-version = "0.7.6"
+version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd8cd714e34ceb95a69c0281d4e55cb5138a90624da41009826b499328f7e3ae"
+checksum = "e0f9533cf8bdfe40cfd65918a7f69b7221179bf3df8ab037ab46addccf418948"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5823,7 +5823,7 @@ dependencies = [
  "winnow",
  "wp-connector-api",
  "wp-log",
- "wp-model-core 0.7.1",
+ "wp-model-core 0.8.1",
 ]
 
 [[package]]
@@ -5920,9 +5920,9 @@ dependencies = [
 
 [[package]]
 name = "wp-log"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07ec490a7b434807e0531f59f554f668d1307a3651bc1f6addb4f65e0dda81f0"
+checksum = "c6f00e5b04e4c43792ba744373f946fcd3a93affae62b16735a6e0e907449a40"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5964,6 +5964,23 @@ name = "wp-model-core"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ea3ac4ff396490408f4257fb358fdc2054e29826d13aca45f8d5e672b781baf4"
+dependencies = [
+ "chrono",
+ "ipnet",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "smallvec",
+ "smol_str",
+ "thiserror 2.0.18",
+ "wildmatch",
+]
+
+[[package]]
+name = "wp-model-core"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "129ca94f0ea5da21f2657326cc162a871e60f3b5370dc51300808f4e67bf0489"
 dependencies = [
  "chrono",
  "ipnet",
@@ -6028,9 +6045,9 @@ dependencies = [
 
 [[package]]
 name = "wp-parse-api"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58ad675399bc63ef47dd68f7de59ba50eed471ecdf75a99df0b7bf7e7806b8ec"
+checksum = "168ecd84c478cdb2ca41efad437cb47fb49a7566bc385b95b2c082c5528927ec"
 dependencies = [
  "bytes",
  "derive_more",
@@ -6038,7 +6055,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "thiserror 2.0.18",
- "wp-model-core 0.7.1",
+ "wp-model-core 0.8.1",
 ]
 
 [[package]]
@@ -6097,9 +6114,9 @@ dependencies = [
 
 [[package]]
 name = "wp-specs"
-version = "0.7.5"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dab04dd646bb4382b0fd44dd4a3a7165cd8da4ce02b6e95a616472ebc8a0413"
+checksum = "cb8ff50b75ca3820da01db43f0895136d220770b1fc4c43af7d0da4e8ab9d96b"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6113,7 +6130,7 @@ dependencies = [
  "wildmatch",
  "winnow",
  "wp-connector-api",
- "wp-model-core 0.7.1",
+ "wp-model-core 0.8.1",
 ]
 
 [[package]]
