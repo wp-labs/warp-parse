@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.15.5 到 v1.17.0-alpha，主要变化包括：
+  - **OML Match 增强**：新增 OR 条件语法 `cond1 | cond2 | ...`，支持单源和多源匹配，兼容值匹配和函数匹配
+  - **OML Match 增强**：多源匹配不再限制源字段数量（之前限制为 2/3/4 个）
+  - **OML NLP**：新增 `extract_main_word` 和 `extract_subject_object` 管道函数，用于中文文本分析
+  - **OML NLP**：新增可配置 NLP 词典系统，支持通过 `NLP_DICT_CONFIG` 环境变量自定义词典
+  - **WPL 新功能**：新增分隔符模式语法 `{…}`，支持通配符（`*`、`?`）、空白匹配器（`\s`、`\h`、`\S`、`\H`）和保留组 `(…)`，用于在单个声明中表达复杂分隔符逻辑
+  - **Bug 修复**：修复 kvarr 模式分隔符解析问题
+
 ## [0.17.1] - 2026-02-09
 
 ### Changed

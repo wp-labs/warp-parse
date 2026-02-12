@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.15.5 to v1.17.0-alpha with key improvements:
+  - **OML Match**: Added OR condition syntax `cond1 | cond2 | ...` for match expressions, supporting single-source and multi-source matching, compatible with both value and function matching
+  - **OML Match**: Multi-source match now supports any number of source fields (no longer limited to 2/3/4)
+  - **OML NLP**: Added `extract_main_word` and `extract_subject_object` pipe functions for Chinese text analysis
+  - **OML NLP**: Added configurable NLP dictionary system, supporting custom dictionary via `NLP_DICT_CONFIG` environment variable
+  - **WPL Features**: Added separator pattern syntax `{…}` with wildcards (`*`, `?`), whitespace matchers (`\s`, `\h`, `\S`, `\H`) and preserve groups `(…)` for expressing complex separator logic in a single declaration
+  - **Bug Fixes**: Fixed kvarr pattern separator parsing
+
 ## [0.17.1] - 2026-02-09
 
 ### Changed
