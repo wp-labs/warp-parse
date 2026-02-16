@@ -229,7 +229,7 @@ wp-data-fmt = "0.1"
 
 # --- Internal: Engine ---
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.13.1" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
 wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.13.1" }
 wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.13.1" }
 wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.13.1" }
