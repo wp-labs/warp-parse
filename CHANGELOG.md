@@ -7,7 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.18.2] - 2026-02-20
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.0-alpha 到 v1.17.4-alpha，主要变化包括：
+  - **Sinks/Buffer**：新增 sink 级别批量缓冲区，支持可配置 `batch_size` 参数；小包进入待发缓冲区定期刷新，大包自动旁路直接发送（零拷贝）
+  - **Sinks/Config**：新增 `batch_timeout_ms` 配置项（默认 300ms），控制缓冲区定期刷新间隔
+  - **Sinks/File**：移除 `BufWriter` 和 `proc_cnt` 定期刷新，改为直接写入 `tokio::fs::File`；上游批量组装使用户空间缓冲冗余
+- 升级 `wp-connectors` 从 v0.7.6-beta 到 v0.7.7-beta，主要变化包括：
+  - **Doris**：使用新协议
+  - 更新 `reqwest` 从 0.12 到 0.13
+  - 更新 `env_logger` 从 0.10 到 0.11
+
+## [0.18.1] - 2026-02-13
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.0-alpha 到 v1.17.2-alpha，主要变化包括：
+  - **wp-lang**：`kv`/`kvarr` key 解析支持括号类字符 `()`、`<>`、`[]`、`{}`
+
+## [0.18.0] - 2026-02-12
 
 ### Changed
 - 升级 `wp-motor` 核心引擎从 v1.15.5 到 v1.17.0-alpha，主要变化包括：

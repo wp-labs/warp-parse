@@ -7,7 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.18.2] - 2026-02-20
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.0-alpha to v1.17.4-alpha with key improvements:
+  - **Sinks/Buffer**: Added sink-level batch buffer with configurable `batch_size` parameter; small packages enter pending buffer for periodic flushing, large packages automatically bypass for direct sending (zero-copy)
+  - **Sinks/Config**: Added `batch_timeout_ms` configuration (default 300ms) to control periodic buffer flush interval
+  - **Sinks/File**: Removed `BufWriter` and `proc_cnt` periodic flush, now writes directly to `tokio::fs::File`; upstream batch assembly makes userspace buffering redundant
+- Upgraded `wp-connectors` from v0.7.6-beta to v0.7.7-beta with the following changes:
+  - **Doris**: Use the new protocol
+  - Updated `reqwest` from 0.12 to 0.13
+  - Updated `env_logger` from 0.10 to 0.11
+
+## [0.18.1] - 2026-02-13
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.0-alpha to v1.17.2-alpha with key improvements:
+  - **wp-lang**: `kv`/`kvarr` key parsing now supports bracket characters `()`, `<>`, `[]`, `{}`
+
+## [0.18.0] - 2026-02-12
 
 ### Changed
 - Upgraded `wp-motor` core engine from v1.15.5 to v1.17.0-alpha with key improvements:
