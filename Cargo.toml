@@ -78,7 +78,7 @@ shadow-rs = "1.6"
 # ===========================================================================
 
 [dev-dependencies]
-serial_test = "3.2"
+serial_test = "3.4"
 httpmock = "0.8"
 collection_literals = "1.0"
 tempfile = "3.23"
@@ -197,7 +197,7 @@ educe = { version = "0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
-uuid = { version = "1.19", features = ["v4"] }
+uuid = { version = "1.21", features = ["v4"] }
 once_cell = "1.21"
 lazy_static = "1.5"
 contracts = "0.6"
