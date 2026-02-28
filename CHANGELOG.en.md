@@ -7,6 +7,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.3] - 2026-02-27
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.4-alpha to v1.17.5-alpha
+- Upgraded `wp-connectors` from v0.7.7-beta to v0.7.8-beta
+- Updated project dependencies to latest versions
+
+## [0.18.2] - 2026-02-20
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.0-alpha to v1.17.4-alpha with key improvements:
+  - **Sinks/Buffer**: Added sink-level batch buffer with configurable `batch_size` parameter; small packages enter pending buffer for periodic flushing, large packages automatically bypass for direct sending (zero-copy)
+  - **Sinks/Config**: Added `batch_timeout_ms` configuration (default 300ms) to control periodic buffer flush interval
+  - **Sinks/File**: Removed `BufWriter` and `proc_cnt` periodic flush, now writes directly to `tokio::fs::File`; upstream batch assembly makes userspace buffering redundant
+- Upgraded `wp-connectors` from v0.7.6-beta to v0.7.7-beta with the following changes:
+  - **Doris**: Use the new protocol
+  - Updated `reqwest` from 0.12 to 0.13
+  - Updated `env_logger` from 0.10 to 0.11
+
+## [0.18.1] - 2026-02-13
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.0-alpha to v1.17.2-alpha with key improvements:
+  - **wp-lang**: `kv`/`kvarr` key parsing now supports bracket characters `()`, `<>`, `[]`, `{}`
+
+## [0.18.0] - 2026-02-12
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.15.5 to v1.17.0-alpha with key improvements:
+  - **OML Match**: Added OR condition syntax `cond1 | cond2 | ...` for match expressions, supporting single-source and multi-source matching, compatible with both value and function matching
+  - **OML Match**: Multi-source match now supports any number of source fields (no longer limited to 2/3/4)
+  - **OML NLP**: Added `extract_main_word` and `extract_subject_object` pipe functions for Chinese text analysis
+  - **OML NLP**: Added configurable NLP dictionary system, supporting custom dictionary via `NLP_DICT_CONFIG` environment variable
+  - **WPL Features**: Added separator pattern syntax `{…}` with wildcards (`*`, `?`), whitespace matchers (`\s`, `\h`, `\S`, `\H`) and preserve groups `(…)` for expressing complex separator logic in a single declaration
+  - **Bug Fixes**: Fixed kvarr pattern separator parsing
+
 ## [0.17.1] - 2026-02-09
 
 ### Changed
