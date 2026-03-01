@@ -75,7 +75,7 @@ jobs:
           tar -czf "${ARTIFACT}.tar.gz" artifacts
 
       - name: Attest Build Provenance
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         continue-on-error: true
         with:
           subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
@@ -164,7 +164,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         continue-on-error: true
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
