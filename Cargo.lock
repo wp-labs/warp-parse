@@ -5419,7 +5419,7 @@ dependencies = [
  "wp-knowledge",
  "wp-lang",
  "wp-log",
- "wp-model-core 0.7.2",
+ "wp-model-core 0.8.5",
  "wp-parse-api",
  "wp-proj",
  "wp-specs",
