@@ -105,18 +105,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.15.7] - 2026-01-30
 
 ### Changed
-- 升级 `wp-motor` 核心引擎到 v1.13.1 版本。
-- 升级 `wp-connectors` 到 v0.7.5-beta 版本。
-
-## [0.15.6] - 2026-01-29
-
-### Changed
-- 升级 `wp-motor` 核心引擎到 v1.13.0-alpha 版本，主要变化包括：
+- 升级 `wp-motor` 核心引擎到 v1.13.1 版本，主要变化包括：
   - **WPL 解析器增强**：支持 `\t`（制表符）和 `\S`（非空白字符）分隔符
   - **WPL 解析器增强**：支持带引号的特殊字符字段名（如 `"field.name"`、`"field-name"`）
   - **新增函数**：`chars_replace` 字符级字符串替换函数
   - **日志优化**：高频日志路径使用 `log_enabled!` 守卫，消除日志级别过滤时的循环开销
   - **移除功能**：Syslog UDP Source 移除 `SO_REUSEPORT` 多实例支持（安全风险及跨平台不一致）
+- 升级 `wp-connectors` 到 v0.7.5-beta 版本。
 
 ## [0.15.5] - 2026-01-28
 

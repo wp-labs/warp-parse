@@ -285,5 +285,5 @@ jobs:
             Please report it at: https://github.com/wp-labs/warp-parse/issues
 
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
           files: artifacts/*
