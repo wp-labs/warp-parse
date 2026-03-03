@@ -151,7 +151,7 @@ signal-hook-registry = "1.4"
 tikv-jemallocator = "0.6"
 
 # --- Async Runtime ---
-tokio = { version = "1.48", features = ["full"] }
+tokio = { version = "1.50", features = ["full"] }
 tokio-util = { version = "0.7", features = ["full"] }
 tokio-async-drop = "0.1"
 futures-util = "0.3"
