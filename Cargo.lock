@@ -5387,7 +5387,7 @@ dependencies = [
  "orion-sec",
  "orion-variate",
  "orion_conf",
- "rand 0.9.2",
+ "rand 0.10.0",
  "serde",
  "serde_json",
  "serial_test",
