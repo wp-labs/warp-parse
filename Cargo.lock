@@ -5413,7 +5413,7 @@ dependencies = [
  "wp-config",
  "wp-connector-api",
  "wp-connectors",
- "wp-data-fmt 0.1.0",
+ "wp-data-fmt",
  "wp-engine",
  "wp-error",
  "wp-knowledge",
@@ -6218,7 +6218,7 @@ dependencies = [
  "winnow",
  "wp-conf-base",
  "wp-connector-api",
- "wp-data-fmt 0.2.2",
+ "wp-data-fmt",
  "wp-error",
  "wp-log",
  "wp-model-core 0.8.5",
@@ -6233,19 +6233,6 @@ version = "0.1.0"
 source = "git+https://github.com/wp-labs/wp-advanced-api?tag=v0.0.5-beta#89d175482649ac93c80df6d4312f06f03a01f701"
 dependencies = [
  "serde",
-]
-
-[[package]]
-name = "wp-data-fmt"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68d415d74e9dc57a0c377e51891da2ba0657ec1ebca1d528a1f4b5f4317e65d9"
-dependencies = [
- "chrono",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "wp-model-core 0.7.2",
 ]
 
 [[package]]
@@ -6346,7 +6333,7 @@ dependencies = [
  "wp-config",
  "wp-connector-api",
  "wp-ctrl-api",
- "wp-data-fmt 0.2.2",
+ "wp-data-fmt",
  "wp-data-utils",
  "wp-enrich-api",
  "wp-error",
@@ -6427,7 +6414,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml",
  "wildmatch",
- "wp-data-fmt 0.2.2",
+ "wp-data-fmt",
  "wp-data-utils",
  "wp-error",
  "wp-log",
@@ -6481,7 +6468,7 @@ dependencies = [
  "wildmatch",
  "winnow",
  "wp-connector-api",
- "wp-data-fmt 0.2.2",
+ "wp-data-fmt",
  "wp-error",
  "wp-log",
  "wp-model-core 0.8.5",
@@ -6608,7 +6595,7 @@ dependencies = [
  "url",
  "wildmatch",
  "winnow",
- "wp-data-fmt 0.2.2",
+ "wp-data-fmt",
  "wp-data-utils",
  "wp-error",
  "wp-knowledge",
