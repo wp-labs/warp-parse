@@ -3009,6 +3009,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "orion-error"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5b28c5a8d3f14a81aa499b81d0c90d6581d975475cd1b8d04b657cec85ddf31"
+dependencies = [
+ "derive_more",
+ "log",
+ "serde",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "orion-sec"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3022,7 +3034,7 @@ dependencies = [
  "indexmap",
  "log",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "serde",
@@ -3045,7 +3057,7 @@ dependencies = [
  "getset",
  "indexmap",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "os_info",
  "serde",
  "serde_derive",
@@ -3066,7 +3078,7 @@ dependencies = [
  "derive-getters",
  "derive_more",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "serde",
  "serde_derive",
@@ -5396,7 +5408,7 @@ dependencies = [
  "log",
  "lru",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-sec",
  "orion-variate",
  "orion_conf",
@@ -5433,7 +5445,7 @@ dependencies = [
  "wp-lang",
  "wp-log",
  "wp-model-core 0.7.2",
- "wp-parse-api",
+ "wp-parse-api 0.8.1",
  "wp-proj",
  "wp-specs",
 ]
@@ -6106,7 +6118,7 @@ dependencies = [
  "anyhow",
  "chrono",
  "comfy-table",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "serde",
@@ -6128,7 +6140,7 @@ dependencies = [
  "derive_more",
  "getset",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "serde",
@@ -6155,7 +6167,7 @@ dependencies = [
  "glob",
  "log",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "orion_exp 1.17.7",
@@ -6190,7 +6202,7 @@ dependencies = [
  "async-trait",
  "derive_more",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "serde",
  "serde_derive",
  "serde_json",
@@ -6199,7 +6211,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml",
  "wp-model-core 0.8.5",
- "wp-parse-api",
+ "wp-parse-api 0.7.1",
 ]
 
 [[package]]
@@ -6215,7 +6227,7 @@ dependencies = [
  "educe 0.6.0",
  "lazy_static",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "orion_conf",
  "orion_exp 0.1.1",
  "prometheus",
@@ -6235,7 +6247,7 @@ dependencies = [
  "wp-error",
  "wp-log",
  "wp-model-core 0.8.5",
- "wp-parse-api",
+ "wp-parse-api 0.7.1",
  "wp-schema",
  "wp-specs",
 ]
@@ -6283,7 +6295,7 @@ dependencies = [
  "chrono",
  "derive_builder",
  "lru",
- "orion-error",
+ "orion-error 0.5.6",
  "orion_exp 1.17.7",
  "serde",
  "serde_derive",
@@ -6327,7 +6339,7 @@ dependencies = [
  "memchr",
  "mockall",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-sec",
  "orion-variate",
  "orion_conf",
@@ -6368,7 +6380,7 @@ dependencies = [
  "wp-log",
  "wp-model-core 0.8.5",
  "wp-oml",
- "wp-parse-api",
+ "wp-parse-api 0.7.1",
  "wp-parser",
  "wp-specs",
  "wp-stats",
@@ -6394,7 +6406,7 @@ dependencies = [
  "getset",
  "log",
  "log4rs",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-sec",
  "orion-variate",
  "orion_conf",
@@ -6424,7 +6436,7 @@ dependencies = [
  "lazy_static",
  "log",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "orion_overload",
@@ -6475,7 +6487,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "ordered-float 5.1.0",
- "orion-error",
+ "orion-error 0.5.6",
  "orion_overload",
  "phone",
  "rand 0.10.0",
@@ -6498,7 +6510,7 @@ dependencies = [
  "wp-error",
  "wp-log",
  "wp-model-core 0.8.5",
- "wp-parse-api",
+ "wp-parse-api 0.7.1",
  "wp-parser",
  "wp-specs",
 ]
@@ -6515,7 +6527,7 @@ dependencies = [
  "getset",
  "log",
  "log4rs",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "serde",
@@ -6603,7 +6615,7 @@ dependencies = [
  "log",
  "md5",
  "once_cell",
- "orion-error",
+ "orion-error 0.5.6",
  "orion_conf",
  "orion_exp 1.17.7",
  "parse-display",
@@ -6640,7 +6652,22 @@ checksum = "168ecd84c478cdb2ca41efad437cb47fb49a7566bc385b95b2c082c5528927ec"
 dependencies = [
  "bytes",
  "derive_more",
- "orion-error",
+ "orion-error 0.5.6",
+ "serde",
+ "serde_derive",
+ "thiserror 2.0.18",
+ "wp-model-core 0.8.5",
+]
+
+[[package]]
+name = "wp-parse-api"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9108cdcb3f90e5b4f986ec7a1403f85e967916a21e660089b12690e5ecf72c32"
+dependencies = [
+ "bytes",
+ "derive_more",
+ "orion-error 0.6.0",
  "serde",
  "serde_derive",
  "thiserror 2.0.18",
@@ -6664,7 +6691,7 @@ dependencies = [
  "anyhow",
  "comfy-table",
  "glob",
- "orion-error",
+ "orion-error 0.5.6",
  "orion-variate",
  "orion_conf",
  "serde",
@@ -6692,7 +6719,7 @@ dependencies = [
  "chrono",
  "educe 0.4.23",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "orion_conf",
  "serde",
  "serde_json",
@@ -6711,7 +6738,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "log",
- "orion-error",
+ "orion-error 0.5.6",
  "serde",
  "serde_json",
  "thiserror 2.0.18",

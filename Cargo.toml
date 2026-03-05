@@ -217,7 +217,7 @@ glob = "0.3"
 # --- Internal: Open API ---
 
 wp-connector-api = "0.7"
-wp-parse-api = "0.7"
+wp-parse-api = "0.8"
 wp-model-core = "0.7"
 
 # --- Internal: Infrastructure ---
