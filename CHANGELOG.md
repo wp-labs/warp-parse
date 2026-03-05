@@ -7,14 +7,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.18.5 Unreleased]
+## [0.19.0 Unreleased]
 
 ### Changed
-- **wp-motor**: 核心引擎依赖从 `v1.17.6` 升级到 `v1.17.8`。
-- **Dependencies**: 同步依赖版本与锁文件，保持 `beta` 分支构建一致性。
+- **Version**: 项目版本更新为 `0.19.0`。
+- **wp-motor**: 核心引擎依赖从 `v1.17.8` 升级到 `v1.18.0`。
+- **wp-connectors**: 连接器依赖从 `v0.7.10-beta` 升级到 `v0.9.0`。
+- **Dependencies**: 核心依赖升级到新主线（`orion-error 0.6`、`wp-connector-api 0.8`、`wp-error 0.8`、`wp-log 0.2` 等）。
+- **Runtime Connectors**: 为规避升级期间 API 不兼容，社区外部连接器注册调整为暂时跳过并输出告警日志。
 
 ### Fixed
-- **wp-lang**: 随 `wp-motor v1.17.8` 引入对 `kv`/`kvarr` 复杂 key（含 `()`, `[]`, `<>`, `{}`）解析与 `@...` 路径解析的修复。
+- **Error Handling**: 适配 `orion-error 0.6` 的 `UvsFrom`/`from_*` 新接口，统一错误上下文附加方式。
+- **Build**: 修复依赖升级后的编译失败，恢复 `cargo check --all-targets` 可通过。
 
 ## [0.18.4] - 2026-03-04
 
