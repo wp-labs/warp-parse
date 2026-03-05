@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.5 Unreleased]
+
+### Changed
+- **wp-motor**: 核心引擎依赖从 `v1.17.6` 升级到 `v1.17.8`。
+- **Dependencies**: 同步依赖版本与锁文件，保持 `beta` 分支构建一致性。
+
+### Fixed
+- **wp-lang**: 随 `wp-motor v1.17.8` 引入对 `kv`/`kvarr` 复杂 key（含 `()`, `[]`, `<>`, `{}`）解析与 `@...` 路径解析的修复。
+
 ## [0.18.4] - 2026-03-04
 
 ### Changed

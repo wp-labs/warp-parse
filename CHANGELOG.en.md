@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.5 Unreleased]
+
+### Changed
+- **wp-motor**: Upgraded core engine dependency from `v1.17.6` to `v1.17.8`.
+- **Dependencies**: Refreshed dependency pins and lockfile to keep `beta` branch builds consistent.
+
+### Fixed
+- **wp-lang**: Pulled fixes from `wp-motor v1.17.8` for `kv`/`kvarr` complex key parsing (keys containing `()`, `[]`, `<>`, `{}`) and `@...` path parsing behavior.
+
 ## [0.18.4] - 2026-03-04
 
 ### Changed
