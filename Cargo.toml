@@ -204,7 +204,7 @@ contracts = "0.6"
 ctor = "0.6"
 hex = "0.4"
 shadow-rs = { version = "1.6.0", default-features = false }
-rand = "0.9"
+rand = "0.10"
 
 # --- Data Structures ---
 lru = "0.16"
