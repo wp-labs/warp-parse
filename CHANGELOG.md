@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0 Unreleased]
+
+### Changed
+- **Version**: 项目版本更新为 `0.19.0`。
+- **wp-motor**: 核心引擎依赖从 `v1.17.8` 升级到 `v1.18.0`。
+- **wp-connectors**: 连接器依赖从 `v0.7.10-beta` 升级到 `v0.9.0`。
+- **Dependencies**: 核心依赖升级到新主线（`orion-error 0.6`、`wp-connector-api 0.8`、`wp-error 0.8`、`wp-log 0.2` 等）。
+- **Runtime Connectors**: 为规避升级期间 API 不兼容，社区外部连接器注册调整为暂时跳过并输出告警日志。
+
+### Fixed
+- **Error Handling**: 适配 `orion-error 0.6` 的 `UvsFrom`/`from_*` 新接口，统一错误上下文附加方式。
+- **Build**: 修复依赖升级后的编译失败，恢复 `cargo check --all-targets` 可通过。
+
+## [0.18.4] - 2026-03-04
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.5 到 v1.17.6
+- `wp-motor` v1.17.6 主要增强观测与统计链路（背压指标、聚合语义修正、热路径优化），并修复 parser 退出与 recovery failover 稳定性问题
+
 ## [0.18.3] - 2026-02-27
 
 ### Changed
@@ -112,18 +131,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.15.7] - 2026-01-30
 
 ### Changed
-- 升级 `wp-motor` 核心引擎到 v1.13.1 版本。
-- 升级 `wp-connectors` 到 v0.7.5-beta 版本。
-
-## [0.15.6] - 2026-01-29
-
-### Changed
-- 升级 `wp-motor` 核心引擎到 v1.13.0-alpha 版本，主要变化包括：
+- 升级 `wp-motor` 核心引擎到 v1.13.1 版本，主要变化包括：
   - **WPL 解析器增强**：支持 `\t`（制表符）和 `\S`（非空白字符）分隔符
   - **WPL 解析器增强**：支持带引号的特殊字符字段名（如 `"field.name"`、`"field-name"`）
   - **新增函数**：`chars_replace` 字符级字符串替换函数
   - **日志优化**：高频日志路径使用 `log_enabled!` 守卫，消除日志级别过滤时的循环开销
   - **移除功能**：Syslog UDP Source 移除 `SO_REUSEPORT` 多实例支持（安全风险及跨平台不一致）
+- 升级 `wp-connectors` 到 v0.7.5-beta 版本。
 
 ## [0.15.5] - 2026-01-28
 

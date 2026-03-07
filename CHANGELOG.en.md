@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0 Unreleased]
+
+### Changed
+- **Version**: Bumped project version to `0.19.0`.
+- **wp-motor**: Upgraded core engine dependency from `v1.17.8` to `v1.18.0`.
+- **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.0`.
+- **Dependencies**: Migrated core dependency stack to newer major lines (`orion-error 0.6`, `wp-connector-api 0.8`, `wp-error 0.8`, `wp-log 0.2`, etc.).
+- **Runtime Connectors**: Temporarily skipped community external connector factory registration with warning logs to avoid API mismatch during dependency transition.
+
+### Fixed
+- **Error Handling**: Adapted to `orion-error 0.6` (`UvsFrom`/`from_*`) and unified error-context attachment behavior.
+- **Build**: Fixed compile failures after dependency upgrades and restored passing `cargo check --all-targets`.
+
+## [0.18.4] - 2026-03-04
+
+### Changed
+- Upgraded `wp-motor` core engine from v1.17.5 to v1.17.6
+- `wp-motor` v1.17.6 mainly improves observability and statistics (backpressure metrics, aggregation semantics fixes, hot-path optimization), and fixes parser shutdown and recovery failover stability
+
 ## [0.18.3] - 2026-02-27
 
 ### Changed
@@ -112,18 +131,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.15.7] - 2026-01-30
 
 ### Changed
-- Upgraded `wp-motor` core engine to v1.13.1.
-- Upgraded `wp-connectors` to v0.7.5-beta.
-
-## [0.15.6] - 2026-01-29
-
-### Changed
-- Upgraded `wp-motor` core engine to v1.13.0-alpha with the following key changes:
+- Upgraded `wp-motor` core engine to v1.13.1 with the following key changes:
   - **WPL Parser Enhancement**: Added support for `\t` (tab) and `\S` (non-whitespace) separators in parsing expressions
   - **WPL Parser Enhancement**: Added support for quoted field names with special characters (e.g., `"field.name"`, `"field-name"`)
   - **New Function**: Added `chars_replace` function for character-level string replacement
   - **Logging Optimization**: High-frequency log paths now use `log_enabled!` guard to eliminate loop overhead when log level is filtered
   - **Removed Feature**: Removed `SO_REUSEPORT` multi-instance support from Syslog UDP Source (security risk and cross-platform inconsistency)
+- Upgraded `wp-connectors` to v0.7.5-beta.
 
 ## [0.15.5] - 2026-01-28
 

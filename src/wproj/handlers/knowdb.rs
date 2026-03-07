@@ -1,5 +1,5 @@
 use orion_conf::ToStructError;
-use orion_error::UvsConfFrom;
+use orion_error::UvsFrom;
 use orion_variate::EnvDict;
 use std::path::PathBuf;
 use wp_error::run_error::{RunReason, RunResult};
@@ -8,7 +8,7 @@ use crate::args::{KnowdbCheckArgs, KnowdbCleanArgs, KnowdbInitArgs};
 
 pub fn init_knowdb(a: &KnowdbInitArgs) -> RunResult<()> {
     wp_cli_core::knowdb::init(&a.work_root, a.full)
-        .map_err(|e| RunReason::from_conf(e.to_string()).to_err())?;
+        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
     println!(
         "wprojknowdb skeleton created under '{}'",
         PathBuf::from(&a.work_root).display()
@@ -18,7 +18,7 @@ pub fn init_knowdb(a: &KnowdbInitArgs) -> RunResult<()> {
 
 pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
     let rep = wp_cli_core::knowdb::check(&a.work_root, dict)
-        .map_err(|e| RunReason::from_conf(e.to_string()).to_err())?;
+        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
     println!("提示: 按配置顺序加载（[[tables]] 出现顺序）");
     for t in &rep.tables {
         if t.create_ok && t.insert_ok && t.data_ok && t.columns_ok {
@@ -35,14 +35,18 @@ pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
         rep.total, rep.ok, rep.fail
     );
     if rep.fail > 0 {
-        return Err(RunReason::from_conf("knowdb check failed").to_err());
+        return Err(
+            RunReason::from_conf()
+                .to_err()
+                .with_detail("knowdb check failed"),
+        );
     }
     Ok(())
 }
 
 pub fn clean_knowdb(a: &KnowdbCleanArgs) -> RunResult<()> {
     let rep = wp_cli_core::knowdb::clean(&a.work_root)
-        .map_err(|e| RunReason::from_conf(e.to_string()).to_err())?;
+        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
 
     let wr = PathBuf::from(&a.work_root);
     let models_dir = wr.join("models").join("knowledge");

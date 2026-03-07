@@ -30,52 +30,38 @@ pub fn register_optional_connectors() {
     // Initialize runtime registries if needed
     wp_engine::connectors::startup::init_runtime_registries();
 
-    // Kafka connector (source/sink)
-    // Available via "community" default feature or explicit "kafka" feature
+    // NOTE:
+    // 依赖升级后，wp-engine/wp-motor 走 wp-connector-api 0.8，而 wp-connectors 仍是 0.7，
+    // 这里的工厂类型不再兼容。先保留 feature 开关但不注册，确保主程序可编译运行；
+    // 待 wp-connectors 升级到 0.8 线后恢复下面这些注册调用。
+
     #[cfg(any(feature = "community", feature = "kafka"))]
     {
-        /* Note: In some versions, function names may differ.
-         * To ensure compilability across versions, external factory
-         * registration is temporarily disabled here.
-         * Uncomment when all versions have consistent APIs.
-         */
-
-        use wp_engine::connectors::registry;
-
-        registry::register_source_factory(wp_connectors::kafka::KafkaSourceFactory);
-        registry::register_sink_factory(wp_connectors::kafka::KafkaSinkFactory);
+        wp_log::warn_ctrl!("skip kafka connector registration: wp-connectors api version mismatch");
     }
 
-    // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "doris"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::doris::DorisSinkFactory);
+        wp_log::warn_ctrl!("skip doris connector registration: wp-connectors api version mismatch");
     }
 
-    // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
-        registry::register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
+        wp_log::warn_ctrl!("skip mysql connector registration: wp-connectors api version mismatch");
     }
 
-    // VictoriaLogs connector (sink only)
     #[cfg(any(feature = "community", feature = "victoriametrics"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::victoriametrics::VictoriaMetricFactory);
+        wp_log::warn_ctrl!(
+            "skip victoriametrics connector registration: wp-connectors api version mismatch"
+        );
     }
 
     #[cfg(any(feature = "community", feature = "victorialogs"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::victorialogs::VictoriaLogSinkFactory);
+        wp_log::warn_ctrl!(
+            "skip victorialogs connector registration: wp-connectors api version mismatch"
+        );
     }
     // ClickHouse connector (source/sink)
     #[cfg(any(feature = "community", feature = "clickhouse"))]

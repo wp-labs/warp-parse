@@ -17,8 +17,8 @@ Thank you for your interest in contributing to WarpParse! We welcome contributio
 This project uses a three-tier branch model:
 
 ```
-feature/* ──► alpha ──► release/x.y ──► main
-              (alpha)    (beta/rc)     (stable)
+feature/* ──► alpha ──► beta ──► main
+              (alpha)   (beta)   (stable)
 ```
 
 ### Branch Overview
@@ -26,8 +26,9 @@ feature/* ──► alpha ──► release/x.y ──► main
 | Branch | Purpose | Stability |
 |--------|---------|-----------|
 | `main` | Production releases | Stable |
+| `beta` | Beta releases, bug fixes only | Beta |
 | `alpha` | Development mainline, continuous integration | Alpha |
-| `release/x.y` | Release branch, feature-frozen, bug fixes only | Beta/RC |
+| `release/x.y` | Release candidate branch (optional) | RC |
 | `feature/*` | Feature development branches | Unstable |
 | `issues/*` | Issue fix branches | Unstable |
 
@@ -37,27 +38,26 @@ feature/* ──► alpha ──► release/x.y ──► main
    - Create `feature/<name>` or `issues/<number>` branch from `alpha`
    - Submit a PR to merge into `alpha` when complete
 
-2. **Release Preparation**
-   - Create `release/x.y` branch from `alpha`
-   - Perform beta testing and bug fixes on the release branch
-   - Publish RC versions for final validation
+2. **Beta Release**
+   - Merge `alpha` into `beta` when ready for beta testing
+   - Bug fixes on `beta` branch
+   - Tag beta versions (e.g. `v0.15.7-beta.1`)
 
 3. **Production Release**
-   - Merge `release/x.y` into `main`
-   - Tag on `main` (e.g. `v0.15.0`)
+   - Merge `beta` into `main`
+   - Tag stable version on `main` (e.g. `v0.15.7`)
    - Merge `main` back into `alpha` (sync release fixes)
-   - Delete `release/x.y` branch
 
 4. **Hotfix**
    - Create `hotfix/<name>` branch from `main`
-   - After fixing, merge into both `main` and `alpha`
+   - After fixing, merge into `main`, `beta` and `alpha`
 
 ### Version Naming
 
-- Alpha: `x.y.z-alpha` (e.g. `v0.15.7-alpha`)
-- Beta: `x.y.z-beta.n` (e.g. `v0.15.7-beta.1`)
-- RC: `x.y.z-rc.n` (e.g. `v0.15.7-rc.1`)
-- Stable: `x.y.z` (e.g. `v0.15.7`)
+- Alpha: `x.y.z-alpha` (e.g. `v0.15.7-alpha`) - tagged on `alpha` branch
+- Beta: `x.y.z-beta.n` (e.g. `v0.15.7-beta.1`) - tagged on `beta` branch
+- RC: `x.y.z-rc.n` (e.g. `v0.15.7-rc.1`) - tagged on `release/x.y` branch
+- Stable: `x.y.z` (e.g. `v0.15.7`) - tagged on `main` branch
 
 ## Getting Started
 
@@ -386,8 +386,8 @@ Please be respectful and constructive in all interactions with other community m
 本项目采用三层分支模型：
 
 ```
-feature/* ──► alpha ──► release/x.y ──► main
-              (alpha)    (beta/rc)     (stable)
+feature/* ──► alpha ──► beta ──► main
+              (alpha)   (beta)   (stable)
 ```
 
 ### 分支说明
@@ -395,8 +395,9 @@ feature/* ──► alpha ──► release/x.y ──► main
 | 分支 | 用途 | 稳定性 |
 |------|------|--------|
 | `main` | 正式发布版本 | 稳定 |
+| `beta` | Beta 发布版本，只修 bug | Beta |
 | `alpha` | 开发主线，持续集成 | Alpha |
-| `release/x.y` | 版本发布分支，功能冻结，只修 bug | Beta/RC |
+| `release/x.y` | 候选发布分支（可选） | RC |
 | `feature/*` | 功能开发分支 | 不稳定 |
 | `issues/*` | Issue 修复分支 | 不稳定 |
 
@@ -406,27 +407,26 @@ feature/* ──► alpha ──► release/x.y ──► main
    - 从 `alpha` 创建 `feature/<name>` 或 `issues/<number>` 分支
    - 完成开发后，提交 PR 合并到 `alpha`
 
-2. **版本发布准备**
-   - 从 `alpha` 创建 `release/x.y` 分支
-   - 在 release 分支上进行 Beta 测试和 bug 修复
-   - 发布 RC 版本进行最终验证
+2. **Beta 发布**
+   - 当准备好进行 beta 测试时，将 `alpha` 合并到 `beta`
+   - 在 `beta` 分支上修复 bug
+   - 打 beta 版本 tag（如 `v0.15.7-beta.1`）
 
 3. **正式发布**
-   - `release/x.y` 合并到 `main`
-   - 在 `main` 上打 tag（如 `v0.15.0`）
+   - `beta` 合并到 `main`
+   - 在 `main` 上打稳定版本 tag（如 `v0.15.7`）
    - `main` 合并回 `alpha`（同步 release 中的修复）
-   - 删除 `release/x.y` 分支
 
 4. **热修复**
    - 从 `main` 创建 `hotfix/<name>` 分支
-   - 修复后合并到 `main` 和 `alpha`
+   - 修复后合并到 `main`、`beta` 和 `alpha`
 
 ### 版本命名
 
-- Alpha: `x.y.z-alpha`（如 `v0.15.7-alpha`）
-- Beta: `x.y.z-beta.n`（如 `v0.15.7-beta.1`）
-- RC: `x.y.z-rc.n`（如 `v0.15.7-rc.1`）
-- 正式: `x.y.z`（如 `v0.15.7`）
+- Alpha: `x.y.z-alpha`（如 `v0.15.7-alpha`）- 在 `alpha` 分支打 tag
+- Beta: `x.y.z-beta.n`（如 `v0.15.7-beta.1`）- 在 `beta` 分支打 tag
+- RC: `x.y.z-rc.n`（如 `v0.15.7-rc.1`）- 在 `release/x.y` 分支打 tag
+- 正式: `x.y.z`（如 `v0.15.7`）- 在 `main` 分支打 tag
 
 ## 快速开始
 

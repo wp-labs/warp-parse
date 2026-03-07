@@ -1,4 +1,5 @@
 use orion_conf::ToStructError;
+use orion_error::UvsFrom;
 use orion_variate::EnvDict;
 use serde_json::json;
 use wp_cli_core::{
@@ -51,10 +52,9 @@ pub fn run_sink_validation(args: &ValidateSinkArgs, dict: &EnvDict) -> RunResult
 
     if report.has_error_fail() {
         return Err(
-            wp_error::run_error::RunReason::Uvs(orion_error::UvsReason::validation_error(
-                "validate failed".to_string(),
-            ))
-            .to_err(),
+            wp_error::run_error::RunReason::from_validation()
+                .to_err()
+                .with_detail("validate failed"),
         );
     }
     Ok(())
