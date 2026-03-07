@@ -46,6 +46,5 @@ mod main   {
       gx.cmd ("git push --tags ");
     }
 
-  }
 
 }
