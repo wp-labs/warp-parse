@@ -6,6 +6,7 @@ pub mod cli;
 //pub mod init;
 pub mod rescue;
 pub mod rule;
+pub mod self_update;
 pub mod sinks;
 pub mod sources;
 pub mod stat;

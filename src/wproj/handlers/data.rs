@@ -77,11 +77,9 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     match parser.parse_and_build_from(&config_str, dict).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),
         Err(err) => {
-            return Err(
-                wp_error::run_error::RunReason::from_data()
-                    .to_err()
-                    .with_detail(err.to_string()),
-            )
+            return Err(wp_error::run_error::RunReason::from_data()
+                .to_err()
+                .with_detail(err.to_string()))
         }
     }
     Ok(())

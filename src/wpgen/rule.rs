@@ -56,10 +56,9 @@ pub async fn run(
     // 1) 判断配置文件是否存在
     let conf_path = god.config_path(conf_name);
     if !std::path::Path::new(&conf_path).exists() {
-        return Err(RunReason::from_conf().to_err().with_detail(format!(
-            "config file not found: {}",
-            conf_path.display()
-        )));
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("config file not found: {}", conf_path.display())));
     }
     wp_log::info_ctrl!("wpgen.rule: loading config from '{}'", conf_path.display());
     let rt = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;

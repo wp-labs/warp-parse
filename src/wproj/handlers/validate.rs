@@ -51,11 +51,9 @@ pub fn run_sink_validation(args: &ValidateSinkArgs, dict: &EnvDict) -> RunResult
     }
 
     if report.has_error_fail() {
-        return Err(
-            wp_error::run_error::RunReason::from_validation()
-                .to_err()
-                .with_detail("validate failed"),
-        );
+        return Err(wp_error::run_error::RunReason::from_validation()
+            .to_err()
+            .with_detail("validate failed"));
     }
     Ok(())
 }

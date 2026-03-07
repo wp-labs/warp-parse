@@ -40,10 +40,9 @@ fn build_components(args: &ProjectCheckArgs) -> RunResult<checker::CheckComponen
         .collect();
 
     if selections.is_empty() {
-        return Err(RunReason::from_conf().to_err().with_detail(format!(
-            "unknown check target: '{}'",
-            args.what
-        )));
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("unknown check target: '{}'", args.what)));
     }
 
     Ok(checker::CheckComponents::default().with_only(selections))

@@ -35,11 +35,9 @@ pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
         rep.total, rep.ok, rep.fail
     );
     if rep.fail > 0 {
-        return Err(
-            RunReason::from_conf()
-                .to_err()
-                .with_detail("knowdb check failed"),
-        );
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail("knowdb check failed"));
     }
     Ok(())
 }

@@ -1,4 +1,5 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
+use serde::{Deserialize, Serialize};
 use wp_proj::consts::{DEFAULT_ANALYSE_LINE_MAX, DEFAULT_ANALYSE_MODE, DEFAULT_WORK_ROOT};
 
 use warp_parse::build::CLAP_LONG_VERSION;
@@ -52,6 +53,81 @@ pub enum WProj {
     /// 管理和统计 rescue 目录中的数据，包括按 sink 分组统计、文件详情等
     #[command(subcommand, name = "rescue")]
     Rescue(RescueCmd),
+
+    /// Warp Parse 自更新工具 | Warp Parse self-update tools
+    #[command(subcommand, name = "self")]
+    SelfUpdate(SelfCmd),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "self",
+    about = "Warp Parse 自更新工具 | Warp Parse self-update tools"
+)]
+pub enum SelfCmd {
+    /// 检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)
+    #[command(
+        name = "check",
+        visible_alias = "检查",
+        about = "检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)"
+    )]
+    Check(SelfCheckArgs),
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfCheckArgs {
+    /// 更新通道 | Update channel
+    #[clap(
+        long = "channel",
+        value_enum,
+        visible_alias = "通道",
+        help = "更新通道：stable|beta|alpha | Update channel: stable|beta|alpha"
+    )]
+    pub channel: Option<UpdateChannel>,
+
+    /// 远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)
+    #[clap(
+        long = "updates-base-url",
+        default_value = "https://raw.githubusercontent.com/wp-labs/wp-install/main",
+        visible_alias = "updates基地址",
+        help = "远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)"
+    )]
+    pub updates_base_url: String,
+
+    /// 本地 updates 根目录覆盖（调试用；设置后优先本地）| Local updates root override (debug only; takes precedence)
+    #[clap(
+        long = "updates-root",
+        visible_alias = "updates目录",
+        help = "本地 updates 根目录覆盖（调试用）| Local updates root override (debug only)"
+    )]
+    pub updates_root: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum UpdateChannel {
+    Stable,
+    Beta,
+    Alpha,
+}
+
+impl UpdateChannel {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Stable => "stable",
+            Self::Beta => "beta",
+            Self::Alpha => "alpha",
+        }
+    }
 }
 
 #[derive(Parser)]
