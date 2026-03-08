@@ -9,8 +9,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [0.19.0 Unreleased]
 
+### Added
+- **Self Check CLI**: Added `wproj self check` to check update metadata by channel (check-only, no installation).
+- **Release Automation**: Added `update-wp-install-manifest` in release workflow to automatically update `updates/<channel>/manifest.json` and `versions/<tag>.json` in `wp-install` after a successful release.
+- **wproj self**: Added `--channel`, `--updates-base-url`, `--updates-root`, and `--json` options to support both remote and local manifest sources.
+
 ### Changed
-- **Version**: Bumped project version to `0.19.0`.
 - **wp-motor**: Upgraded core engine dependency from `v1.17.8` to `v1.18.0`.
 - **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.0`.
 - **Dependencies**: Migrated core dependency stack to newer major lines (`orion-error 0.6`, `wp-connector-api 0.8`, `wp-error 0.8`, `wp-log 0.2`, etc.).
@@ -19,6 +23,8 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **Error Handling**: Adapted to `orion-error 0.6` (`UvsFrom`/`from_*`) and unified error-context attachment behavior.
 - **Build**: Fixed compile failures after dependency upgrades and restored passing `cargo check --all-targets`.
+- **Self Update Validation**: Enforced strict `sha256` validation (must be 64 hex chars) and restricted supported targets to `aarch64-apple-darwin`, `aarch64-unknown-linux-gnu`, and `x86_64-unknown-linux-gnu`.
+- **wproj self Safety**: Added checks for channel/path consistency, target asset presence, and version/artifact filename consistency to reduce false-positive update decisions.
 
 ## [0.18.4] - 2026-03-04
 

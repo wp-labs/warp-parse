@@ -31,55 +31,71 @@ pub fn register_optional_connectors() {
     wp_engine::connectors::startup::init_runtime_registries();
 
     // NOTE:
-    // 依赖升级后，wp-engine/wp-motor 走 wp-connector-api 0.8，而 wp-connectors 仍是 0.7，
-    // 这里的工厂类型不再兼容。先保留 feature 开关但不注册，确保主程序可编译运行；
-    // 待 wp-connectors 升级到 0.8 线后恢复下面这些注册调用。
+    // 目前大部分社区连接器工厂已可与 wp-engine 注册接口兼容，恢复注册。
+    // 仍未恢复的 connector 会按具体原因单独告警。
 
     #[cfg(any(feature = "community", feature = "kafka"))]
     {
-        wp_log::warn_ctrl!("skip kafka connector registration: wp-connectors api version mismatch");
+        wp_engine::connectors::registry::register_source_factory(
+            wp_connectors::kafka::KafkaSourceFactory,
+        );
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::kafka::KafkaSinkFactory,
+        );
     }
 
     #[cfg(any(feature = "community", feature = "doris"))]
     {
-        wp_log::warn_ctrl!("skip doris connector registration: wp-connectors api version mismatch");
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::doris::DorisSinkFactory,
+        );
     }
 
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
-        wp_log::warn_ctrl!("skip mysql connector registration: wp-connectors api version mismatch");
+        wp_engine::connectors::registry::register_source_factory(
+            wp_connectors::mysql::MySQLSourceFactory,
+        );
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::mysql::MySQLSinkFactory,
+        );
     }
 
     #[cfg(any(feature = "community", feature = "victoriametrics"))]
     {
-        wp_log::warn_ctrl!(
-            "skip victoriametrics connector registration: wp-connectors api version mismatch"
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::victoriametrics::VictoriaMetricFactory,
         );
     }
 
     #[cfg(any(feature = "community", feature = "victorialogs"))]
     {
-        wp_log::warn_ctrl!(
-            "skip victorialogs connector registration: wp-connectors api version mismatch"
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::victorialogs::VictoriaLogSinkFactory,
         );
     }
-    // ClickHouse connector (source/sink)
+
+    // ClickHouse connector is not exported from wp-connectors crate root currently.
     #[cfg(any(feature = "community", feature = "clickhouse"))]
     {
-        // registry::register_source_factory(wp_connectors::clickhouse::ClickHouseSourceFactory);
-        // registry::register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
+        wp_log::warn_ctrl!(
+            "skip clickhouse connector registration: module not exported by wp-connectors crate root"
+        );
     }
 
-    // Elasticsearch connector (sink)
     #[cfg(any(feature = "community", feature = "elasticsearch"))]
     {
-        // registry::register_sink_factory(wp_connectors::elasticsearch::ElasticsearchSinkFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::elasticsearch::ElasticsearchSinkFactory,
+        );
     }
 
-    // Prometheus connector (sink)
+    // Prometheus module currently does not export a public sink factory type.
     #[cfg(any(feature = "community", feature = "prometheus"))]
     {
-        // registry::register_sink_factory(wp_connectors::prometheus::PrometheusSinkFactory);
+        wp_log::warn_ctrl!(
+            "skip prometheus connector registration: public factory type is not exported"
+        );
     }
 
     // Enterprise features placeholder
