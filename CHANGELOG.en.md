@@ -7,7 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.19.3 Unreleased]
+## [0.19.4 Unreleased]
+
+### Changed
+- **wp-connectors**: Upgraded connector dependency from `v0.9.1` to `v0.9.2`, pulling in upstream Postgres sink support and the related shared database dependency updates.
+
+## [0.19.3] - 2026-03-10
+
+### Changed
+- **wp-connectors**: Upgraded connector dependency from `v0.9.0` to `v0.9.1`, pulling in the upstream HTTP sink implementation and the ClickHouse config migration from `host` to `endpoint`.
+
+## [0.19.2] - 2026-03-08
 
 ### Added
 - **Self Check CLI**: Added `wproj self check` to check update metadata by channel (check-only, no installation).
@@ -17,7 +27,6 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **wp-motor**: Upgraded core engine dependency from `v1.17.8` to `v1.18.0`.
 - **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.0`.
-- **wp-connectors**: Upgraded connector dependency from `v0.9.0` to `v0.9.1`, pulling in the upstream HTTP sink implementation and the ClickHouse config migration from `host` to `endpoint`.
 - **Dependencies**: Migrated core dependency stack to newer major lines (`orion-error 0.6`, `wp-connector-api 0.8`, `wp-error 0.8`, `wp-log 0.2`, etc.).
 - **Runtime Connectors**: Temporarily skipped community external connector factory registration with warning logs to avoid API mismatch during dependency transition.
 
