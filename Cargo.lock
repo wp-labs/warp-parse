@@ -3218,7 +3218,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "winnow",
 ]
 
@@ -3255,7 +3255,7 @@ dependencies = [
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
 ]
 
 [[package]]
@@ -3291,7 +3291,7 @@ dependencies = [
  "derive-getters",
  "serde",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
 ]
 
 [[package]]
@@ -5255,9 +5255,9 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "1.0.4+spec-1.1.0"
+version = "1.0.6+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c94c3321114413476740df133f0d8862c61d87c8d26f04c6841e033c8c80db47"
+checksum = "399b1124a3c9e16766831c6bba21e50192572cdd98706ea114f9502509686ffc"
 dependencies = [
  "indexmap",
  "serde_core",
@@ -5647,7 +5647,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -6342,7 +6342,7 @@ dependencies = [
  "orion_conf 0.5.1",
  "serde",
  "serde_json",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "walkdir",
  "wp-config",
  "wp-knowledge",
@@ -6365,7 +6365,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "winnow",
  "wp-connector-api 0.8.1",
  "wp-model-core",
@@ -6395,7 +6395,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wildmatch",
  "winnow",
  "wp-conf-base",
@@ -6451,7 +6451,7 @@ dependencies = [
  "smallvec",
  "smol_str",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wp-model-core",
 ]
 
@@ -6594,7 +6594,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -6675,7 +6675,7 @@ dependencies = [
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "unicode-segmentation",
  "winnow",
  "wp-connector-api 0.8.1",
@@ -6711,7 +6711,7 @@ dependencies = [
  "strfmt",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wildmatch",
  "wp-data-fmt",
  "wp-data-utils",
@@ -6761,7 +6761,7 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "unicode-segmentation",
  "url",
  "wildmatch",
@@ -6819,7 +6819,7 @@ dependencies = [
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "unicode-segmentation",
  "winnow",
 ]
@@ -6880,7 +6880,7 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "url",
  "wildmatch",
  "winnow",
@@ -6947,7 +6947,7 @@ dependencies = [
  "orion_conf 0.5.1",
  "serde",
  "serde_json",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wildmatch",
  "wp-cli-core",
  "wp-config",
@@ -6993,7 +6993,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wildmatch",
  "winnow",
  "wp-connector-api 0.8.1",
@@ -7022,7 +7022,7 @@ dependencies = [
  "smol_str",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.4+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "wildmatch",
  "wp-log 0.2.0",
  "wp-model-core",
