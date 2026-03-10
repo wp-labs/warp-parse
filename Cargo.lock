@@ -5537,6 +5537,7 @@ dependencies = [
  "wp-model-core",
  "wp-parse-api 0.8.1",
  "wp-proj",
+ "wp-self-update",
  "wp-specs",
 ]
 
@@ -6844,6 +6845,18 @@ dependencies = [
  "winnow",
  "wp-error 0.7.7",
  "wp-log 0.1.3",
+]
+
+[[package]]
+name = "wp-self-update"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
 ]
 
 [[package]]

@@ -165,6 +165,7 @@ serde_json = "1.0"
 toml = "0.9"
 semver = "1.0"
 reqwest = "0.13.2"
+wp-self-update = { path = "crates/wp-self-update" }
 
 # --- Logging and Errors ---
 log = "0.4"
