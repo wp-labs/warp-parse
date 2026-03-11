@@ -243,7 +243,7 @@ wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/w
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
 wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.9.2" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.9.3" }
 
 
 #wp-engine = { path = "../wp-motor" }

@@ -5084,9 +5084,9 @@ dependencies = [
 
 [[package]]
 name = "tempfile"
-version = "3.26.0"
+version = "3.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82a72c767771b47409d2345987fda8628641887d5466101319899796367354a0"
+checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
  "getrandom 0.4.2",
@@ -6597,7 +6597,7 @@ dependencies = [
 [[package]]
 name = "wp-connectors"
 version = "0.7.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.9.2#764427a5ebe225e7cfc0087b5e5271429ea6ee8b"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.9.3#0eb7f0843417bd7ac0a442cd0ec2554f28486cca"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -6614,7 +6614,7 @@ dependencies = [
  "orion_conf 0.5.1",
  "orion_exp 0.1.1",
  "prometheus",
- "rand 0.8.5",
+ "rand 0.10.0",
  "rdkafka-wrap",
  "regex",
  "reqwest",
@@ -6622,7 +6622,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "toml 0.9.12+spec-1.1.0",
+ "toml 1.0.6+spec-1.1.0",
  "urlencoding",
  "uuid",
  "winnow",
