@@ -7,7 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.19.4 Unreleased]
+## [0.19.5 Unreleased]
+
+### Changed
+- **wp-connectors**: Upgraded connector dependency from `v0.9.2` to `v0.9.4`, pulling in upstream Doris Stream Load hardening and related dependency refreshes such as `rand 0.10` and `toml 1.0`.
+
+## [0.19.4] - 2026-03-10
 
 ### Changed
 - **wp-connectors**: Upgraded connector dependency from `v0.9.1` to `v0.9.2`, pulling in upstream Postgres sink support and the related shared database dependency updates.
