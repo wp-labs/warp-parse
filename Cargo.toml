@@ -165,6 +165,9 @@ serde_json = "1.0"
 toml = "1.0"
 semver = "1.0"
 reqwest = "0.13.2"
+http-body-util = "0.1"
+hyper = { version = "1.8", features = ["server", "http1"] }
+hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service", "tokio", "http1"] }
 
 # --- Logging and Errors ---
 log = "0.4"
@@ -207,6 +210,8 @@ ctor = "0.6"
 hex = "0.4"
 shadow-rs = { version = "1.6.0", default-features = false }
 rand = "0.9"
+rustls = "0.23"
+tokio-rustls = "0.26"
 
 # --- Data Structures ---
 lru = "0.16"
@@ -234,22 +239,22 @@ wp-data-fmt = "0.2"
 # feats/oml_static.1
 
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+#wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.9.4" }
 
 
-#wp-engine = { path = "../wp-motor" }
-#wp-config = { path = "../wp-motor/crates/wp-config" }
-#wp-lang   = { path = "../wp-motor/crates/wp-lang" }
-#wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
-#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+wp-engine = { path = "../wp-motor" }
+wp-config = { path = "../wp-motor/crates/wp-config" }
+wp-lang   = { path = "../wp-motor/crates/wp-lang" }
+wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
+wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 
 # wp-enterprise = { path = "../wp-enterprise" }
 
