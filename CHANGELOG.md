@@ -7,22 +7,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.19.5 Unreleased]
-
-### Changed
-- **wp-connectors**: 连接器依赖从 `v0.9.2` 升级到 `v0.9.4`，同步上游 Doris Stream Load 稳定性增强，并引入 `rand 0.10`、`toml 1.0` 等依赖更新。
-
-## [0.19.4] - 2026-03-10
-
-### Changed
-- **wp-connectors**: 连接器依赖从 `v0.9.1` 升级到 `v0.9.2`，同步上游 Postgres sink 支持及其共享数据库依赖调整。
-
-## [0.19.3] - 2026-03-10
-
-### Changed
-- **wp-connectors**: 连接器依赖从 `v0.9.0` 升级到 `v0.9.1`，同步上游 HTTP sink 实现以及 ClickHouse 从 `host` 到 `endpoint` 的配置模型调整。
-
-## [0.19.2] - 2026-03-08
+## [0.20.0 Unreleased]
 
 ### Added
 - **Self Check CLI**: 新增 `wproj self check` 命令，用于按 channel 检查远端更新元数据（仅检查，不安装）。
@@ -31,8 +16,9 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 - **wp-motor**: 核心引擎依赖从 `v1.17.8` 升级到 `v1.18.0`。
-- **wp-connectors**: 连接器依赖从 `v0.7.10-beta` 升级到 `v0.9.0`。
+- **wp-connectors**: 连接器依赖从 `v0.7.10-beta` 升级到 `v0.9.4`，同步上游 HTTP sink、Postgres sink、ClickHouse `host` 到 `endpoint` 配置迁移，以及 Doris Stream Load 稳定性增强。
 - **Dependencies**: 核心依赖升级到新主线（`orion-error 0.6`、`wp-connector-api 0.8`、`wp-error 0.8`、`wp-log 0.2` 等）。
+- **Dependencies**: 同步引入 `rand 0.10`、`toml 1.0` 等依赖更新。
 - **Runtime Connectors**: 为规避升级期间 API 不兼容，社区外部连接器注册调整为暂时跳过并输出告警日志。
 
 ### Fixed
