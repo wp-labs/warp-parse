@@ -7,27 +7,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.19.4 Unreleased]
-
-### Changed
-- **wp-connectors**: Upgraded connector dependency from `v0.9.1` to `v0.9.2`, pulling in upstream Postgres sink support and the related shared database dependency updates.
-
-## [0.19.3] - 2026-03-10
-
-### Changed
-- **wp-connectors**: Upgraded connector dependency from `v0.9.0` to `v0.9.1`, pulling in the upstream HTTP sink implementation and the ClickHouse config migration from `host` to `endpoint`.
-
-## [0.19.2] - 2026-03-08
+## [0.20.0 Unreleased]
 
 ### Added
 - **Self Check CLI**: Added `wproj self check` to check update metadata by channel (check-only, no installation).
-- **Release Automation**: Added `update-wp-install-manifest` in release workflow to automatically update `updates/<channel>/manifest.json` and `versions/<tag>.json` in `wp-install` after a successful release.
+- **Release Automation**: Added `update-wp-install-manifest` in the release workflow to automatically update `updates/<channel>/manifest.json` and `versions/<tag>.json` in `wp-install` after a successful release.
 - **wproj self**: Added `--channel`, `--updates-base-url`, `--updates-root`, and `--json` options to support both remote and local manifest sources.
 
 ### Changed
 - **wp-motor**: Upgraded core engine dependency from `v1.17.8` to `v1.18.0`.
-- **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.0`.
+- **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.4`, pulling in the upstream HTTP sink, Postgres sink, ClickHouse config migration from `host` to `endpoint`, and Doris Stream Load hardening.
 - **Dependencies**: Migrated core dependency stack to newer major lines (`orion-error 0.6`, `wp-connector-api 0.8`, `wp-error 0.8`, `wp-log 0.2`, etc.).
+- **Dependencies**: Pulled in additional dependency refreshes such as `rand 0.10` and `toml 1.0`.
 - **Runtime Connectors**: Temporarily skipped community external connector factory registration with warning logs to avoid API mismatch during dependency transition.
 
 ### Fixed

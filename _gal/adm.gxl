@@ -25,15 +25,15 @@ mod main   {
     }
     flow v_patch_up | ver.patch {
     }
-    flow tag_alpha | _tag_impl {
+    flow release_alpha | _tag_impl {
           CHANNEL = "alpha" ;
           VERSION_PATH = "${VERSION}-${CHANNEL}";
     }
-    flow tag_beta {
+    flow release_beta | _tag_impl {
           CHANNEL = "beta" ;
           VERSION_PATH = "${VERSION}-${CHANNEL}";
     }
-    flow tag_stable {
+    flow release_stable | _tag_impl {
           CHANNEL = "stable" ;
           VERSION_PATH = "${VERSION}";
     }

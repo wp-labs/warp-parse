@@ -61,6 +61,13 @@ pub fn register_optional_connectors() {
         );
     }
 
+    #[cfg(any(feature = "community", feature = "postgres"))]
+    {
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::postgres::PostgresSinkFactory,
+        );
+    }
+
     #[cfg(any(feature = "community", feature = "victoriametrics"))]
     {
         wp_engine::connectors::registry::register_sink_factory(

@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.19.4" # @gxl:set(version)
+version = "0.21.0" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -100,6 +100,7 @@ community = [
     "kafka",
     "doris",
     "mysql",
+    "postgres",
     "clickhouse",
     "elasticsearch",
     "prometheus",
@@ -110,6 +111,7 @@ community = [
 # --- Connectors (via wp_connectors) ---
 kafka = ["wp-connectors/kafka"]
 mysql = ["wp-connectors/mysql"]
+postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
@@ -235,14 +237,14 @@ wp-data-fmt = "0.2"
 # feats/oml_static.1
 
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.9.2" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
 
 
 #wp-engine = { path = "../wp-motor" }
