@@ -237,22 +237,22 @@ wp-data-fmt = "0.2"
 # feats/oml_static.1
 
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.1" }
+#wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
+#wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
+#wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
+#wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
+#wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
+#wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.2" }
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
 
 
-#wp-engine = { path = "../wp-motor" }
-#wp-config = { path = "../wp-motor/crates/wp-config" }
-#wp-lang   = { path = "../wp-motor/crates/wp-lang" }
-#wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
-#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+wp-engine = { path = "../wp-motor" }
+wp-config = { path = "../wp-motor/crates/wp-config" }
+wp-lang   = { path = "../wp-motor/crates/wp-lang" }
+wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
+wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 
 # wp-enterprise = { path = "../wp-enterprise" }
 
