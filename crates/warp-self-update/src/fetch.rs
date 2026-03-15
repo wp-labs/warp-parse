@@ -1,69 +1,72 @@
-use crate::error::{err, Result};
-use crate::manifest::{
-    parse_v2_release, updates_manifest_path, updates_manifest_url, ResolvedRelease,
-};
-use crate::platform::detect_target_triple_v2;
-use crate::types::{SelfCheckRequest, UpdateChannel};
+use crate::manifest::{parse_v2_release, updates_manifest_path, updates_manifest_url};
+use crate::types::{ResolvedRelease, SourceConfig, UpdateChannel};
+use orion_error::{ToStructError, UvsFrom};
 use reqwest::StatusCode;
 use std::time::Duration;
+use wp_error::run_error::{RunReason, RunResult};
 
 const FETCH_CONNECT_TIMEOUT_SECS: u64 = 5;
 const FETCH_REQUEST_TIMEOUT_SECS: u64 = 10;
 const FETCH_RETRY_MAX_ATTEMPTS: usize = 3;
 
 pub(crate) async fn load_release(
-    req: &SelfCheckRequest,
+    source: &SourceConfig,
     channel: UpdateChannel,
-) -> Result<(ResolvedRelease, String)> {
-    let target = detect_target_triple_v2()?;
-
-    if let Some(root) = req.updates_root.as_deref() {
+) -> RunResult<(ResolvedRelease, String)> {
+    if let Some(root) = source.updates_root.as_deref() {
         let path = updates_manifest_path(root, channel);
-        let raw = std::fs::read_to_string(&path)
-            .map_err(|e| err(format!("failed to read manifest {}: {}", path.display(), e)))?;
-        let source = path.display().to_string();
-        let release = parse_v2_release(&raw, &source, channel, target)?;
-        return Ok((release, source));
+        let raw = std::fs::read_to_string(&path).map_err(|e| {
+            RunReason::from_conf().to_err().with_detail(format!(
+                "failed to read manifest {}: {}",
+                path.display(),
+                e
+            ))
+        })?;
+        let release = parse_v2_release(&raw, &path.display().to_string(), channel)?;
+        return Ok((release, path.display().to_string()));
     }
 
-    let url = updates_manifest_url(&req.updates_base_url, channel);
+    let url = updates_manifest_url(&source.updates_base_url, channel);
     let client = reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(FETCH_CONNECT_TIMEOUT_SECS))
         .timeout(Duration::from_secs(FETCH_REQUEST_TIMEOUT_SECS))
         .build()
-        .map_err(|e| err(format!("failed to build HTTP client: {}", e)))?;
+        .map_err(|e| {
+            RunReason::from_conf()
+                .to_err()
+                .with_detail(format!("failed to build HTTP client: {}", e))
+        })?;
 
     let raw = fetch_manifest_text(&client, &url).await?;
-    let release = parse_v2_release(&raw, &url, channel, target)?;
+    let release = parse_v2_release(&raw, &url, channel)?;
     Ok((release, url))
 }
 
-async fn fetch_manifest_text(client: &reqwest::Client, url: &str) -> Result<String> {
+async fn fetch_manifest_text(client: &reqwest::Client, url: &str) -> RunResult<String> {
     let mut last_error: Option<String> = None;
-
     for attempt in 1..=FETCH_RETRY_MAX_ATTEMPTS {
         match client.get(url).send().await {
             Ok(rsp) => {
                 let status = rsp.status();
                 if status.is_success() {
                     return rsp.text().await.map_err(|e| {
-                        err(format!("failed to read manifest response {}: {}", url, e))
+                        RunReason::from_conf()
+                            .to_err()
+                            .with_detail(format!("failed to read manifest response {}: {}", url, e))
                     });
                 }
-
                 if status == StatusCode::NOT_FOUND {
-                    return Err(err(format!("manifest not found: {}", url)));
+                    return Err(RunReason::from_conf()
+                        .to_err()
+                        .with_detail(format!("manifest not found: {}", url)));
                 }
-
                 if is_retryable_status(status) && attempt < FETCH_RETRY_MAX_ATTEMPTS {
                     tokio::time::sleep(Duration::from_millis(200 * attempt as u64)).await;
                     continue;
                 }
-
-                return Err(err(format!(
-                    "manifest request failed {}: HTTP {}",
-                    url, status
-                )));
+                return Err(RunReason::from_conf()
+                    .to_err()
+                    .with_detail(format!("manifest request failed {}: HTTP {}", url, status)));
             }
             Err(e) => {
                 last_error = Some(e.to_string());
@@ -74,8 +77,7 @@ async fn fetch_manifest_text(client: &reqwest::Client, url: &str) -> Result<Stri
             }
         }
     }
-
-    Err(err(format!(
+    Err(RunReason::from_conf().to_err().with_detail(format!(
         "failed to fetch manifest {} after {} attempts: {}",
         url,
         FETCH_RETRY_MAX_ATTEMPTS,
@@ -83,7 +85,7 @@ async fn fetch_manifest_text(client: &reqwest::Client, url: &str) -> Result<Stri
     )))
 }
 
-fn is_retryable_status(status: StatusCode) -> bool {
+pub(crate) fn is_retryable_status(status: StatusCode) -> bool {
     status.is_server_error() || status == StatusCode::TOO_MANY_REQUESTS
 }
 

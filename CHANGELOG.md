@@ -7,7 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.0 Unreleased]
+## [0.21.0 Unreleased]
+
+### Changed
+- **Self Update Architecture**: 删除重复的 `wp-self-update` crate，统一由 `warp-self-update` 承担自检与自更新能力，避免两套 manifest/版本解析逻辑继续并行演进。
+- **Self Update Refactor**: 将 `warp-self-update` 从单文件实现拆分为 `types`、`versioning`、`manifest`、`platform`、`fetch`、`install`、`lock` 模块，保持对外 API 不变，降低后续维护成本。
+
+### Fixed
+- **Self Update Build/Test**: 修复 merge 后 `wproj self` 混用两套 self-update API 导致的编译错误，并将 crate 内安装/回滚测试改为不依赖本地监听端口，提升受限环境下的测试稳定性。
+
+## [0.20.0] - 2026-03-12
 
 ### Added
 - **Self Check CLI**: 新增 `wproj self check` 命令，用于按 channel 检查远端更新元数据（仅检查，不安装）。

@@ -1,13 +1,18 @@
-use crate::error::{err, Result};
 use crate::types::VersionRelation;
+use orion_error::{ToStructError, UvsFrom};
 use semver::Version;
+use wp_error::run_error::{RunReason, RunResult};
 
-pub(crate) fn parse_version(raw: &str) -> Result<Version> {
+pub(crate) fn parse_version(raw: &str) -> RunResult<Version> {
     let normalized = raw.trim().trim_start_matches('v');
-    Version::parse(normalized).map_err(|e| err(format!("invalid semver '{}': {}", raw, e)))
+    Version::parse(normalized).map_err(|e| {
+        RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("invalid semver '{}': {}", raw, e))
+    })
 }
 
-pub fn compare_versions(current: &Version, latest: &Version) -> VersionRelation {
+pub(crate) fn compare_versions(current: &Version, latest: &Version) -> VersionRelation {
     if latest > current {
         return VersionRelation::UpdateAvailable;
     }
@@ -17,14 +22,31 @@ pub fn compare_versions(current: &Version, latest: &Version) -> VersionRelation 
     VersionRelation::AheadOfChannel
 }
 
-pub(crate) fn validate_artifact_version_consistency(version: &str, artifact: &str) -> Result<()> {
+pub fn compare_versions_str(current: &str, latest: &str) -> RunResult<VersionRelation> {
+    let current_version = parse_version(current)?;
+    let latest_version = parse_version(latest)?;
+    Ok(compare_versions(&current_version, &latest_version))
+}
+
+pub(crate) fn validate_artifact_version_consistency(
+    version: &str,
+    artifact: &str,
+) -> RunResult<()> {
     if artifact.contains(version) {
         return Ok(());
     }
-    Err(err(format!(
+    Err(RunReason::from_conf().to_err().with_detail(format!(
         "artifact/version mismatch: artifact '{}' does not contain version '{}'",
         artifact, version
     )))
+}
+
+pub fn relation_message(relation: VersionRelation) -> &'static str {
+    match relation {
+        VersionRelation::UpdateAvailable => "update available",
+        VersionRelation::UpToDate => "up-to-date",
+        VersionRelation::AheadOfChannel => "ahead of channel manifest",
+    }
 }
 
 #[cfg(test)]
