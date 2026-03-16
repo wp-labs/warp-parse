@@ -7,25 +7,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.0 Unreleased]
+## [0.20.1 Unreleased]
+
+### Fixed
+- **Event ID**: 同步上游 `wp-motor` 修复，统一 `wp_event_id` 生成逻辑，并避免运行时重启后回退到进程内种子导致的重复 ID。
+- **Kafka Source**: 同步上游 `wp-connectors` 修复，Kafka source 改用共享 `wp_event_id` 生成器，不再使用进程内自增序列。
+
+## [0.20.0]
 
 ### Added
-- **Self Check CLI**: 新增 `wproj self check` 命令，用于按 channel 检查远端更新元数据（仅检查，不安装）。
-- **Release Automation**: 在发布流程新增 `update-wp-install-manifest` 任务，发布成功后自动更新 `wp-install` 仓库的 `updates/<channel>/manifest.json` 与 `versions/<tag>.json`。
-- **wproj self**: 新增 `--channel`、`--updates-base-url`、`--updates-root`、`--json` 参数，支持远端与本地更新清单源切换。
+- 新增支持 HTTP Sink。
+- 新增支持 ES Sink。
+- 新增支持 Postgres Sink。
+- 新增支持 Doris Sink。
+- 新增支持 ClickHouse Sink。
 
 ### Changed
 - **wp-motor**: 核心引擎依赖从 `v1.17.8` 升级到 `v1.18.0`。
-- **wp-connectors**: 连接器依赖从 `v0.7.10-beta` 升级到 `v0.9.4`，同步上游 HTTP sink、Postgres sink、ClickHouse `host` 到 `endpoint` 配置迁移，以及 Doris Stream Load 稳定性增强。
 - **Dependencies**: 核心依赖升级到新主线（`orion-error 0.6`、`wp-connector-api 0.8`、`wp-error 0.8`、`wp-log 0.2` 等）。
 - **Dependencies**: 同步引入 `rand 0.10`、`toml 1.0` 等依赖更新。
 - **Runtime Connectors**: 为规避升级期间 API 不兼容，社区外部连接器注册调整为暂时跳过并输出告警日志。
 
-### Fixed
-- **Error Handling**: 适配 `orion-error 0.6` 的 `UvsFrom`/`from_*` 新接口，统一错误上下文附加方式。
-- **Build**: 修复依赖升级后的编译失败问题，恢复 `cargo check --all-targets` 通过。
-- **Self Update Validation**: 对 `sha256` 校验改为严格校验（必须为 64 位十六进制字符），并将支持目标限制为 `aarch64-apple-darwin`、`aarch64-unknown-linux-gnu` 和 `x86_64-unknown-linux-gnu`。
-- **wproj self Safety**: 增加 channel/路径一致性、目标资产存在性以及版本与制品文件名一致性检查，减少误判更新的情况。
 
 ## [0.18.4] - 2026-03-04
 
