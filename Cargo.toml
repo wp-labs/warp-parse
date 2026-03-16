@@ -71,17 +71,17 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs = "1.6"
+shadow-rs = "1.7"
 
 # ===========================================================================
 # Dev Dependencies
 # ===========================================================================
 
 [dev-dependencies]
-serial_test = "3.2"
+serial_test = "3.4"
 httpmock = "0.8"
 collection_literals = "1.0"
-tempfile = "3.23"
+tempfile = "3.27"
 criterion = "0.8"
 
 # ===========================================================================
@@ -151,7 +151,7 @@ signal-hook-registry = "1.4"
 tikv-jemallocator = "0.6"
 
 # --- Async Runtime ---
-tokio = { version = "1.48", features = ["full"] }
+tokio = { version = "1.50", features = ["full"] }
 tokio-util = { version = "0.7", features = ["full"] }
 tokio-async-drop = "0.1"
 futures-util = "0.3"
@@ -178,7 +178,7 @@ chrono = "0.4"
 time = "0.3"
 
 # --- CLI ---
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6", features = ["derive"] }
 comfy-table = "7.2"
 
 # --- Parsing ---
@@ -197,13 +197,13 @@ educe = { version = "0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
-uuid = { version = "1.19", features = ["v4"] }
+uuid = { version = "1.22", features = ["v4"] }
 once_cell = "1.21"
 lazy_static = "1.5"
 contracts = "0.6"
 ctor = "0.6"
 hex = "0.4"
-shadow-rs = { version = "1.6.0", default-features = false }
+shadow-rs = { version = "1.7.1", default-features = false }
 rand = "0.9"
 
 # --- Data Structures ---
