@@ -84,7 +84,7 @@ shadow-rs = "1.6"
 serial_test = "3.2"
 httpmock = "0.8"
 collection_literals = "1.0"
-tempfile = "3.23"
+tempfile = "3.27"
 criterion = "0.8"
 
 # ===========================================================================
@@ -184,7 +184,7 @@ chrono = "0.4"
 time = "0.3"
 
 # --- CLI ---
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.6", features = ["derive"] }
 comfy-table = "7.2"
 
 # --- Parsing ---
