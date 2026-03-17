@@ -240,20 +240,20 @@ wp-data-fmt = "0.2"
 
 wp-knowledge  =  "0.10"
 # @gxl:block(remote_motor)
-#wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.4" }
-#wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.4" }
-#wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.4" }
-#wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.4" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
 # @gxl:end(remote_motor)
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
 warp-self-update = { path = "crates/warp-self-update" }
 
 # @gxl:block(local_motor)
-wp-engine = { path = "../wp-motor" }
-wp-config = { path = "../wp-motor/crates/wp-config" }
-wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+#wp-engine = { path = "../wp-motor" }
+#wp-config = { path = "../wp-motor/crates/wp-config" }
+#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 # @gxl:end(local_motor)
 
 # wp-enterprise = { path = "../wp-enterprise" }
