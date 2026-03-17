@@ -1,3 +1,5 @@
+use std::fs;
+use std::path::Path;
 use std::str::FromStr;
 
 use orion_error::{ToStructError, UvsFrom};
@@ -12,8 +14,8 @@ pub fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
         args.work_root.clone(),
         PrjScope::from_str(args.mode.as_str())?,
         dict,
-    )
-    .map(|_| ())
+    )?;
+    ensure_admin_api_config_block(Path::new(&args.work_root))
 }
 
 pub fn check_project(args: ProjectCheckArgs, dict: &EnvDict) -> RunResult<()> {
@@ -59,6 +61,51 @@ fn parse_component(token: &str) -> Option<checker::CheckComponent> {
         "all" => None,
         _ => None,
     }
+}
+
+const DEFAULT_ADMIN_API_BLOCK: &str = r#"
+[admin_api]
+enabled = false
+bind = "127.0.0.1:19090"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = false
+cert_file = ""
+key_file = ""
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+"#;
+
+fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
+    let conf_path = work_root.join("conf/wparse.toml");
+    if !conf_path.exists() {
+        return Ok(());
+    }
+
+    let mut conf = fs::read_to_string(&conf_path).map_err(|e| {
+        RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("read {} failed: {}", conf_path.display(), e))
+    })?;
+    if conf.contains("[admin_api]") {
+        return Ok(());
+    }
+
+    if !conf.ends_with('\n') {
+        conf.push('\n');
+    }
+    conf.push_str(DEFAULT_ADMIN_API_BLOCK);
+
+    fs::write(&conf_path, conf).map_err(|e| {
+        RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("write {} failed: {}", conf_path.display(), e))
+    })?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -155,11 +202,32 @@ mod tests {
         }
 
         assert!(std::path::Path::new(&format!("{}/conf/wparse.toml", work)).exists());
+        let wparse_conf =
+            std::fs::read_to_string(format!("{}/conf/wparse.toml", work)).expect("read wparse");
+        assert!(wparse_conf.contains("[admin_api]"));
+        assert!(wparse_conf.contains("enabled = false"));
+        assert!(wparse_conf.contains("token_file = \"runtime/admin_api.token\""));
         assert!(std::path::Path::new(&format!("{}/conf/wpgen.toml", work)).exists());
         assert!(
             std::path::Path::new(&format!("{}/connectors/source.d/00-file_src.toml", work))
                 .exists()
         );
         println!("DEBUG: Test directory NOT cleaned for debugging: {}", work);
+    }
+
+    #[test]
+    fn ensure_admin_api_block_appends_once() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        std::fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let conf_path = conf_dir.join("wparse.toml");
+        std::fs::write(&conf_path, "version = \"1.0\"\n").expect("write conf");
+
+        ensure_admin_api_config_block(temp.path()).expect("append admin_api block");
+        ensure_admin_api_config_block(temp.path()).expect("skip duplicate admin_api block");
+
+        let conf = std::fs::read_to_string(conf_path).expect("read conf");
+        assert_eq!(conf.matches("[admin_api]").count(), 1);
+        assert!(conf.contains("bind = \"127.0.0.1:19090\""));
     }
 }

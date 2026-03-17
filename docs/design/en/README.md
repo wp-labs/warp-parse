@@ -1,0 +1,14 @@
+# Design Docs
+
+This directory contains release, branch governance, and capability design documentation.
+
+## Documents
+
+- Release management: [release_management.md](release_management.md)
+- Branch protection rules: [branch_protection_rules.md](branch_protection_rules.md)
+- Branch source and maturity control: [branch_source_and_maturity_control.md](branch_source_and_maturity_control.md)
+- Self-update design: [self_update_design.md](self_update_design.md)
+
+## Chinese Counterpart
+
+- [../zh-CN/README.md](../zh-CN/README.md)

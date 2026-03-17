@@ -57,6 +57,10 @@ pub enum WProj {
     /// Warp Parse 自更新工具 | Warp Parse self-update tools
     #[command(subcommand, name = "self")]
     SelfUpdate(SelfCmd),
+
+    /// Warp Parse 引擎管理面工具 | Warp Parse engine admin tools
+    #[command(subcommand, name = "engine")]
+    Engine(EngineCmd),
 }
 
 #[derive(Subcommand, Debug)]
@@ -80,6 +84,123 @@ pub enum SelfCmd {
         about = "下载并安装新版本 | Download and install the latest release"
     )]
     Update(SelfUpdateArgs),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "engine",
+    about = "Warp Parse 引擎管理面工具 | Warp Parse engine admin tools"
+)]
+pub enum EngineCmd {
+    /// 查询运行时状态 | Query runtime status
+    #[command(name = "status", visible_alias = "状态")]
+    Status(EngineStatusArgs),
+
+    /// 触发运行时 reload | Trigger runtime reload
+    #[command(name = "reload", visible_alias = "重载")]
+    Reload(EngineReloadArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct EngineTargetArgs {
+    /// 工作目录（用于解析 conf/wparse.toml）| Work directory (used to resolve conf/wparse.toml)
+    #[clap(
+        short,
+        long,
+        default_value = ".",
+        visible_alias = "工作目录",
+        help = "工作目录（用于解析 conf/wparse.toml）| Work directory (used to resolve conf/wparse.toml)"
+    )]
+    pub work_root: String,
+
+    /// 管理面基础地址覆盖，例如 http://127.0.0.1:19090 | Override admin API base URL
+    #[clap(
+        long = "admin-url",
+        visible_alias = "管理地址",
+        help = "管理面基础地址覆盖，例如 http://127.0.0.1:19090 | Override admin API base URL"
+    )]
+    pub admin_url: Option<String>,
+
+    /// Bearer token 文件覆盖 | Override bearer token file
+    #[clap(
+        long = "token-file",
+        visible_alias = "令牌文件",
+        help = "Bearer token 文件覆盖 | Override bearer token file"
+    )]
+    pub token_file: Option<String>,
+
+    /// 跳过 TLS 证书校验（仅调试）| Skip TLS certificate verification (debug only)
+    #[clap(
+        long = "insecure",
+        default_value_t = false,
+        visible_alias = "跳过TLS校验",
+        help = "跳过 TLS 证书校验（仅调试）| Skip TLS certificate verification (debug only)"
+    )]
+    pub insecure: bool,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct EngineStatusArgs {
+    #[clap(flatten)]
+    pub target: EngineTargetArgs,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct EngineReloadArgs {
+    #[clap(flatten)]
+    pub target: EngineTargetArgs,
+
+    /// 是否等待 reload 结果 | Whether to wait for reload result
+    #[clap(
+        long = "wait",
+        default_value_t = true,
+        visible_alias = "等待",
+        help = "是否等待 reload 结果 | Whether to wait for reload result"
+    )]
+    pub wait: bool,
+
+    /// HTTP 等待超时（毫秒）| HTTP wait timeout in milliseconds
+    #[clap(
+        long = "timeout-ms",
+        default_value_t = 15000,
+        visible_alias = "超时毫秒",
+        help = "HTTP 等待超时（毫秒）| HTTP wait timeout in milliseconds"
+    )]
+    pub timeout_ms: u64,
+
+    /// 触发原因（审计用途）| Trigger reason for audit
+    #[clap(
+        long = "reason",
+        visible_alias = "原因",
+        help = "触发原因（审计用途）| Trigger reason for audit"
+    )]
+    pub reason: Option<String>,
+
+    /// 自定义请求 ID | Override request ID
+    #[clap(
+        long = "request-id",
+        visible_alias = "请求ID",
+        help = "自定义请求 ID | Override request ID"
+    )]
+    pub request_id: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
 }
 
 #[derive(Args, Debug, Clone)]
