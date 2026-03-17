@@ -2,7 +2,7 @@ use crate::args::{EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd,
 use crate::handlers::engine::{run_engine_reload, run_engine_status};
 use crate::handlers::rescue::dispatch_rescue_cmd;
 use crate::handlers::rule::dispatch_rule_cmd;
-use crate::handlers::self_update::run_self_check;
+use crate::handlers::self_update::{run_self_check, run_self_update};
 use crate::handlers::sinks::{list_sinks, show_sink_routes};
 use crate::handlers::sources::list_sources_for_cli;
 use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
@@ -36,6 +36,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
 async fn dispatch_self_cmd(cmd: SelfCmd) -> RunResult<()> {
     match cmd {
         SelfCmd::Check(args) => run_self_check(args).await,
+        SelfCmd::Update(args) => run_self_update(args).await,
     }
 }
 
@@ -82,7 +83,7 @@ pub fn dispatch_validate_cmd(sub: ValidateCmd, dict: &EnvDict) -> RunResult<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::args::{SelfCheckArgs, WProjCli};
+    use crate::args::{SelfCheckArgs, SelfSourceArgs, WProjCli};
     use serial_test::serial;
     use std::path::PathBuf;
 
@@ -146,11 +147,13 @@ mod tests {
         let cli = WProjCli {
             quiet: true,
             cmd: WProj::SelfUpdate(SelfCmd::Check(SelfCheckArgs {
-                channel: Some(crate::args::UpdateChannel::Stable),
-                updates_base_url: "https://raw.githubusercontent.com/wp-labs/wp-install/main"
-                    .to_string(),
-                updates_root: Some(".".to_string()),
-                json: true,
+                source: SelfSourceArgs {
+                    channel: crate::args::UpdateChannel::Stable,
+                    updates_base_url: "https://raw.githubusercontent.com/wp-labs/wp-install/main"
+                        .to_string(),
+                    updates_root: Some(".".to_string()),
+                    json: true,
+                },
             })),
         };
 

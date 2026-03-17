@@ -76,6 +76,14 @@ pub enum SelfCmd {
         about = "检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)"
     )]
     Check(SelfCheckArgs),
+
+    /// 下载并安装新版本 | Download and install the latest release
+    #[command(
+        name = "update",
+        visible_alias = "更新",
+        about = "下载并安装新版本 | Download and install the latest release"
+    )]
+    Update(SelfUpdateArgs),
 }
 
 #[derive(Subcommand, Debug)]
@@ -196,15 +204,16 @@ pub struct EngineReloadArgs {
 }
 
 #[derive(Args, Debug, Clone)]
-pub struct SelfCheckArgs {
+pub struct SelfSourceArgs {
     /// 更新通道 | Update channel
     #[clap(
         long = "channel",
         value_enum,
+        default_value_t = UpdateChannel::Stable,
         visible_alias = "通道",
-        help = "更新通道：stable|beta|alpha | Update channel: stable|beta|alpha"
+        help = "更新通道：stable|beta|alpha（默认 stable）| Update channel: stable|beta|alpha (default: stable)"
     )]
-    pub channel: Option<UpdateChannel>,
+    pub channel: UpdateChannel,
 
     /// 远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)
     #[clap(
@@ -233,22 +242,54 @@ pub struct SelfCheckArgs {
     pub json: bool,
 }
 
+#[derive(Args, Debug, Clone)]
+pub struct SelfCheckArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfUpdateArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+
+    /// 自动确认安装 | Skip confirmation prompt
+    #[clap(
+        long = "yes",
+        default_value_t = false,
+        visible_alias = "确认",
+        help = "自动确认安装 | Skip confirmation prompt"
+    )]
+    pub yes: bool,
+
+    /// 仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes
+    #[clap(
+        long = "dry-run",
+        default_value_t = false,
+        visible_alias = "演练",
+        help = "仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes"
+    )]
+    pub dry_run: bool,
+
+    /// 强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it
+    #[clap(
+        long = "force",
+        default_value_t = false,
+        visible_alias = "强制",
+        help = "强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it"
+    )]
+    pub force: bool,
+
+    #[clap(long = "install-dir", hide = true)]
+    pub install_dir: Option<String>,
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UpdateChannel {
     Stable,
     Beta,
     Alpha,
-}
-
-impl UpdateChannel {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Stable => "stable",
-            Self::Beta => "beta",
-            Self::Alpha => "alpha",
-        }
-    }
 }
 
 #[derive(Parser)]

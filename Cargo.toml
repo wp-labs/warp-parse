@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.19.5" # @gxl:set(version)
+version = "0.21.0" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -25,6 +25,9 @@ description = "High-performance flow data parsing and processing system"
 repository = "https://github.com/wp-labs/warp-parse"
 keywords = ["parsing", "data-processing", "security", "log-analysis"]
 categories = ["command-line-utilities", "parsing"]
+
+[workspace]
+members = ["crates/warp-self-update"]
 
 # ===========================================================================
 # Binary Applications
@@ -100,6 +103,7 @@ community = [
     "kafka",
     "doris",
     "mysql",
+    "postgres",
     "clickhouse",
     "elasticsearch",
     "prometheus",
@@ -110,6 +114,7 @@ community = [
 # --- Connectors (via wp_connectors) ---
 kafka = ["wp-connectors/kafka"]
 mysql = ["wp-connectors/mysql"]
+postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
 elasticsearch = ["wp-connectors/elasticsearch"]
@@ -239,22 +244,19 @@ wp-data-fmt = "0.2"
 # feats/oml_static.1
 
 
-#wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-#wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-#wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-#wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-#wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
-#wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.0" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.9.4" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
+warp-self-update = { path = "crates/warp-self-update" }
 
 
-wp-engine = { path = "../wp-motor" }
-wp-config = { path = "../wp-motor/crates/wp-config" }
-wp-lang   = { path = "../wp-motor/crates/wp-lang" }
-wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
-wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+#wp-engine = { path = "../wp-motor" }
+#wp-config = { path = "../wp-motor/crates/wp-config" }
+#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 
 # wp-enterprise = { path = "../wp-enterprise" }
 
