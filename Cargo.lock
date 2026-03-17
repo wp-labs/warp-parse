@@ -3612,7 +3612,11 @@ dependencies = [
 
 [[package]]
 name = "orion_exp"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "arcstr",
  "chrono",
@@ -3624,7 +3628,11 @@ dependencies = [
 
 [[package]]
 name = "orion_overload"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "derive-getters",
@@ -6828,7 +6836,11 @@ dependencies = [
 
 [[package]]
 name = "wp-cli-core"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "chrono",
@@ -6878,7 +6890,11 @@ dependencies = [
 
 [[package]]
 name = "wp-config"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6893,7 +6909,11 @@ dependencies = [
  "orion-error 0.6.0",
  "orion-variate 0.11.1",
  "orion_conf 0.5.1",
+<<<<<<< HEAD
  "orion_exp 1.19.4",
+=======
+ "orion_exp 1.19.2",
+>>>>>>> feats/local
  "orion_overload",
  "serde",
  "serde_derive",
@@ -7051,14 +7071,22 @@ dependencies = [
 
 [[package]]
 name = "wp-data-utils"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "arcstr",
  "chrono",
  "derive_builder",
  "lru",
  "orion-error 0.6.0",
+<<<<<<< HEAD
  "orion_exp 1.19.4",
+=======
+ "orion_exp 1.19.2",
+>>>>>>> feats/local
  "serde",
  "serde_derive",
  "serde_json",
@@ -7068,7 +7096,11 @@ dependencies = [
 
 [[package]]
 name = "wp-engine"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "async-broadcast",
@@ -7104,7 +7136,11 @@ dependencies = [
  "orion-sec 0.4.0",
  "orion-variate 0.11.1",
  "orion_conf 0.5.1",
+<<<<<<< HEAD
  "orion_exp 1.19.4",
+=======
+ "orion_exp 1.19.2",
+>>>>>>> feats/local
  "orion_overload",
  "rand 0.10.0",
  "regex",
@@ -7215,9 +7251,13 @@ dependencies = [
 
 [[package]]
 name = "wp-knowledge"
+<<<<<<< HEAD
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d81b3f44e16ba0353a79b2d588304d24857b0a8cff9b4788a450952c3a0ce86c"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "chrono",
@@ -7253,9 +7293,13 @@ dependencies = [
 
 [[package]]
 name = "wp-lang"
+<<<<<<< HEAD
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a98b613f0b536d4b89b66223ad5377e51e551266b866454b07c1d70c9d5176d"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "ahash",
  "anyhow",
@@ -7374,7 +7418,11 @@ dependencies = [
 
 [[package]]
 name = "wp-oml"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "arcstr",
@@ -7397,7 +7445,11 @@ dependencies = [
  "once_cell",
  "orion-error 0.6.0",
  "orion_conf 0.5.1",
+<<<<<<< HEAD
  "orion_exp 1.19.4",
+=======
+ "orion_exp 1.19.2",
+>>>>>>> feats/local
  "parse-display",
  "parse-display-derive",
  "regex",
@@ -7456,17 +7508,28 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
 name = "wp-primitives"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4de22e9b9fdac31efc29311725b239d4cf95d1bf81a1363478d48999d017f668"
 dependencies = [
+=======
+name = "wp-parser"
+version = "1.19.2"
+dependencies = [
+ "orion_exp 1.19.2",
+>>>>>>> feats/local
  "winnow",
 ]
 
 [[package]]
 name = "wp-proj"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "comfy-table",
@@ -7532,7 +7595,11 @@ dependencies = [
 
 [[package]]
 name = "wp-stats"
+<<<<<<< HEAD
 version = "1.19.4"
+=======
+version = "1.19.2"
+>>>>>>> feats/local
 dependencies = [
  "anyhow",
  "chrono",
