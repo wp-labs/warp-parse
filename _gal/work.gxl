@@ -63,6 +63,15 @@ mod main  {
     gx.cmd ( "cargo test --all ${ENV_BUILD_FLAG}", log : "1" , out:"true"  );
   }
 
+  flow use_local  {
+    gx.patch_file(file: "./Cargo.toml", action: "comment_block", marker: "remote_motor");
+    gx.patch_file(file: "./Cargo.toml", action: "uncomment_block", marker: "local_motor");
+  }
+  flow use_remote {
+    gx.patch_file(file: "./Cargo.toml", action: "comment_block", marker: "local_motor");
+    gx.patch_file(file: "./Cargo.toml", action: "uncomment_block", marker: "remote_motor");
+  }
+
   #[task(name="pub to local")]
   flow _pub_local   {
 

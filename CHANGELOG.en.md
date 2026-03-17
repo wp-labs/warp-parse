@@ -7,7 +7,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.0 Unreleased]
+## [0.21.0 Unreleased]
+
+### Added
+- **wproj self update**: Added an install-capable `wproj self update` flow with artifact download, `sha256` verification, binary replacement, rollback-on-health-check-failure, and control flags such as `--yes`, `--dry-run`, and `--force`.
+- **Self Update Core**: Added a dedicated `warp-self-update` crate to centralize manifest resolution, version comparison, asset download, installation, and rollback logic.
+
+### Changed
+- **wp-motor**: Upgraded core engine dependency from `v1.18.1` to `v1.19.3`, pulling in the upstream runtime command bus, structured reload outcomes, and the dependency-track shift around externalized `wp-knowledge` / `wp-lang`.
+- **Self Update Architecture**: Removed the duplicate `wp-self-update` crate and consolidated self-check and self-update behavior into `warp-self-update` to avoid maintaining two manifest/version resolution implementations.
+- **Self Update Refactor**: Split `warp-self-update` from a single-file implementation into `types`, `versioning`, `manifest`, `platform`, `fetch`, `install`, and `lock` modules while preserving the public API.
+
+### Fixed
+- **Self Update Build/Test**: Fixed post-merge build failures caused by mixed self-update APIs in `wproj self`, and rewrote crate-level install/rollback coverage to avoid depending on local listener sockets.
+
+## [0.20.0] - 2026-03-12
 
 ### Added
 - **Self Check CLI**: Added `wproj self check` to check update metadata by channel (check-only, no installation).

@@ -9,12 +9,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [0.21.0 Unreleased]
 
-### Changed
-- **Self Update Architecture**: 删除重复的 `wp-self-update` crate，统一由 `warp-self-update` 承担自检与自更新能力，避免两套 manifest/版本解析逻辑继续并行演进。
-- **Self Update Refactor**: 将 `warp-self-update` 从单文件实现拆分为 `types`、`versioning`、`manifest`、`platform`、`fetch`、`install`、`lock` 模块，保持对外 API 不变，降低后续维护成本。
+### Added
+- **wproj self update**: 新增可执行安装的 `wproj self update` 流程，支持下载制品、校验 `sha256`、替换二进制、健康检查失败回滚，以及 `--yes`、`--dry-run`、`--force` 等控制参数。
+- **Self Update Core**: 新增独立 `warp-self-update` crate，集中承载 manifest 解析、版本比较、资产下载、安装与回滚逻辑。
 
-### Fixed
-- **Self Update Build/Test**: 修复 merge 后 `wproj self` 混用两套 self-update API 导致的编译错误，并将 crate 内安装/回滚测试改为不依赖本地监听端口，提升受限环境下的测试稳定性。
+### Changed
+- **wp-motor**: 核心引擎依赖从 `v1.18.1` 升级到 `v1.19.3`，同步引入上游运行时命令总线、reload 结果结构化输出，以及 `wp-knowledge` / `wp-lang` 外部化依赖轨道调整。
+
 
 ## [0.20.0] - 2026-03-12
 
