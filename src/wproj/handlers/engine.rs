@@ -175,7 +175,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
                     "reload failed without error detail".to_string()
                 })));
             }
-            return Ok(());
+            Ok(())
         }
         _ => {
             let err = decode_error_response(response).await?;

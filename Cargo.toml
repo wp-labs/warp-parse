@@ -250,7 +250,7 @@ wp-knowledge  =  "0.10"
 # @gxl:end(remote_motor)
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
-wp-self-update = { path = "../wp-update/crates/wp-self-update" }
+wp-self-update = "0.1"
 
 # @gxl:block(local_motor)
 wp-engine = { path = "../wp-motor" }
