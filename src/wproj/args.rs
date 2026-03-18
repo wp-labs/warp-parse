@@ -215,11 +215,11 @@ pub struct SelfSourceArgs {
     )]
     pub channel: UpdateChannel,
 
-    /// 远端 manifest 基础地址（最终拼成 {channel}/manifest.json）| Remote manifest base URL (resolved as {channel}/manifest.json)
+    /// 远端 manifest 基础地址（默认 wp-install updates 根；最终拼成 {channel}/manifest.json）| Remote manifest base URL (defaults to wp-install updates root; resolved as {channel}/manifest.json)
     #[clap(
         long = "updates-base-url",
         visible_alias = "updates基地址",
-        help = "远端 manifest 基础地址（最终拼成 {channel}/manifest.json）| Remote manifest base URL (resolved as {channel}/manifest.json)"
+        help = "远端 manifest 基础地址（默认 wp-install updates 根；最终拼成 {channel}/manifest.json）| Remote manifest base URL (defaults to wp-install updates root; resolved as {channel}/manifest.json)"
     )]
     pub updates_base_url: Option<String>,
 

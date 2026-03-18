@@ -8,6 +8,8 @@ use wp_self_update::{
 };
 use wp_error::run_error::{RunReason, RunResult};
 
+const DEFAULT_SELF_UPDATE_BASE_URL: &str =
+    "https://raw.githubusercontent.com/wp-labs/wp-install/refs/heads/main/updates";
 const SELF_UPDATE_BASE_URL_ENV: &str = "UPDATE_BASE_URL";
 const SELF_UPDATE_ROOT_ENV: &str = "WPROJ_SELF_UPDATE_ROOT";
 
@@ -58,7 +60,8 @@ fn to_core_source(source: &SelfSourceArgs) -> RunResult<SourceConfig> {
     let updates_base_url = source
         .updates_base_url
         .clone()
-        .or_else(|| env::var(SELF_UPDATE_BASE_URL_ENV).ok());
+        .or_else(|| env::var(SELF_UPDATE_BASE_URL_ENV).ok())
+        .or_else(|| Some(DEFAULT_SELF_UPDATE_BASE_URL.to_string()));
 
     if updates_root.is_none() && updates_base_url.is_none() {
         return Err(RunReason::from_conf().to_err().with_detail(format!(
