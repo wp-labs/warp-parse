@@ -8,6 +8,7 @@
 - 分支保护规则: [branch_protection_rules.md](branch_protection_rules.md)
 - 分支来源与成熟度控制: [branch_source_and_maturity_control.md](branch_source_and_maturity_control.md)
 - 自动更新设计: [self_update_design.md](self_update_design.md)
+- `wp-update` 仓库布局: [wp_update_repo_layout.md](wp_update_repo_layout.md)
 
 ## 对应英文版
 

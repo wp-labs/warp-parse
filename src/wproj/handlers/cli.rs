@@ -124,8 +124,8 @@ mod tests {
         let temp = tempfile::tempdir().expect("create temp dir");
         let _guard = CwdGuard::enter(temp.path());
 
-        let updates_dir = temp.path().join("updates").join("stable");
-        std::fs::create_dir_all(&updates_dir).expect("create updates dir");
+        let updates_dir = temp.path().join("stable");
+        std::fs::create_dir_all(&updates_dir).expect("create manifest dir");
 
         let manifest_path = updates_dir.join("manifest.json");
         let body = format!(
@@ -149,8 +149,7 @@ mod tests {
             cmd: WProj::SelfUpdate(SelfCmd::Check(SelfCheckArgs {
                 source: SelfSourceArgs {
                     channel: crate::args::UpdateChannel::Stable,
-                    updates_base_url: "https://raw.githubusercontent.com/wp-labs/wp-install/main"
-                        .to_string(),
+                    updates_base_url: None,
                     updates_root: Some(".".to_string()),
                     json: true,
                 },

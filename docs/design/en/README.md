@@ -8,6 +8,7 @@ This directory contains release, branch governance, and capability design docume
 - Branch protection rules: [branch_protection_rules.md](branch_protection_rules.md)
 - Branch source and maturity control: [branch_source_and_maturity_control.md](branch_source_and_maturity_control.md)
 - Self-update design: [self_update_design.md](self_update_design.md)
+- `wp-update` repository layout: [wp_update_repo_layout.md](wp_update_repo_layout.md)
 
 ## Chinese Counterpart
 

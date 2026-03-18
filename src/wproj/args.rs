@@ -215,20 +215,19 @@ pub struct SelfSourceArgs {
     )]
     pub channel: UpdateChannel,
 
-    /// 远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)
+    /// 远端 manifest 基础地址（最终拼成 {channel}/manifest.json）| Remote manifest base URL (resolved as {channel}/manifest.json)
     #[clap(
         long = "updates-base-url",
-        default_value = "https://raw.githubusercontent.com/wp-labs/wp-install/main",
         visible_alias = "updates基地址",
-        help = "远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)"
+        help = "远端 manifest 基础地址（最终拼成 {channel}/manifest.json）| Remote manifest base URL (resolved as {channel}/manifest.json)"
     )]
-    pub updates_base_url: String,
+    pub updates_base_url: Option<String>,
 
-    /// 本地 updates 根目录覆盖（调试用；设置后优先本地）| Local updates root override (debug only; takes precedence)
+    /// 本地 manifest 根目录覆盖（调试用；设置后优先本地）| Local manifest root override (debug only; takes precedence)
     #[clap(
         long = "updates-root",
         visible_alias = "updates目录",
-        help = "本地 updates 根目录覆盖（调试用）| Local updates root override (debug only)"
+        help = "本地 manifest 根目录覆盖（最终拼成 {channel}/manifest.json）| Local manifest root override (resolved as {channel}/manifest.json)"
     )]
     pub updates_root: Option<String>,
 

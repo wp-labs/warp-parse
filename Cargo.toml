@@ -26,9 +26,6 @@ repository = "https://github.com/wp-labs/warp-parse"
 keywords = ["parsing", "data-processing", "security", "log-analysis"]
 categories = ["command-line-utilities", "parsing"]
 
-[workspace]
-members = ["crates/warp-self-update"]
-
 # ===========================================================================
 # Binary Applications
 # ===========================================================================
@@ -253,7 +250,7 @@ wp-knowledge  =  "0.10"
 # @gxl:end(remote_motor)
 
 wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
-warp-self-update = { path = "crates/warp-self-update" }
+wp-self-update = { path = "../wp-update/crates/wp-self-update" }
 
 # @gxl:block(local_motor)
 wp-engine = { path = "../wp-motor" }
