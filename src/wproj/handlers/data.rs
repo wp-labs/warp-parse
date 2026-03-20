@@ -4,8 +4,7 @@ use crate::args::{
 };
 use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
 use orion_conf::TomlIO;
-use orion_error::{ErrorOwe, ToStructError, UvsDataFrom};
-use orion_error::{UvsConfFrom, UvsReason}; // moved from function scope
+use orion_error::{ErrorOwe, ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use wp_config::sources::types::WarpSources;
 use wp_engine::facade::config as constants;
@@ -61,26 +60,26 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     // 使用 WarpSources::load_toml 读取 wpsrc.toml 配置
     let wpsrc_path = std::path::PathBuf::from(main_conf.src_conf_of(constants::WPSRC_TOML));
     let sources_config = WarpSources::load_toml(&wpsrc_path).map_err(|e| {
-        wp_error::run_error::RunReason::from_conf(format!("Failed to load wpsrc.toml: {}", e))
+        wp_error::run_error::RunReason::from_conf()
             .to_err()
+            .with_detail(format!("Failed to load wpsrc.toml: {}", e))
     })?;
 
     // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
     let parser =
         wp_engine::sources::SourceConfigParser::new(conf_manager.work_root().to_path_buf());
     let config_str = toml::to_string_pretty(&sources_config).map_err(|e| {
-        wp_error::run_error::RunReason::from_conf(format!("Failed to serialize config: {}", e))
+        wp_error::run_error::RunReason::from_conf()
             .to_err()
+            .with_detail(format!("Failed to serialize config: {}", e))
     })?;
 
     match parser.parse_and_build_from(&config_str, dict).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),
         Err(err) => {
-            return Err(wp_error::run_error::RunReason::Uvs(UvsReason::from_data(
-                err.to_string(),
-                None,
-            ))
-            .to_err())
+            return Err(wp_error::run_error::RunReason::from_data()
+                .to_err()
+                .with_detail(err.to_string()))
         }
     }
     Ok(())

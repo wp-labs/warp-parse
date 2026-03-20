@@ -63,6 +63,15 @@ mod main  {
     gx.cmd ( "cargo test --all ${ENV_BUILD_FLAG}", log : "1" , out:"true"  );
   }
 
+  flow use_local  {
+    gx.patch_file(file: "./Cargo.toml", action: "comment_block", marker: "remote_motor");
+    gx.patch_file(file: "./Cargo.toml", action: "uncomment_block", marker: "local_motor");
+  }
+  flow use_remote {
+    gx.patch_file(file: "./Cargo.toml", action: "comment_block", marker: "local_motor");
+    gx.patch_file(file: "./Cargo.toml", action: "uncomment_block", marker: "remote_motor");
+  }
+
   #[task(name="pub to local")]
   flow _pub_local   {
 
@@ -72,14 +81,4 @@ mod main  {
     gx.cmd (  "cp ${MAIN_BLD_BINS}/wproj ${MAIN_HOME_BIN}/"  );
     gx.cmd (  "cp ${MAIN_BLD_BINS}/wprescue ${MAIN_HOME_BIN}/"  );
   }
-  flow ci_msg {
-    gx.cmd("git diff > code_diff.txt");
-    gx.ai_chat( "Generate a brief summary for the git commit message", prompt_file : "./code_diff.txt");
-  }
-
-    flow dev_ai {
-        //gx.ai_regist(flow :"ci_msg", desc: "gen git commit message");
-        //gx.ai_task( task: "生成代码提交说明", role : "developer" ) ;
-    }
-
 }

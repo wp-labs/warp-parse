@@ -1,4 +1,5 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand, ValueEnum};
+use serde::{Deserialize, Serialize};
 use wp_proj::consts::{DEFAULT_ANALYSE_LINE_MAX, DEFAULT_ANALYSE_MODE, DEFAULT_WORK_ROOT};
 
 use warp_parse::build::CLAP_LONG_VERSION;
@@ -52,6 +53,122 @@ pub enum WProj {
     /// 管理和统计 rescue 目录中的数据，包括按 sink 分组统计、文件详情等
     #[command(subcommand, name = "rescue")]
     Rescue(RescueCmd),
+
+    /// Warp Parse 自更新工具 | Warp Parse self-update tools
+    #[command(subcommand, name = "self")]
+    SelfUpdate(SelfCmd),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "self",
+    about = "Warp Parse 自更新工具 | Warp Parse self-update tools"
+)]
+pub enum SelfCmd {
+    /// 检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)
+    #[command(
+        name = "check",
+        visible_alias = "检查",
+        about = "检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)"
+    )]
+    Check(SelfCheckArgs),
+
+    /// 下载并安装新版本 | Download and install the latest release
+    #[command(
+        name = "update",
+        visible_alias = "更新",
+        about = "下载并安装新版本 | Download and install the latest release"
+    )]
+    Update(SelfUpdateArgs),
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfSourceArgs {
+    /// 更新通道 | Update channel
+    #[clap(
+        long = "channel",
+        value_enum,
+        default_value_t = UpdateChannel::Stable,
+        visible_alias = "通道",
+        help = "更新通道：stable|beta|alpha（默认 stable）| Update channel: stable|beta|alpha (default: stable)"
+    )]
+    pub channel: UpdateChannel,
+
+    /// 远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)
+    #[clap(
+        long = "updates-base-url",
+        default_value = "https://raw.githubusercontent.com/wp-labs/wp-install/main",
+        visible_alias = "updates基地址",
+        help = "远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)"
+    )]
+    pub updates_base_url: String,
+
+    /// 本地 updates 根目录覆盖（调试用；设置后优先本地）| Local updates root override (debug only; takes precedence)
+    #[clap(
+        long = "updates-root",
+        visible_alias = "updates目录",
+        help = "本地 updates 根目录覆盖（调试用）| Local updates root override (debug only)"
+    )]
+    pub updates_root: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfCheckArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfUpdateArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+
+    /// 自动确认安装 | Skip confirmation prompt
+    #[clap(
+        long = "yes",
+        default_value_t = false,
+        visible_alias = "确认",
+        help = "自动确认安装 | Skip confirmation prompt"
+    )]
+    pub yes: bool,
+
+    /// 仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes
+    #[clap(
+        long = "dry-run",
+        default_value_t = false,
+        visible_alias = "演练",
+        help = "仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes"
+    )]
+    pub dry_run: bool,
+
+    /// 强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it
+    #[clap(
+        long = "force",
+        default_value_t = false,
+        visible_alias = "强制",
+        help = "强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it"
+    )]
+    pub force: bool,
+
+    #[clap(long = "install-dir", hide = true)]
+    pub install_dir: Option<String>,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum UpdateChannel {
+    Stable,
+    Beta,
+    Alpha,
 }
 
 #[derive(Parser)]

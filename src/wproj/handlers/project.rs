@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use orion_error::{ToStructError, UvsConfFrom};
+use orion_error::{ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::project::{checker, init::PrjScope, WarpProject};
@@ -40,9 +40,9 @@ fn build_components(args: &ProjectCheckArgs) -> RunResult<checker::CheckComponen
         .collect();
 
     if selections.is_empty() {
-        return Err(
-            RunReason::from_conf(format!("unknown check target: '{}'", args.what)).to_err(),
-        );
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("unknown check target: '{}'", args.what)));
     }
 
     Ok(checker::CheckComponents::default().with_only(selections))

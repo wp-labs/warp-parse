@@ -1,4 +1,4 @@
-use orion_error::{ToStructError, UvsConfFrom};
+use orion_error::{ToStructError, UvsFrom};
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::{
     connectors::{types::SilentErrKind, LintSeverity},
@@ -38,11 +38,10 @@ pub fn lint_connectors_silent(work_root: &str) -> RunResult<()> {
     if errors.is_empty() {
         Ok(())
     } else {
-        Err(RunReason::from_conf(format!(
+        Err(RunReason::from_conf().to_err().with_detail(format!(
             "connectors lint failed: {} error(s)\n{}",
             errors.len(),
             errors.join("\n")
-        ))
-        .to_err())
+        )))
     }
 }
