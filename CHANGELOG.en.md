@@ -21,25 +21,34 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **Self Update Build/Test**: Fixed post-merge build failures caused by mixed self-update APIs in `wproj self`, and rewrote crate-level install/rollback coverage to avoid depending on local listener sockets.
 
-## [0.20.0] - 2026-03-12
+## [0.20.2]
+
+### Fixed
+- **orion-sec**: Updated `orion-sec` to keep `sec_key` handling consistent.
+
+## [0.20.1]
+
+### Fixed
+- **Event ID**: Pulled in upstream `wp-motor` fixes to unify `wp_event_id` generation and avoid duplicate IDs after runtime restarts.
+- **Kafka Source**: Pulled in the upstream `wp-connectors` fix so Kafka source events use the shared `wp_event_id` generator instead of a process-local counter.
+
+## [0.20.0]
 
 ### Added
-- **Self Check CLI**: Added `wproj self check` to check update metadata by channel (check-only, no installation).
-- **Release Automation**: Added `update-wp-install-manifest` in the release workflow to automatically update `updates/<channel>/manifest.json` and `versions/<tag>.json` in `wp-install` after a successful release.
-- **wproj self**: Added `--channel`, `--updates-base-url`, `--updates-root`, and `--json` options to support both remote and local manifest sources.
+- Added HTTP sink support.
+- Added Elasticsearch sink support.
+- Added Postgres sink support.
+- Added Doris sink support.
+- Added ClickHouse sink support.
 
 ### Changed
 - **wp-motor**: Upgraded core engine dependency from `v1.17.8` to `v1.18.0`.
-- **wp-connectors**: Upgraded connector dependency from `v0.7.10-beta` to `v0.9.4`, pulling in the upstream HTTP sink, Postgres sink, ClickHouse config migration from `host` to `endpoint`, and Doris Stream Load hardening.
 - **Dependencies**: Migrated core dependency stack to newer major lines (`orion-error 0.6`, `wp-connector-api 0.8`, `wp-error 0.8`, `wp-log 0.2`, etc.).
 - **Dependencies**: Pulled in additional dependency refreshes such as `rand 0.10` and `toml 1.0`.
 - **Runtime Connectors**: Temporarily skipped community external connector factory registration with warning logs to avoid API mismatch during dependency transition.
 
 ### Fixed
 - **Error Handling**: Adapted to `orion-error 0.6` (`UvsFrom`/`from_*`) and unified error-context attachment behavior.
-- **Build**: Fixed compile failures after dependency upgrades and restored passing `cargo check --all-targets`.
-- **Self Update Validation**: Enforced strict `sha256` validation (must be 64 hex chars) and restricted supported targets to `aarch64-apple-darwin`, `aarch64-unknown-linux-gnu`, and `x86_64-unknown-linux-gnu`.
-- **wproj self Safety**: Added checks for channel/path consistency, target asset presence, and version/artifact filename consistency to reduce false-positive update decisions.
 
 ## [0.18.4] - 2026-03-04
 

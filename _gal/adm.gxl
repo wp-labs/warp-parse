@@ -1,49 +1,19 @@
-//extern mod cfm { git = "https://github.com/galaxy-operators/cfm-gxl.git", branch = "${GXL_CHANNEL:develop}" }
-extern mod ver { path = "./_gal/mods" }
+extern mod cfm { git = "https://github.com/galaxy-operators/cfm-gxl.git", branch = "${GXL_CHANNEL:develop}" }
+//extern mod ver { path = "./_gal/mods" }
 mod  envs {
   env default {
     root = "./" ;
   }
 }
-mod main   {
+mod main   : ver_adm {
 
   #[auto_load(entry)]
     flow _entry : ver.use {
     }
 
   #[auto_load(exit)]
-    flow _set_ver {
-      gx.patch_file(
-        file   : "./Cargo.toml",
-        action : "set",
-        marker : "version",
-        value  : r#""${VERSION}""#
-      );
-    }
-
-    flow v_feats_up  | ver.feature {
-    }
-    flow v_patch_up | ver.patch {
-    }
-    flow release_alpha | _tag_impl {
-          CHANNEL = "alpha" ;
-          VERSION_PATH = "${VERSION}-${CHANNEL}";
-    }
-    flow release_beta | _tag_impl {
-          CHANNEL = "beta" ;
-          VERSION_PATH = "${VERSION}-${CHANNEL}";
-    }
-    flow release_stable | _tag_impl {
-          CHANNEL = "stable" ;
-          VERSION_PATH = "${VERSION}";
-    }
-    flow _tag_impl {
-      gx.tpl ( tpl: "./dist/install-manifest_tpl.json", dst : "./dist/install-manifest-${CHANNEL}.json" )
-      gx.echo("${VERSION_PATH}");
-      gx.cmd ("git commit -a -m ${VERSION_PATH}" );
-      gx.cmd ("git push");
-      gx.cmd ("git tag v${VERSION_PATH}");
-      gx.cmd ("git push --tags ");
+    flow ver.set_cargo_ver | @_set_ver {
+        gx.cmd ("cargo check")
     }
 
 

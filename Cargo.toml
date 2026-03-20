@@ -246,8 +246,8 @@ wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/w
 wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.5" }
 # @gxl:end(remote_motor)
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.0" }
-warp-self-update = { path = "crates/warp-self-update" }
+wp-self-update =  "0.1"
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.1" }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }

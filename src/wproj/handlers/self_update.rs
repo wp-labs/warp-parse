@@ -1,13 +1,15 @@
 use crate::args::{SelfCheckArgs, SelfSourceArgs, SelfUpdateArgs, UpdateChannel};
 use crate::format::print_json;
-use warp_self_update::{
-    check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
-    UpdateChannel as CoreChannel, UpdateReport, UpdateRequest, VersionRelation,
-};
 use wp_error::run_error::RunResult;
+use wp_self_update::{
+    check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
+    SourceKind, UpdateChannel as CoreChannel, UpdateProduct, UpdateReport, UpdateRequest,
+    UpdateTarget, VersionRelation,
+};
 
 pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
     let report = check(CheckRequest {
+        product: self_update_product_name(),
         source: to_core_source(&args.source),
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         branch: warp_parse::build::BRANCH.to_string(),
@@ -24,7 +26,9 @@ pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
 }
 
 pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
-    let report = warp_self_update::update(UpdateRequest {
+    let report = wp_self_update::update(UpdateRequest {
+        product: self_update_product_name(),
+        target: UpdateTarget::Product(UpdateProduct::Suite),
         source: to_core_source(&args.source),
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         install_dir: args.install_dir.as_deref().map(std::path::PathBuf::from),
@@ -45,9 +49,15 @@ pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
 fn to_core_source(source: &SelfSourceArgs) -> SourceConfig {
     SourceConfig {
         channel: to_core_channel(source.channel),
-        updates_base_url: source.updates_base_url.clone(),
-        updates_root: source.updates_root.as_deref().map(std::path::PathBuf::from),
+        kind: SourceKind::Manifest {
+            updates_base_url: source.updates_base_url.clone(),
+            updates_root: source.updates_root.as_deref().map(std::path::PathBuf::from),
+        },
     }
+}
+
+fn self_update_product_name() -> String {
+    "warp-parse".to_string()
 }
 
 fn to_core_channel(channel: UpdateChannel) -> CoreChannel {
