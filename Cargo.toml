@@ -105,6 +105,7 @@ community = [
     "mysql",
     "postgres",
     "clickhouse",
+    "http",
     "elasticsearch",
     "prometheus",
     "victorialogs",
@@ -117,6 +118,7 @@ mysql = ["wp-connectors/mysql"]
 postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
+http = ["wp-connectors/http"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus = ["wp-connectors/prometheus"]
 victorialogs = ["wp-connectors/victorialogs"]
