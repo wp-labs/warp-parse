@@ -7,7 +7,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.1 Unreleased]
+
+## [0.20.2 ]
+
+### Fixed
+- ** update orion-sec , sec_key 保持一致
+
+## [0.20.1 ]
 
 ### Fixed
 - **Event ID**: 同步上游 `wp-motor` 修复，统一 `wp_event_id` 生成逻辑，并避免运行时重启后回退到进程内种子导致的重复 ID。

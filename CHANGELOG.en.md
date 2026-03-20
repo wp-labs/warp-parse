@@ -7,7 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.20.1 Unreleased]
+## [0.20.2]
+
+### Fixed
+- **orion-sec**: Updated `orion-sec` to keep `sec_key` handling consistent.
+
+## [0.20.1]
 
 ### Fixed
 - **Event ID**: Pulled in upstream `wp-motor` fixes to unify `wp_event_id` generation and avoid duplicate IDs after runtime restarts.
