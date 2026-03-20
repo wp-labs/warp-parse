@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.20.2" # @gxl:set(version)
+version = "0.20.3" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -102,6 +102,7 @@ community = [
     "mysql",
     "postgres",
     "clickhouse",
+    "http",
     "elasticsearch",
     "prometheus",
     "victorialogs",
@@ -114,6 +115,7 @@ mysql = ["wp-connectors/mysql"]
 postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
+http = ["wp-connectors/http"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus = ["wp-connectors/prometheus"]
 victorialogs = ["wp-connectors/victorialogs"]

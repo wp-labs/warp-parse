@@ -27,6 +27,7 @@ tmp/
 .tmp/
 *.log
 my_example
+Cargo.lock
 
 # Python cache (docs scripts)
 __pycache__/
