@@ -16,6 +16,7 @@ Thumbs.db
 logs
 .run.gxl
 .report
+Cargo.lock
 # Docs (mdBook)
 docs/book/
 docs/SUMMARY.md.bak

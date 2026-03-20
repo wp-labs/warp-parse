@@ -85,8 +85,15 @@ pub fn register_optional_connectors() {
     // ClickHouse connector is not exported from wp-connectors crate root currently.
     #[cfg(any(feature = "community", feature = "clickhouse"))]
     {
-        wp_log::warn_ctrl!(
-            "skip clickhouse connector registration: module not exported by wp-connectors crate root"
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::clickhouse::ClickHouseSinkFactory,
+        );
+    }
+
+    #[cfg(any(feature = "community", feature = "http"))]
+    {
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::http::HttpSinkFactory,
         );
     }
 
