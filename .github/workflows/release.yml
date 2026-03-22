@@ -285,5 +285,121 @@ jobs:
             Please report it at: https://github.com/wp-labs/warp-parse/issues
 
           token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') || contains(github.ref, '-rc') }}
+          prerelease: ${{ contains(github.ref, '-alpha') || contains(github.ref, '-beta') }}
           files: artifacts/*
+
+  update-wp-install-manifest:
+    needs: [release]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    concurrency:
+      group: wp-install-updates
+      cancel-in-progress: false
+    steps:
+      - name: Determine channel
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" == *"-alpha"* ]]; then
+            CHANNEL="alpha"
+          elif [[ "$TAG" == *"-beta"* ]]; then
+            CHANNEL="beta"
+          else
+            CHANNEL="stable"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "channel=$CHANNEL" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure wp-install token exists
+        env:
+          WP_INSTALL_TOKEN: ${{ secrets.WP_INSTALL_TOKEN }}
+        run: |
+          if [[ -z "${WP_INSTALL_TOKEN}" ]]; then
+            echo "missing required secret: WP_INSTALL_TOKEN"
+            exit 1
+          fi
+
+      - name: Fetch release metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${{ steps.meta.outputs.tag }}" > /tmp/release.json
+
+      - name: Build assets map and validate
+        run: |
+          set -euo pipefail
+          jq -c '
+            [ .assets[]
+              | select(.name | test("^warp-parse-v[^/]+-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
+              | {
+                  key: (.name | capture("-(?<target>aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$").target),
+                  value: {
+                    url: .browser_download_url,
+                    sha256: ((.digest // "") | sub("^sha256:"; "") | ascii_downcase)
+                  }
+                }
+            ] | from_entries
+          ' /tmp/release.json > /tmp/assets.json
+
+          jq -e '
+            (keys | sort) == ["aarch64-apple-darwin","aarch64-unknown-linux-gnu","x86_64-unknown-linux-gnu"] and
+            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse/releases/download/"))) and
+            (to_entries | all(.value.sha256 | test("^[0-9a-f]{64}$")))
+          ' /tmp/assets.json >/dev/null
+
+      - name: Checkout wp-install
+        uses: actions/checkout@v6
+        with:
+          repository: wp-labs/wp-install
+          token: ${{ secrets.WP_INSTALL_TOKEN }}
+          path: wp-install
+
+      - name: Update manifest and history
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.tag }}"
+          CHANNEL="${{ steps.meta.outputs.channel }}"
+          PUBLISHED_AT="$(jq -r '.published_at // empty' /tmp/release.json)"
+          if [[ -z "$PUBLISHED_AT" ]]; then
+            PUBLISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
+
+          cd wp-install
+          MANIFEST="updates/${CHANNEL}/manifest.json"
+          HISTORY="updates/${CHANNEL}/versions/${TAG}.json"
+          mkdir -p "$(dirname "$MANIFEST")" "$(dirname "$HISTORY")"
+
+          jq -n \
+            --arg version "$TAG" \
+            --arg channel "$CHANNEL" \
+            --arg published_at "$PUBLISHED_AT" \
+            --arg git_ref "$TAG" \
+            --arg git_commit "${GITHUB_SHA}" \
+            --slurpfile assets /tmp/assets.json \
+            '{
+              version: $version,
+              channel: $channel,
+              published_at: $published_at,
+              git_ref: $git_ref,
+              git_commit: $git_commit,
+              assets: $assets[0]
+            }' > "$MANIFEST"
+
+          cp "$MANIFEST" "$HISTORY"
+
+      - name: Commit and push metadata repo
+        run: |
+          set -euo pipefail
+          cd wp-install
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add updates
+          if git diff --cached --quiet; then
+            echo "no manifest changes"
+            exit 0
+          fi
+          git commit -m "chore(updates): ${{ steps.meta.outputs.tag }} (${{ steps.meta.outputs.channel }})"
+          git push

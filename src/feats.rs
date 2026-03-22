@@ -30,70 +30,86 @@ pub fn register_optional_connectors() {
     // Initialize runtime registries if needed
     wp_engine::connectors::startup::init_runtime_registries();
 
-    // Kafka connector (source/sink)
-    // Available via "community" default feature or explicit "kafka" feature
+    // NOTE:
+    // 目前大部分社区连接器工厂已可与 wp-engine 注册接口兼容，恢复注册。
+    // 仍未恢复的 connector 会按具体原因单独告警。
+
     #[cfg(any(feature = "community", feature = "kafka"))]
     {
-        /* Note: In some versions, function names may differ.
-         * To ensure compilability across versions, external factory
-         * registration is temporarily disabled here.
-         * Uncomment when all versions have consistent APIs.
-         */
-
-        use wp_engine::connectors::registry;
-
-        registry::register_source_factory(wp_connectors::kafka::KafkaSourceFactory);
-        registry::register_sink_factory(wp_connectors::kafka::KafkaSinkFactory);
+        wp_engine::connectors::registry::register_source_factory(
+            wp_connectors::kafka::KafkaSourceFactory,
+        );
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::kafka::KafkaSinkFactory,
+        );
     }
 
-    // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "doris"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::doris::DorisSinkFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::doris::DorisSinkFactory,
+        );
     }
 
-    // MySQL connector (source/sink)
     #[cfg(any(feature = "community", feature = "mysql"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
-        registry::register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
+        wp_engine::connectors::registry::register_source_factory(
+            wp_connectors::mysql::MySQLSourceFactory,
+        );
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::mysql::MySQLSinkFactory,
+        );
     }
 
-    // VictoriaLogs connector (sink only)
+    #[cfg(any(feature = "community", feature = "postgres"))]
+    {
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::postgres::PostgresSinkFactory,
+        );
+    }
+
     #[cfg(any(feature = "community", feature = "victoriametrics"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::victoriametrics::VictoriaMetricFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::victoriametrics::VictoriaMetricFactory,
+        );
     }
 
     #[cfg(any(feature = "community", feature = "victorialogs"))]
     {
-        use wp_engine::connectors::registry;
-
-        registry::register_sink_factory(wp_connectors::victorialogs::VictoriaLogSinkFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::victorialogs::VictoriaLogSinkFactory,
+        );
     }
-    // ClickHouse connector (source/sink)
+
+    // ClickHouse connector is not exported from wp-connectors crate root currently.
     #[cfg(any(feature = "community", feature = "clickhouse"))]
     {
-        // registry::register_source_factory(wp_connectors::clickhouse::ClickHouseSourceFactory);
-        // registry::register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::clickhouse::ClickHouseSinkFactory,
+        );
     }
 
-    // Elasticsearch connector (sink)
+    #[cfg(any(feature = "community", feature = "http"))]
+    {
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::http::HttpSinkFactory,
+        );
+    }
+
     #[cfg(any(feature = "community", feature = "elasticsearch"))]
     {
-        // registry::register_sink_factory(wp_connectors::elasticsearch::ElasticsearchSinkFactory);
+        wp_engine::connectors::registry::register_sink_factory(
+            wp_connectors::elasticsearch::ElasticsearchSinkFactory,
+        );
     }
 
-    // Prometheus connector (sink)
+    // Prometheus module currently does not export a public sink factory type.
     #[cfg(any(feature = "community", feature = "prometheus"))]
     {
-        // registry::register_sink_factory(wp_connectors::prometheus::PrometheusSinkFactory);
+        wp_log::warn_ctrl!(
+            "skip prometheus connector registration: public factory type is not exported"
+        );
     }
 
     // Enterprise features placeholder

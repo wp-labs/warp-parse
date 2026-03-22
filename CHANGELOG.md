@@ -7,6 +7,76 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.20.2 ]
+
+### Fixed
+- ** update orion-sec , sec_key 保持一致
+
+## [0.20.1 ]
+
+### Fixed
+- **Event ID**: 同步上游 `wp-motor` 修复，统一 `wp_event_id` 生成逻辑，并避免运行时重启后回退到进程内种子导致的重复 ID。
+- **Kafka Source**: 同步上游 `wp-connectors` 修复，Kafka source 改用共享 `wp_event_id` 生成器，不再使用进程内自增序列。
+
+## [0.20.0]
+
+### Added
+- 新增支持 HTTP Sink。
+- 新增支持 ES Sink。
+- 新增支持 Postgres Sink。
+- 新增支持 Doris Sink。
+- 新增支持 ClickHouse Sink。
+
+### Changed
+- **wp-motor**: 核心引擎依赖从 `v1.17.8` 升级到 `v1.18.0`。
+- **Dependencies**: 核心依赖升级到新主线（`orion-error 0.6`、`wp-connector-api 0.8`、`wp-error 0.8`、`wp-log 0.2` 等）。
+- **Dependencies**: 同步引入 `rand 0.10`、`toml 1.0` 等依赖更新。
+- **Runtime Connectors**: 为规避升级期间 API 不兼容，社区外部连接器注册调整为暂时跳过并输出告警日志。
+
+
+## [0.18.4] - 2026-03-04
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.5 到 v1.17.6
+- `wp-motor` v1.17.6 主要增强观测与统计链路（背压指标、聚合语义修正、热路径优化），并修复 parser 退出与 recovery failover 稳定性问题
+
+## [0.18.3] - 2026-02-27
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.4-alpha 到 v1.17.5-alpha
+- 升级 `wp-connectors` 从 v0.7.7-beta 到 v0.7.8-beta
+- 更新项目依赖到最新版本
+
+## [0.18.2] - 2026-02-20
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.0-alpha 到 v1.17.4-alpha，主要变化包括：
+  - **Sinks/Buffer**：新增 sink 级别批量缓冲区，支持可配置 `batch_size` 参数；小包进入待发缓冲区定期刷新，大包自动旁路直接发送（零拷贝）
+  - **Sinks/Config**：新增 `batch_timeout_ms` 配置项（默认 300ms），控制缓冲区定期刷新间隔
+  - **Sinks/File**：移除 `BufWriter` 和 `proc_cnt` 定期刷新，改为直接写入 `tokio::fs::File`；上游批量组装使用户空间缓冲冗余
+- 升级 `wp-connectors` 从 v0.7.6-beta 到 v0.7.7-beta，主要变化包括：
+  - **Doris**：使用新协议
+  - 更新 `reqwest` 从 0.12 到 0.13
+  - 更新 `env_logger` 从 0.10 到 0.11
+
+## [0.18.1] - 2026-02-13
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.17.0-alpha 到 v1.17.2-alpha，主要变化包括：
+  - **wp-lang**：`kv`/`kvarr` key 解析支持括号类字符 `()`、`<>`、`[]`、`{}`
+
+## [0.18.0] - 2026-02-12
+
+### Changed
+- 升级 `wp-motor` 核心引擎从 v1.15.5 到 v1.17.0-alpha，主要变化包括：
+  - **OML Match 增强**：新增 OR 条件语法 `cond1 | cond2 | ...`，支持单源和多源匹配，兼容值匹配和函数匹配
+  - **OML Match 增强**：多源匹配不再限制源字段数量（之前限制为 2/3/4 个）
+  - **OML NLP**：新增 `extract_main_word` 和 `extract_subject_object` 管道函数，用于中文文本分析
+  - **OML NLP**：新增可配置 NLP 词典系统，支持通过 `NLP_DICT_CONFIG` 环境变量自定义词典
+  - **WPL 新功能**：新增分隔符模式语法 `{…}`，支持通配符（`*`、`?`）、空白匹配器（`\s`、`\h`、`\S`、`\H`）和保留组 `(…)`，用于在单个声明中表达复杂分隔符逻辑
+  - **Bug 修复**：修复 kvarr 模式分隔符解析问题
+
 ## [0.17.1] - 2026-02-09
 
 ### Changed

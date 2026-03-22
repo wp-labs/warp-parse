@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.17.1"
+version = "0.20.3" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -100,7 +100,9 @@ community = [
     "kafka",
     "doris",
     "mysql",
+    "postgres",
     "clickhouse",
+    "http",
     "elasticsearch",
     "prometheus",
     "victorialogs",
@@ -110,8 +112,10 @@ community = [
 # --- Connectors (via wp_connectors) ---
 kafka = ["wp-connectors/kafka"]
 mysql = ["wp-connectors/mysql"]
+postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
+http = ["wp-connectors/http"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus = ["wp-connectors/prometheus"]
 victorialogs = ["wp-connectors/victorialogs"]
@@ -162,16 +166,18 @@ async-broadcast = "0.7"
 # --- Serialization ---
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-toml = "0.9"
+toml = "1.0"
+semver = "1.0"
+reqwest = "0.13.2"
 
 # --- Logging and Errors ---
 log = "0.4"
 anyhow = "1.0"
 thiserror = "2.0"
-orion-error = "0.5"
-orion-sec = "0.3"
-orion-variate = "0.10"
-orion_conf = { version = "0.4", features = ["yaml", "toml"] }
+orion-error = "0.6"
+orion-sec = "0.4"
+orion-variate = "0.11"
+orion_conf = { version = "0.5", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
@@ -216,30 +222,30 @@ glob = "0.3"
 
 # --- Internal: Open API ---
 
-wp-connector-api = "0.7"
-wp-parse-api = "0.7"
-wp-model-core = "0.7"
+wp-connector-api = "0.8"
+wp-parse-api = "0.8"
+wp-model-core = "0.8"
 
 # --- Internal: Infrastructure ---
-wp-log = "0.1"
-wp-error = "0.7"
-wp-specs = "0.7"
-wp-conf-base = "0.1"
-wp-data-fmt = "0.1"
+wp-log = "0.2"
+wp-error = "0.8"
+wp-specs = "0.8"
+wp-conf-base = "0.2"
+wp-data-fmt = "0.2"
 
 # --- Internal: Engine ---
 
 # feats/oml_static.1
 
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.15.5" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.7.6-beta" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.1" }
 
 
 #wp-engine = { path = "../wp-motor" }

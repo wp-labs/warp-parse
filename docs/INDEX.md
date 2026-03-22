@@ -22,6 +22,11 @@
    - Immediate actions for setup
    - Long-term automation solutions
 
+4. **[Self Update Design](SELF_UPDATE_DESIGN.md)** 🆕 **FEATURE DESIGN**
+   - `wproj self update` capability design
+   - Channel strategy (`stable/main`, `beta/beta`, `alpha/alpha`)
+   - Security, rollback, and compatibility constraints
+
 ---
 
 ## 🗂️ Document Categories
@@ -52,6 +57,7 @@
 | How to release alpha? | RELEASE_MANAGEMENT.md | 5.1 Alpha Release |
 | How to release beta? | RELEASE_MANAGEMENT.md | 5.2 Beta Release |
 | How to release stable? | RELEASE_MANAGEMENT.md | 5.3 Stable Release |
+| How to design update channels? | SELF_UPDATE_DESIGN.md | 14. CI/CD 发布侧对齐规范 |
 | Why is Dependabot PR closed? | BRANCH_SOURCE_AND_MATURITY_CONTROL.md | Enforcement Mechanisms |
 | How to configure GitHub? | BRANCH_PROTECTION_RULES.md | Required Settings |
 | Daily development workflow? | RELEASE_MANAGEMENT.md | 6.1 For Developers |
