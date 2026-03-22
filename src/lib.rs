@@ -9,6 +9,7 @@ shadow_rs::shadow!(build);
 // Shared library module for warp-parse
 pub mod admin_api;
 pub mod feats;
+pub mod project_remote;
 pub const SEK_KEY_FILE: &str = "sec_key.toml";
 pub const WP_DOT_DIR: &str = ".warp_parse";
 

@@ -1,5 +1,6 @@
 // Top-level modules (kept for backward imports inside the crate)
 // Physical grouping by core concepts
+pub mod conf;
 pub mod data;
 
 pub mod cli;

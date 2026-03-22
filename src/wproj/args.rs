@@ -61,6 +61,10 @@ pub enum WProj {
     /// Warp Parse 引擎管理面工具 | Warp Parse engine admin tools
     #[command(subcommand, name = "engine")]
     Engine(EngineCmd),
+
+    /// 远程规则版本更新工具 | Remote rule version update tools
+    #[command(subcommand, name = "conf")]
+    Conf(ConfCmd),
 }
 
 #[derive(Subcommand, Debug)]
@@ -99,6 +103,17 @@ pub enum EngineCmd {
     /// 触发运行时 reload | Trigger runtime reload
     #[command(name = "reload", visible_alias = "重载")]
     Reload(EngineReloadArgs),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "conf",
+    about = "远程规则版本更新工具 | Remote rule version update tools"
+)]
+pub enum ConfCmd {
+    /// 执行远程规则版本更新 | Run remote rule version update
+    #[command(name = "update", visible_alias = "更新")]
+    Update(ConfUpdateArgs),
 }
 
 #[derive(Args, Debug, Clone, Default)]
@@ -185,6 +200,23 @@ pub struct EngineReloadArgs {
     )]
     pub reason: Option<String>,
 
+    /// 重载前先执行远程规则版本更新 | Run remote rule version update before reload
+    #[clap(
+        long = "update",
+        default_value_t = false,
+        visible_alias = "先更新",
+        help = "重载前先执行远程规则版本更新 | Run remote rule version update before reload"
+    )]
+    pub update: bool,
+
+    /// 本次更新目标版本 | Target version for this update
+    #[clap(
+        long = "version",
+        visible_alias = "版本",
+        help = "本次更新目标版本 | Target version for this update"
+    )]
+    pub version: Option<String>,
+
     /// 自定义请求 ID | Override request ID
     #[clap(
         long = "request-id",
@@ -192,6 +224,36 @@ pub struct EngineReloadArgs {
         help = "自定义请求 ID | Override request ID"
     )]
     pub request_id: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct ConfUpdateArgs {
+    /// 工作目录 | Work directory
+    #[clap(
+        short,
+        long,
+        default_value = ".",
+        visible_alias = "工作目录",
+        help = "工作目录 | Work directory"
+    )]
+    pub work_root: String,
+
+    /// 本次更新目标版本 | Target version for this update
+    #[clap(
+        long = "version",
+        visible_alias = "版本",
+        help = "本次更新目标版本 | Target version for this update"
+    )]
+    pub version: Option<String>,
 
     /// JSON 输出 | JSON output
     #[clap(

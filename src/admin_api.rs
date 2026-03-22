@@ -76,6 +76,7 @@ pub async fn start_if_enabled(
     let instance_id = format!("{}:{}", hostname_for_instance(), std::process::id());
     let state = Arc::new(AppState {
         control_handle,
+        work_root: work_root.to_path_buf(),
         bearer_token: config.bearer_token,
         request_timeout: config.request_timeout,
         max_body_bytes: config.max_body_bytes,
@@ -458,6 +459,7 @@ where
 
 struct AppState {
     control_handle: RuntimeControlHandle,
+    work_root: PathBuf,
     bearer_token: String,
     request_timeout: Duration,
     max_body_bytes: usize,
@@ -469,6 +471,9 @@ struct AppState {
 struct ReloadRequest {
     #[serde(default = "default_wait")]
     wait: bool,
+    #[serde(default)]
+    update: bool,
+    version: Option<String>,
     timeout_ms: Option<u64>,
     reason: Option<String>,
 }
@@ -478,6 +483,14 @@ struct ReloadResponse {
     request_id: String,
     accepted: bool,
     result: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    update: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    requested_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    current_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    resolved_tag: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     force_replaced: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -630,6 +643,40 @@ async fn reload_response(
         };
 
     let reason = reload_req.reason.as_deref().unwrap_or("");
+    if !reload_req.update && reload_req.version.is_some() {
+        return json_response(
+            StatusCode::BAD_REQUEST,
+            &ErrorResponse {
+                request_id: request_id.to_string(),
+                accepted: false,
+                result: "invalid_request",
+                error: "version requires update=true".to_string(),
+            },
+        );
+    }
+
+    let update_result = if reload_req.update {
+        match crate::project_remote::sync_project_remote(
+            &state.work_root,
+            reload_req.version.as_deref(),
+        ) {
+            Ok(result) => Some(result),
+            Err(err) => {
+                return json_response(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "update_failed",
+                        error: err.to_string(),
+                    },
+                );
+            }
+        }
+    } else {
+        None
+    };
+
     match state
         .control_handle
         .request_load_model(request_id.to_string())
@@ -650,6 +697,16 @@ async fn reload_response(
                         request_id: request_id.to_string(),
                         accepted: true,
                         result: "running",
+                        update: Some(reload_req.update),
+                        requested_version: update_result
+                            .as_ref()
+                            .and_then(|result| result.requested_version.clone()),
+                        current_version: update_result
+                            .as_ref()
+                            .map(|result| result.current_version.clone()),
+                        resolved_tag: update_result
+                            .as_ref()
+                            .map(|result| result.resolved_tag.clone()),
                         force_replaced: None,
                         warning: None,
                         error: None,
@@ -663,13 +720,25 @@ async fn reload_response(
                     .unwrap_or(state.request_timeout.as_millis() as u64),
             );
             match timeout(wait_timeout, reply_rx).await {
-                Ok(Ok(resp)) => map_runtime_response(resp, remote_addr, reason),
+                Ok(Ok(resp)) => {
+                    map_runtime_response(resp, remote_addr, reason, update_result.as_ref())
+                }
                 Ok(Err(_)) => json_response(
                     StatusCode::INTERNAL_SERVER_ERROR,
                     &ReloadResponse {
                         request_id: request_id.to_string(),
                         accepted: true,
                         result: "reload_failed",
+                        update: Some(reload_req.update),
+                        requested_version: update_result
+                            .as_ref()
+                            .and_then(|result| result.requested_version.clone()),
+                        current_version: update_result
+                            .as_ref()
+                            .map(|result| result.current_version.clone()),
+                        resolved_tag: update_result
+                            .as_ref()
+                            .map(|result| result.resolved_tag.clone()),
                         force_replaced: None,
                         warning: None,
                         error: Some("runtime response channel closed".to_string()),
@@ -689,6 +758,16 @@ async fn reload_response(
                             request_id: request_id.to_string(),
                             accepted: true,
                             result: "running",
+                            update: Some(reload_req.update),
+                            requested_version: update_result
+                                .as_ref()
+                                .and_then(|result| result.requested_version.clone()),
+                            current_version: update_result
+                                .as_ref()
+                                .map(|result| result.current_version.clone()),
+                            resolved_tag: update_result
+                                .as_ref()
+                                .map(|result| result.resolved_tag.clone()),
                             force_replaced: None,
                             warning: None,
                             error: None,
@@ -705,6 +784,7 @@ fn map_runtime_response(
     resp: RuntimeCommandResp,
     remote_addr: SocketAddr,
     reason: &str,
+    update_result: Option<&crate::project_remote::ProjectRemoteUpdateResult>,
 ) -> Response<Full<Bytes>> {
     match resp.result {
         RuntimeCommandResult::ReloadDone => {
@@ -720,6 +800,11 @@ fn map_runtime_response(
                     request_id: resp.request_id,
                     accepted: resp.accepted,
                     result: "reload_done",
+                    update: update_result.map(|_| true),
+                    requested_version: update_result
+                        .and_then(|result| result.requested_version.clone()),
+                    current_version: update_result.map(|result| result.current_version.clone()),
+                    resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: Some(false),
                     warning: None,
                     error: None,
@@ -739,6 +824,11 @@ fn map_runtime_response(
                     request_id: resp.request_id,
                     accepted: resp.accepted,
                     result: "reload_done",
+                    update: update_result.map(|_| true),
+                    requested_version: update_result
+                        .and_then(|result| result.requested_version.clone()),
+                    current_version: update_result.map(|result| result.current_version.clone()),
+                    resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: Some(true),
                     warning: Some(
                         "graceful drain timed out, fallback to force replace".to_string(),
@@ -761,6 +851,11 @@ fn map_runtime_response(
                     request_id: resp.request_id,
                     accepted: resp.accepted,
                     result: "reload_failed",
+                    update: update_result.map(|_| true),
+                    requested_version: update_result
+                        .and_then(|result| result.requested_version.clone()),
+                    current_version: update_result.map(|result| result.current_version.clone()),
+                    resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: None,
                     warning: None,
                     error: Some(err),
@@ -790,6 +885,10 @@ fn map_send_error(
                     request_id: request_id.to_string(),
                     accepted: false,
                     result: "reload_in_progress",
+                    update: None,
+                    requested_version: None,
+                    current_version: None,
+                    resolved_tag: None,
                     force_replaced: None,
                     warning: None,
                     error: None,
@@ -1066,5 +1165,34 @@ token_file = "{token_file}"
             "unexpected error: {}",
             err
         );
+    }
+
+    #[tokio::test]
+    async fn admin_api_rejects_version_without_update() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let runtime = start_if_enabled(temp.path(), shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::new();
+        let base = format!("http://{}", runtime.local_addr());
+        let response = client
+            .post(format!("{}/admin/v1/reloads/model", base))
+            .bearer_auth("test-token")
+            .json(&serde_json::json!({"wait": false, "version": "1.4.3"}))
+            .send()
+            .await
+            .expect("send reload request");
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let body: serde_json::Value = response.json().await.expect("parse json");
+        assert_eq!(body["result"], "invalid_request");
+        assert_eq!(body["error"], "version requires update=true");
+
+        runtime.shutdown().await;
     }
 }

@@ -29,6 +29,10 @@ struct EngineReloadResponse {
     request_id: String,
     accepted: bool,
     result: String,
+    update: Option<bool>,
+    requested_version: Option<String>,
+    current_version: Option<String>,
+    resolved_tag: Option<String>,
     force_replaced: Option<bool>,
     warning: Option<String>,
     error: Option<String>,
@@ -46,6 +50,9 @@ struct EngineErrorResponse {
 struct EngineReloadRequest<'a> {
     wait: bool,
     timeout_ms: u64,
+    update: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    version: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reason: Option<&'a str>,
 }
@@ -111,6 +118,10 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
 }
 
 pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
+    if !args.update && args.version.is_some() {
+        return Err(conf_err("--version requires --update"));
+    }
+
     let profile = resolve_target(&args.target)?;
     let client = build_client(&profile, args.target.insecure)?;
     let url = format!(
@@ -129,6 +140,8 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
         .json(&EngineReloadRequest {
             wait: args.wait,
             timeout_ms: args.timeout_ms,
+            update: args.update,
+            version: args.version.as_deref(),
             reason: args.reason.as_deref(),
         })
         .send()
@@ -154,6 +167,18 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
             println!("  Request  : {}", body.request_id);
             println!("  Accepted : {}", body.accepted);
             println!("  Result   : {}", body.result);
+            if let Some(update) = body.update {
+                println!("  Updated  : {}", update);
+            }
+            if let Some(version) = body.requested_version.as_deref() {
+                println!("  Request V: {}", version);
+            }
+            if let Some(version) = body.current_version.as_deref() {
+                println!("  Current V: {}", version);
+            }
+            if let Some(tag) = body.resolved_tag.as_deref() {
+                println!("  Tag      : {}", tag);
+            }
             if let Some(force_replaced) = body.force_replaced {
                 println!("  Forced   : {}", force_replaced);
             }
@@ -398,5 +423,32 @@ token_file = "{token_file}"
 
         runtime.shutdown().await;
         assert!(result.is_ok(), "status should work from local profile");
+    }
+
+    #[tokio::test]
+    async fn reload_rejects_version_without_update() {
+        let err = run_engine_reload(EngineReloadArgs {
+            target: EngineTargetArgs {
+                work_root: ".".to_string(),
+                admin_url: None,
+                token_file: None,
+                insecure: false,
+            },
+            wait: true,
+            timeout_ms: 15_000,
+            reason: None,
+            update: false,
+            version: Some("1.4.3".to_string()),
+            request_id: None,
+            json: false,
+        })
+        .await
+        .expect_err("version without update should be rejected");
+
+        assert!(
+            err.to_string().contains("--version requires --update"),
+            "unexpected error: {}",
+            err
+        );
     }
 }

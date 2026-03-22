@@ -1,4 +1,7 @@
-use crate::args::{EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, WProj, WProjCli};
+use crate::args::{
+    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, WProj, WProjCli,
+};
+use crate::handlers::conf::run_conf_update;
 use crate::handlers::engine::{run_engine_reload, run_engine_status};
 use crate::handlers::rescue::dispatch_rescue_cmd;
 use crate::handlers::rule::dispatch_rule_cmd;
@@ -16,6 +19,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
     match cli.cmd {
         WProj::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
         WProj::Engine(sub) => dispatch_engine_cmd(sub).await?,
+        WProj::Conf(sub) => dispatch_conf_cmd(sub)?,
         other => {
             let dict = load_sec_dict()?;
             match other {
@@ -27,6 +31,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
                 WProj::Rescue(sub) => dispatch_rescue_cmd(sub)?,
                 WProj::SelfUpdate(_) => unreachable!("self command handled above"),
                 WProj::Engine(_) => unreachable!("engine command handled above"),
+                WProj::Conf(_) => unreachable!("conf command handled above"),
             }
         }
     }
@@ -44,6 +49,12 @@ async fn dispatch_engine_cmd(cmd: EngineCmd) -> RunResult<()> {
     match cmd {
         EngineCmd::Status(args) => run_engine_status(args).await,
         EngineCmd::Reload(args) => run_engine_reload(args).await,
+    }
+}
+
+fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
+    match cmd {
+        ConfCmd::Update(args) => run_conf_update(args),
     }
 }
 
