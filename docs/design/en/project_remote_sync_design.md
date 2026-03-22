@@ -57,7 +57,7 @@ Add this as an optional section in `conf/wparse.toml`:
 ```toml
 [project_remote]
 enabled = true
-repo = "ssh://git@github.com/acme/wp-project.git"
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
 init_version = "1.4.2"
 ```
 
@@ -82,6 +82,10 @@ If the repository follows a uniform release-tag rule such as `v1.4.2`, the syste
 - to tag `v1.4.2` during initialization
 
 If other tag schemes are needed later, add them later. The first version should not expose extra strategy fields yet.
+
+Repository available for testing and integration:
+
+- `https://github.com/wp-labs/editor-monitor-conf.git`
 
 ## External Interfaces
 
@@ -176,12 +180,13 @@ project_sync_core
 The core module is responsible for:
 
 1. reading project sync config
-2. inspecting local directory state
-3. resolving the target version for the current action
-4. validating remote URL and target release version
-5. enforcing a fixed dirty-worktree protection rule
-6. running minimum validation
-7. returning structured results
+2. resolving the target version for the current action
+3. updating the selected version inside a dedicated remote directory
+4. creating a backup for the managed-directory whitelist inside the current working directory
+5. copying the managed-directory whitelist from remote into the current working directory
+6. running post-update validation
+7. returning structured results on success
+8. restoring the managed-directory whitelist from backup on failure
 
 `wproj` and `wparse` are responsible only for:
 
@@ -194,6 +199,57 @@ At the host layer, the HTTP admin API only maps request parameters into one unif
 - `update = true/false`
 - `requested_version = <version or null>`
 - `runtime_action = reload/restart`
+
+## Directory Model
+
+This design does not switch Git state directly inside the live working directory. Instead, it uses a three-directory model:
+
+- `remote`: cached project directory used for `clone` / `pull` / version checkout
+- `current`: the live working directory actually used by `wparse`
+- `backup`: backup copy of `current`, used for rollback
+
+Rules:
+
+- operators interact only through `wproj conf update` or runtime update/reload instructions
+- Git operations happen only in `remote`
+- `current` must always represent a runnable project snapshot
+- if validation or reload fails, the system must restore `current` from `backup`
+- directory switching uses a managed-directory whitelist instead of overwriting the entire work tree
+
+Suggested managed-directory whitelist:
+
+- `conf/`
+- `models/`
+- `topology/`
+- `connectors/`
+
+Runtime-local directories excluded from switching:
+
+- `data/`
+- `logs/`
+- `.run/`
+- `runtime/`
+
+Rules:
+
+- backup only includes whitelist-managed directories
+- remote -> current copy only includes whitelist-managed directories
+- restore only applies to whitelist-managed directories
+- if a file or directory disappears from the target release inside the whitelist, it must also be deleted from `current`
+
+## Unified Update Flow
+
+No matter whether the entry comes from `wproj conf update` or runtime update/reload, the system should follow this flow:
+
+1. resolve the remote directory from configuration
+2. update the remote directory and switch it to the target version
+3. back up the managed-directory whitelist from current into backup
+4. copy the managed-directory whitelist from remote into current
+5. run post-update validation
+6. if validation succeeds and the caller requested reload/restart, continue with that runtime action
+7. if validation fails or reload fails, restore the managed-directory whitelist from backup
+
+This keeps the update source separate from the live working directory and makes rollback a directory-level restore instead of a repository-state restore.
 
 ## Release-Version Sync Semantics
 
@@ -208,11 +264,12 @@ Once repository implementation details are hidden from the user, the system shou
 
 The first version should support only the safest predictable path:
 
-- the sync target is a concrete release version, not a moving branch head
+- the remote update target is a concrete release version, not a moving branch head
 - the target version for the current action must resolve to one unique release tag
-- fail immediately on dirty local worktrees
+- backup must complete before whitelist-managed content in current is overwritten
+- backup must be restored if validation or reload fails
 
-That makes "update rules" point to a stable and auditable released version instead of a time-varying branch head.
+That makes "update rules" point to a stable and auditable released version while preserving rollback to the last runnable snapshot.
 
 ## Why `init_version`, Action Version, And `current_version` Must Be Separate
 
@@ -242,8 +299,12 @@ without forcing the config file to carry a permanently changing target version.
 
 When `wparse` receives a restart instruction, its meaning changes from "restart immediately from the local tree" to:
 
-1. synchronize the project to the configured remote state
-2. restart from the synchronized tree
+1. synchronize the remote directory to the configured target version
+2. back up the managed-directory whitelist in current
+3. overwrite current with the managed-directory whitelist from remote
+4. run post-update validation
+5. restart from the updated current directory
+6. if restart fails, restore the managed-directory whitelist from backup
 
 If `project_remote.enabled = false`:
 
@@ -254,9 +315,12 @@ If `project_remote.enabled = false`:
 
 The meaning of `wproj conf update` is:
 
-1. synchronize the project tree to the release version selected for the current action
-2. run minimum validation
-3. return the update result
+1. synchronize the remote directory to the release version selected for the current action
+2. back up the managed-directory whitelist in the current working directory
+3. overwrite the current working directory with the managed-directory whitelist from remote
+4. run post-update validation
+5. return success on completion
+6. restore backup on failure
 
 `wproj conf update` does not imply automatic reload or restart.
 
