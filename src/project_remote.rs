@@ -254,3 +254,176 @@ fn oid_to_string(oid: Oid) -> String {
 fn conf_err(message: impl Into<String>) -> wp_error::RunError {
     RunReason::from_conf().to_err().with_detail(message.into())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use git2::{Repository, Signature};
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    use tempfile::TempDir;
+
+    struct RemoteFixture {
+        _temp: TempDir,
+        remote_path: PathBuf,
+    }
+
+    fn write_engine_conf(work_root: &Path, repo_url: &str) {
+        let conf_dir = work_root.join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        fs::write(
+            conf_dir.join("wparse.toml"),
+            format!(
+                r#"version = "1.0"
+
+[project_remote]
+enabled = true
+repo = "{repo_url}"
+init_version = "1.4.2"
+"#
+            ),
+        )
+        .expect("write wparse.toml");
+    }
+
+    fn commit_all(repo: &Repository, message: &str) -> Oid {
+        let mut index = repo.index().expect("open index");
+        index
+            .add_all(["*"], git2::IndexAddOption::DEFAULT, None)
+            .expect("add all");
+        index.write().expect("write index");
+        let tree_id = index.write_tree().expect("write tree");
+        let tree = repo.find_tree(tree_id).expect("find tree");
+        let sig = Signature::now("warp-parse-test", "warp-parse@test.local").expect("signature");
+        let parent = repo
+            .head()
+            .ok()
+            .and_then(|head| head.target())
+            .and_then(|oid| repo.find_commit(oid).ok());
+        match parent.as_ref() {
+            Some(parent) => repo
+                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[parent])
+                .expect("commit with parent"),
+            None => repo
+                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
+                .expect("initial commit"),
+        }
+    }
+
+    fn tag_head(repo: &Repository, tag: &str) {
+        let obj = repo
+            .head()
+            .expect("head")
+            .peel(git2::ObjectType::Commit)
+            .expect("peel head");
+        repo.tag_lightweight(tag, &obj, false)
+            .expect("create lightweight tag");
+    }
+
+    fn create_remote_fixture() -> RemoteFixture {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let repo = Repository::init(temp.path()).expect("init remote repo");
+        write_engine_conf(temp.path(), temp.path().to_str().expect("repo path utf8"));
+        fs::create_dir_all(temp.path().join("rules")).expect("create rules dir");
+        fs::write(temp.path().join("rules/version.txt"), "1.4.2\n").expect("write v1.4.2");
+        commit_all(&repo, "release 1.4.2");
+        tag_head(&repo, "v1.4.2");
+
+        fs::write(temp.path().join("rules/version.txt"), "1.4.3\n").expect("write v1.4.3");
+        commit_all(&repo, "release 1.4.3");
+        tag_head(&repo, "v1.4.3");
+
+        RemoteFixture {
+            remote_path: temp.path().to_path_buf(),
+            _temp: temp,
+        }
+    }
+
+    fn clone_remote(remote_path: &Path) -> TempDir {
+        let temp = tempfile::tempdir().expect("tempdir");
+        Repository::clone(remote_path.to_str().expect("remote path utf8"), temp.path())
+            .expect("clone remote");
+        temp
+    }
+
+    fn checkout_tag(work_root: &Path, tag: &str) {
+        let repo = Repository::open(work_root).expect("open clone repo");
+        let obj = repo
+            .revparse_single(&format!("refs/tags/{tag}"))
+            .expect("find tag");
+        let commit = obj.peel_to_commit().expect("tag commit");
+        repo.checkout_tree(commit.as_object(), Some(CheckoutBuilder::new().force()))
+            .expect("checkout tag");
+        repo.set_head_detached(commit.id()).expect("detach head");
+    }
+
+    #[test]
+    fn sync_project_remote_updates_to_requested_version_and_persists_state() {
+        let fixture = create_remote_fixture();
+        let clone = clone_remote(&fixture.remote_path);
+        checkout_tag(clone.path(), "v1.4.2");
+
+        let result = sync_project_remote(clone.path(), Some("1.4.3")).expect("sync remote");
+
+        assert_eq!(result.requested_version.as_deref(), Some("1.4.3"));
+        assert_eq!(result.current_version, "1.4.3");
+        assert_eq!(result.resolved_tag, "v1.4.3");
+        assert!(result.changed);
+        assert_eq!(
+            fs::read_to_string(clone.path().join("rules/version.txt")).expect("read version file"),
+            "1.4.3\n"
+        );
+
+        let state: serde_json::Value = serde_json::from_slice(
+            &fs::read(clone.path().join(STATE_PATH)).expect("read state file"),
+        )
+        .expect("parse state json");
+        assert_eq!(state["current_version"], "1.4.3");
+        assert_eq!(state["resolved_tag"], "v1.4.3");
+        assert_eq!(state["revision"], result.to_revision);
+    }
+
+    #[test]
+    fn sync_project_remote_uses_latest_release_when_version_is_not_provided() {
+        let fixture = create_remote_fixture();
+        let clone = clone_remote(&fixture.remote_path);
+        checkout_tag(clone.path(), "v1.4.2");
+
+        let result = sync_project_remote(clone.path(), None).expect("sync remote");
+
+        assert_eq!(result.requested_version, None);
+        assert_eq!(result.current_version, "1.4.3");
+        assert_eq!(result.resolved_tag, "v1.4.3");
+        assert_eq!(
+            fs::read_to_string(clone.path().join("rules/version.txt")).expect("read version file"),
+            "1.4.3\n"
+        );
+    }
+
+    #[test]
+    fn sync_project_remote_allows_runtime_generated_paths_but_rejects_other_dirty_changes() {
+        let fixture = create_remote_fixture();
+
+        let allowed_clone = clone_remote(&fixture.remote_path);
+        checkout_tag(allowed_clone.path(), "v1.4.2");
+        fs::create_dir_all(allowed_clone.path().join("runtime")).expect("create runtime dir");
+        fs::write(
+            allowed_clone.path().join("runtime/admin_api.token"),
+            "test-token\n",
+        )
+        .expect("write runtime token");
+        let allowed = sync_project_remote(allowed_clone.path(), Some("1.4.3"));
+        assert!(allowed.is_ok(), "runtime files should not block update");
+
+        let dirty_clone = clone_remote(&fixture.remote_path);
+        checkout_tag(dirty_clone.path(), "v1.4.2");
+        fs::write(dirty_clone.path().join("notes.txt"), "dirty\n").expect("write dirty file");
+        let err = sync_project_remote(dirty_clone.path(), Some("1.4.3"))
+            .expect_err("non-runtime dirty worktree should fail");
+        assert!(
+            err.to_string().contains("clean worktree"),
+            "unexpected error: {}",
+            err
+        );
+    }
+}

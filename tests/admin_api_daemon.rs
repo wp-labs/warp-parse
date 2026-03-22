@@ -7,6 +7,7 @@ use std::process::{Child, Command, Output, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
+use git2::{Repository, Signature};
 use reqwest::StatusCode;
 use serde_json::Value;
 use serial_test::serial;
@@ -66,7 +67,7 @@ fn write_fixture_with_options(
     write_file(work_root, "models/wpl/parse.wpl", &sample_wpl);
 
     let sample_oml = fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/models/oml/example.oml"),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("docker/default_setting/models/oml/example.oml"),
     )
     .expect("read sample oml");
     write_file(work_root, "models/oml/example.oml", &sample_oml);
@@ -391,7 +392,10 @@ async fn wait_until_reloading(base_url: &str, token: &str, timeout: Duration) ->
         }
 
         if Instant::now() >= deadline {
-            panic!("timed out waiting for reloading state, last status={}", body);
+            panic!(
+                "timed out waiting for reloading state, last status={}",
+                body
+            );
         }
         tokio::time::sleep(Duration::from_millis(100)).await;
     }
@@ -426,6 +430,104 @@ fn read_wparse_log(work_root: &Path) -> String {
         .unwrap_or_else(|_| "<missing wparse.log>".to_string())
 }
 
+fn append_project_remote_conf(work_root: &Path, repo_url: &str, init_version: &str) {
+    let conf_path = work_root.join("conf/wparse.toml");
+    let mut conf = fs::read_to_string(&conf_path).expect("read wparse.toml");
+    conf.push_str(&format!(
+        r#"
+
+[project_remote]
+enabled = true
+repo = "{repo_url}"
+init_version = "{init_version}"
+"#
+    ));
+    fs::write(conf_path, conf).expect("write project_remote config");
+}
+
+fn commit_all(repo: &Repository, message: &str) {
+    let mut index = repo.index().expect("open index");
+    index
+        .add_all(["*"], git2::IndexAddOption::DEFAULT, None)
+        .expect("add all");
+    index.write().expect("write index");
+    let tree_id = index.write_tree().expect("write tree");
+    let tree = repo.find_tree(tree_id).expect("find tree");
+    let sig = Signature::now("warp-parse-test", "warp-parse@test.local").expect("signature");
+    let parent = repo
+        .head()
+        .ok()
+        .and_then(|head| head.target())
+        .and_then(|oid| repo.find_commit(oid).ok());
+    match parent.as_ref() {
+        Some(parent) => {
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[parent])
+                .expect("commit with parent");
+        }
+        None => {
+            repo.commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
+                .expect("initial commit");
+        }
+    }
+}
+
+fn tag_head(repo: &Repository, tag: &str) {
+    let obj = repo
+        .head()
+        .expect("head")
+        .peel(git2::ObjectType::Commit)
+        .expect("peel head");
+    repo.tag_lightweight(tag, &obj, false)
+        .expect("create lightweight tag");
+}
+
+fn create_remote_project_repo(bind: SocketAddr, source_bind: SocketAddr) -> tempfile::TempDir {
+    let temp = tempdir().expect("tempdir");
+    write_fixture(temp.path(), bind, source_bind);
+    append_project_remote_conf(
+        temp.path(),
+        temp.path().to_str().expect("repo path utf8"),
+        "1.4.2",
+    );
+    write_file(temp.path(), "project/version.txt", "1.4.2\n");
+    let repo = Repository::init(temp.path()).expect("init remote repo");
+    commit_all(&repo, "release 1.4.2");
+    tag_head(&repo, "v1.4.2");
+
+    write_file(temp.path(), "project/version.txt", "1.4.3\n");
+    commit_all(&repo, "release 1.4.3");
+    tag_head(&repo, "v1.4.3");
+
+    temp
+}
+
+fn clone_project_repo(remote_path: &Path) -> tempfile::TempDir {
+    let temp = tempdir().expect("tempdir");
+    Repository::clone(remote_path.to_str().expect("remote path utf8"), temp.path())
+        .expect("clone remote repo");
+    let token_path = temp.path().join("runtime/admin_api.token");
+    let mut perms = fs::metadata(&token_path)
+        .expect("stat cloned token")
+        .permissions();
+    perms.set_mode(0o600);
+    fs::set_permissions(&token_path, perms).expect("chmod cloned token");
+    temp
+}
+
+fn checkout_tag(work_root: &Path, tag: &str) {
+    let repo = Repository::open(work_root).expect("open repo");
+    let obj = repo
+        .revparse_single(&format!("refs/tags/{tag}"))
+        .expect("find tag");
+    let commit = obj.peel_to_commit().expect("peel commit");
+    repo.checkout_tree(
+        commit.as_object(),
+        Some(git2::build::CheckoutBuilder::new().force()),
+    )
+    .expect("checkout tag");
+    repo.set_head_detached(commit.id()).expect("detach head");
+}
+
 #[tokio::test]
 #[serial]
 async fn daemon_admin_api_status_and_reload_work_end_to_end() {
@@ -438,9 +540,14 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    let ready =
-        wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-            .await;
+    let ready = wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
     assert_eq!(ready["reloading"], false);
 
     let client = reqwest::Client::new();
@@ -490,7 +597,8 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
         log_dump
     );
     assert!(
-        log_dump.contains("runtime command finished request_id=integration-reload-1 command=LoadModel"),
+        log_dump
+            .contains("runtime command finished request_id=integration-reload-1 command=LoadModel"),
         "expected runtime command completion log, got:\n{}",
         log_dump
     );
@@ -510,8 +618,14 @@ async fn daemon_admin_api_rejects_wrong_bearer_token() {
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-        .await;
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
 
     let client = reqwest::Client::new();
     let resp = client
@@ -541,8 +655,14 @@ async fn daemon_admin_api_reload_wait_false_returns_accepted_and_finishes_async(
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-        .await;
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
 
     let client = reqwest::Client::new();
     let resp = client
@@ -594,8 +714,14 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-        .await;
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
 
     send_tcp_line(source_bind, "parallel reload test\n");
     thread::sleep(Duration::from_millis(200));
@@ -665,8 +791,14 @@ async fn daemon_admin_api_reports_force_replace_when_drain_times_out() {
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-        .await;
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
 
     send_tcp_line(source_bind, "force replace test\n");
     thread::sleep(Duration::from_millis(200));
@@ -725,12 +857,24 @@ async fn wproj_engine_status_and_reload_work_against_admin_api() {
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
 
-    wait_until_ready(&mut child, work_root, &base_url, "test-token", Duration::from_secs(20))
-        .await;
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
 
     let status = run_wproj(
         work_root,
-        &["engine", "status", "--work-root", work_root.to_str().expect("work root utf8"), "--json"],
+        &[
+            "engine",
+            "status",
+            "--work-root",
+            work_root.to_str().expect("work root utf8"),
+            "--json",
+        ],
     );
     assert!(
         status.status.success(),
@@ -767,10 +911,152 @@ async fn wproj_engine_status_and_reload_work_against_admin_api() {
     assert_eq!(reload_body["accepted"], true);
     assert_eq!(reload_body["result"], "reload_done");
 
-    let final_status =
-        wait_until_reload_finished(&base_url, "test-token", "cli-reload-1", Duration::from_secs(20))
-            .await;
+    let final_status = wait_until_reload_finished(
+        &base_url,
+        "test-token",
+        "cli-reload-1",
+        Duration::from_secs(20),
+    )
+    .await;
     assert_eq!(final_status["last_reload_result"], "reload_done");
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo(bind, source_bind);
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(clone.path(), "daemon");
+
+    wait_until_ready(
+        &mut child,
+        clone.path(),
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+
+    let client = reqwest::Client::new();
+    let resp = client
+        .post(format!("{}/admin/v1/reloads/model", base_url))
+        .bearer_auth("test-token")
+        .header("X-Request-Id", "integration-reload-update-1")
+        .json(&serde_json::json!({
+            "wait": true,
+            "update": true,
+            "version": "1.4.3",
+            "timeout_ms": 15000,
+            "reason": "integration reload with update"
+        }))
+        .send()
+        .await
+        .expect("send reload update request");
+
+    assert_eq!(resp.status(), StatusCode::OK);
+    let body: Value = resp.json().await.expect("decode reload update response");
+    assert_eq!(body["accepted"], true);
+    assert_eq!(body["result"], "reload_done");
+    assert_eq!(body["update"], true);
+    assert_eq!(body["requested_version"], "1.4.3");
+    assert_eq!(body["current_version"], "1.4.3");
+    assert_eq!(body["resolved_tag"], "v1.4.3");
+    assert_eq!(
+        fs::read_to_string(clone.path().join("project/version.txt"))
+            .expect("read updated version marker"),
+        "1.4.3\n"
+    );
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_remote() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo(bind, source_bind);
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+            "--json",
+        ],
+    );
+    assert!(
+        conf_update.status.success(),
+        "wproj conf update failed: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    let conf_body: Value =
+        serde_json::from_slice(&conf_update.stdout).expect("decode conf update json");
+    assert_eq!(conf_body["requested_version"], "1.4.3");
+    assert_eq!(conf_body["current_version"], "1.4.3");
+    assert_eq!(conf_body["resolved_tag"], "v1.4.3");
+    assert_eq!(
+        fs::read_to_string(clone.path().join("project/version.txt"))
+            .expect("read updated version marker"),
+        "1.4.3\n"
+    );
+
+    checkout_tag(clone.path(), "v1.4.2");
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(clone.path(), "daemon");
+
+    wait_until_ready(
+        &mut child,
+        clone.path(),
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+
+    let reload = run_wproj(
+        clone.path(),
+        &[
+            "engine",
+            "reload",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--request-id",
+            "cli-reload-update-1",
+            "--update",
+            "--version",
+            "1.4.3",
+            "--json",
+        ],
+    );
+    assert!(
+        reload.status.success(),
+        "wproj engine reload update failed: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&reload.stdout),
+        String::from_utf8_lossy(&reload.stderr)
+    );
+    let reload_body: Value =
+        serde_json::from_slice(&reload.stdout).expect("decode reload update json");
+    assert_eq!(reload_body["accepted"], true);
+    assert_eq!(reload_body["result"], "reload_done");
+    assert_eq!(reload_body["update"], true);
+    assert_eq!(reload_body["requested_version"], "1.4.3");
+    assert_eq!(reload_body["current_version"], "1.4.3");
+    assert_eq!(reload_body["resolved_tag"], "v1.4.3");
 
     shutdown_child(&mut child);
 }
