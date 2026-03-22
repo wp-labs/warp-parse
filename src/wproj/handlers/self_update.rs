@@ -2,12 +2,12 @@ use crate::args::{SelfCheckArgs, SelfSourceArgs, SelfUpdateArgs, UpdateChannel};
 use crate::format::print_json;
 use orion_error::{ToStructError, UvsFrom};
 use std::env;
+use wp_error::run_error::{RunReason, RunResult};
 use wp_self_update::{
     check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
     SourceKind, UpdateChannel as CoreChannel, UpdateProduct, UpdateReport, UpdateRequest,
     UpdateTarget, VersionRelation,
 };
-use wp_error::run_error::{RunReason, RunResult};
 
 const DEFAULT_SELF_UPDATE_BASE_URL: &str =
     "https://raw.githubusercontent.com/wp-labs/wp-install/refs/heads/main/updates";
@@ -227,17 +227,24 @@ mod tests {
     }
 
     #[test]
-    fn to_core_source_rejects_missing_manifest_source() {
-        let err = to_core_source(&SelfSourceArgs {
+    fn to_core_source_uses_default_manifest_source() {
+        let source = to_core_source(&SelfSourceArgs {
             channel: UpdateChannel::Stable,
             updates_base_url: None,
             updates_root: None,
             json: false,
         })
-        .unwrap_err();
+        .expect("default manifest source should be available");
 
-        assert!(err
-            .to_string()
-            .contains("self-update manifest source is required"));
+        match source.kind {
+            SourceKind::Manifest {
+                updates_base_url,
+                updates_root,
+            } => {
+                assert_eq!(updates_base_url, DEFAULT_SELF_UPDATE_BASE_URL);
+                assert_eq!(updates_root, None);
+            }
+            other => panic!("unexpected source kind: {:?}", other),
+        }
     }
 }

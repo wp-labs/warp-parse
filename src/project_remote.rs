@@ -1,7 +1,9 @@
 use std::fs;
 use std::path::Path;
 
-use git2::{build::CheckoutBuilder, Oid, Remote, Repository, StatusOptions};
+use git2::{
+    build::CheckoutBuilder, ErrorCode, FetchOptions, Oid, Remote, Repository, StatusOptions,
+};
 use orion_conf::{ToStructError, UvsConfFrom};
 use orion_variate::EnvDict;
 use semver::Version;
@@ -11,7 +13,6 @@ use wp_error::run_error::{RunReason, RunResult};
 
 const ENGINE_CONF_PATH: &str = "conf/wparse.toml";
 const STATE_PATH: &str = ".run/project_remote_state.json";
-
 #[derive(Debug, Clone, Serialize)]
 pub struct ProjectRemoteUpdateResult {
     pub requested_version: Option<String>,
@@ -20,6 +21,12 @@ pub struct ProjectRemoteUpdateResult {
     pub from_revision: Option<String>,
     pub to_revision: String,
     pub changed: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProjectRemoteSnapshot {
+    revision: Option<String>,
+    state_file: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -46,14 +53,10 @@ pub fn sync_project_remote<P: AsRef<Path>>(
         return Err(conf_err("project_remote.repo must not be empty"));
     }
 
-    let repo = Repository::open(work_root).map_err(|e| {
-        conf_err(format!(
-            "open git repository {} failed: {}",
-            work_root.display(),
-            e
-        ))
-    })?;
-    ensure_clean_worktree(&repo)?;
+    let repo = open_or_init_repo(work_root)?;
+    if has_checked_out_head(&repo) {
+        ensure_clean_worktree(&repo)?;
+    }
 
     fetch_remote_tags(&repo, &remote_conf.repo)?;
 
@@ -100,6 +103,77 @@ pub fn sync_project_remote<P: AsRef<Path>>(
     Ok(result)
 }
 
+pub fn capture_project_remote_snapshot<P: AsRef<Path>>(
+    work_root: P,
+) -> RunResult<ProjectRemoteSnapshot> {
+    let work_root = work_root.as_ref();
+    let revision = match Repository::open(work_root) {
+        Ok(repo) => repo
+            .head()
+            .ok()
+            .and_then(|head| head.target())
+            .map(oid_to_string),
+        Err(_) => None,
+    };
+    let state_path = work_root.join(STATE_PATH);
+    let state_file = match fs::read(&state_path) {
+        Ok(bytes) => Some(bytes),
+        Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
+        Err(err) => {
+            return Err(conf_err(format!(
+                "read {} failed: {}",
+                state_path.display(),
+                err
+            )))
+        }
+    };
+    Ok(ProjectRemoteSnapshot {
+        revision,
+        state_file,
+    })
+}
+
+pub fn restore_project_remote_snapshot<P: AsRef<Path>>(
+    work_root: P,
+    snapshot: &ProjectRemoteSnapshot,
+) -> RunResult<()> {
+    let work_root = work_root.as_ref();
+    if let Some(revision) = snapshot.revision.as_deref() {
+        let repo = Repository::open(work_root).map_err(|e| {
+            conf_err(format!(
+                "open git repository {} failed: {}",
+                work_root.display(),
+                e
+            ))
+        })?;
+        checkout_revision(&repo, revision)?;
+    }
+
+    let state_path = work_root.join(STATE_PATH);
+    match &snapshot.state_file {
+        Some(bytes) => {
+            if let Some(parent) = state_path.parent() {
+                fs::create_dir_all(parent)
+                    .map_err(|e| conf_err(format!("create {} failed: {}", parent.display(), e)))?;
+            }
+            fs::write(&state_path, bytes)
+                .map_err(|e| conf_err(format!("write {} failed: {}", state_path.display(), e)))?;
+        }
+        None => {
+            if let Err(err) = fs::remove_file(&state_path) {
+                if err.kind() != std::io::ErrorKind::NotFound {
+                    return Err(conf_err(format!(
+                        "remove {} failed: {}",
+                        state_path.display(),
+                        err
+                    )));
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 fn load_engine_config(work_root: &Path) -> RunResult<EngineConfig> {
     let dict = crate::load_sec_dict().unwrap_or_else(|_| EnvDict::new());
     EngineConfig::load(work_root, &dict).map_err(|e| {
@@ -109,6 +183,28 @@ fn load_engine_config(work_root: &Path) -> RunResult<EngineConfig> {
             e
         ))
     })
+}
+
+fn open_or_init_repo(work_root: &Path) -> RunResult<Repository> {
+    match Repository::open(work_root) {
+        Ok(repo) => Ok(repo),
+        Err(err) if err.code() == ErrorCode::NotFound => Repository::init(work_root).map_err(|e| {
+            conf_err(format!(
+                "init git repository {} failed: {}",
+                work_root.display(),
+                e
+            ))
+        }),
+        Err(err) => Err(conf_err(format!(
+            "open git repository {} failed: {}",
+            work_root.display(),
+            err
+        ))),
+    }
+}
+
+fn has_checked_out_head(repo: &Repository) -> bool {
+    repo.head().ok().and_then(|head| head.target()).is_some()
 }
 
 fn ensure_clean_worktree(repo: &Repository) -> RunResult<()> {
@@ -141,10 +237,40 @@ fn ensure_clean_worktree(repo: &Repository) -> RunResult<()> {
 }
 
 fn fetch_remote_tags(repo: &Repository, repo_url: &str) -> RunResult<()> {
+    clear_local_release_tags(repo)?;
     let mut remote = ensure_remote(repo, repo_url)?;
+    let mut fetch_options = FetchOptions::new();
+    fetch_options.prune(git2::FetchPrune::On);
     remote
-        .fetch(&["refs/tags/*:refs/tags/*"], None, None)
+        .fetch(
+            &["+refs/tags/*:refs/tags/*"],
+            Some(&mut fetch_options),
+            None,
+        )
         .map_err(|e| conf_err(format!("fetch remote tags failed: {}", e)))?;
+    Ok(())
+}
+
+fn clear_local_release_tags(repo: &Repository) -> RunResult<()> {
+    let mut refs = repo
+        .references_glob("refs/tags/*")
+        .map_err(|e| conf_err(format!("list local tags failed: {}", e)))?;
+    while let Some(reference) = refs.next() {
+        let mut reference =
+            reference.map_err(|e| conf_err(format!("read local tag failed: {}", e)))?;
+        let Some(name) = reference.name() else {
+            continue;
+        };
+        let Some(tag) = name.strip_prefix("refs/tags/") else {
+            continue;
+        };
+        if parse_tag_version(tag).is_none() {
+            continue;
+        }
+        reference
+            .delete()
+            .map_err(|e| conf_err(format!("delete local tag failed: {}", e)))?;
+    }
     Ok(())
 }
 
@@ -249,6 +375,19 @@ fn persist_state(work_root: &Path, result: &ProjectRemoteUpdateResult) -> RunRes
 
 fn oid_to_string(oid: Oid) -> String {
     oid.to_string()
+}
+
+fn checkout_revision(repo: &Repository, revision: &str) -> RunResult<()> {
+    let oid = Oid::from_str(revision)
+        .map_err(|e| conf_err(format!("parse revision {} failed: {}", revision, e)))?;
+    let commit = repo
+        .find_commit(oid)
+        .map_err(|e| conf_err(format!("load target commit {} failed: {}", revision, e)))?;
+    repo.checkout_tree(commit.as_object(), Some(CheckoutBuilder::new().force()))
+        .map_err(|e| conf_err(format!("checkout revision {} failed: {}", revision, e)))?;
+    repo.set_head_detached(commit.id())
+        .map_err(|e| conf_err(format!("set detached HEAD failed: {}", e)))?;
+    Ok(())
 }
 
 fn conf_err(message: impl Into<String>) -> wp_error::RunError {
@@ -424,6 +563,30 @@ init_version = "1.4.2"
             err.to_string().contains("clean worktree"),
             "unexpected error: {}",
             err
+        );
+    }
+
+    #[test]
+    fn sync_project_remote_initializes_non_git_work_root() {
+        let fixture = create_remote_fixture();
+        let work_root = tempfile::tempdir().expect("tempdir");
+        write_engine_conf(
+            work_root.path(),
+            fixture.remote_path.to_str().expect("repo path utf8"),
+        );
+
+        let result = sync_project_remote(work_root.path(), Some("1.4.2"))
+            .expect("sync should initialize git repo");
+
+        assert_eq!(result.current_version, "1.4.2");
+        assert_eq!(result.resolved_tag, "v1.4.2");
+        assert!(
+            work_root.path().join(".git").exists(),
+            "git repo should be initialized"
+        );
+        assert_eq!(
+            fs::read_to_string(work_root.path().join("rules/version.txt")).expect("read version"),
+            "1.4.2\n"
         );
     }
 }

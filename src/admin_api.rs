@@ -21,7 +21,7 @@ use rustls::ServerConfig;
 use serde::{Deserialize, Serialize};
 use sysinfo::System;
 use tokio::net::TcpListener;
-use tokio::sync::oneshot;
+use tokio::sync::{oneshot, Mutex};
 use tokio::task::JoinHandle;
 use tokio::time::timeout;
 use tokio_rustls::TlsAcceptor;
@@ -77,6 +77,7 @@ pub async fn start_if_enabled(
     let state = Arc::new(AppState {
         control_handle,
         work_root: work_root.to_path_buf(),
+        reload_gate: Mutex::new(()),
         bearer_token: config.bearer_token,
         request_timeout: config.request_timeout,
         max_body_bytes: config.max_body_bytes,
@@ -460,6 +461,7 @@ where
 struct AppState {
     control_handle: RuntimeControlHandle,
     work_root: PathBuf,
+    reload_gate: Mutex<()>,
     bearer_token: String,
     request_timeout: Duration,
     max_body_bytes: usize,
@@ -604,6 +606,26 @@ async fn reload_response(
     remote_addr: SocketAddr,
     state: Arc<AppState>,
 ) -> Response<Full<Bytes>> {
+    let _reload_guard = match state.reload_gate.try_lock() {
+        Ok(guard) => guard,
+        Err(_) => {
+            return json_response(
+                StatusCode::CONFLICT,
+                &ReloadResponse {
+                    request_id: request_id.to_string(),
+                    accepted: false,
+                    result: "reload_in_progress",
+                    update: None,
+                    requested_version: None,
+                    current_version: None,
+                    resolved_tag: None,
+                    force_replaced: None,
+                    warning: None,
+                    error: None,
+                },
+            )
+        }
+    };
     let reload_req =
         match read_json_body::<ReloadRequest>(req.into_body(), state.max_body_bytes).await {
             Ok(payload) => payload,
@@ -654,6 +676,55 @@ async fn reload_response(
             },
         );
     }
+
+    let runtime_status = state.control_handle.status_snapshot();
+    if !runtime_status.accepting_commands {
+        return json_response(
+            StatusCode::SERVICE_UNAVAILABLE,
+            &ErrorResponse {
+                request_id: request_id.to_string(),
+                accepted: false,
+                result: "runtime_not_ready",
+                error: "runtime command receiver not ready".to_string(),
+            },
+        );
+    }
+    if runtime_status.reloading {
+        return json_response(
+            StatusCode::CONFLICT,
+            &ReloadResponse {
+                request_id: request_id.to_string(),
+                accepted: false,
+                result: "reload_in_progress",
+                update: None,
+                requested_version: None,
+                current_version: None,
+                resolved_tag: None,
+                force_replaced: None,
+                warning: None,
+                error: None,
+            },
+        );
+    }
+
+    let rollback_snapshot = if reload_req.update {
+        match crate::project_remote::capture_project_remote_snapshot(&state.work_root) {
+            Ok(snapshot) => Some(snapshot),
+            Err(err) => {
+                return json_response(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "update_failed",
+                        error: err.to_string(),
+                    },
+                );
+            }
+        }
+    } else {
+        None
+    };
 
     let update_result = if reload_req.update {
         match crate::project_remote::sync_project_remote(
@@ -776,7 +847,26 @@ async fn reload_response(
                 }
             }
         }
-        Err(err) => map_send_error(request_id, remote_addr, reason, err),
+        Err(err) => {
+            if let (Some(snapshot), Some(update_result)) =
+                (rollback_snapshot.as_ref(), update_result.as_ref())
+            {
+                if update_result.changed {
+                    if let Err(restore_err) = crate::project_remote::restore_project_remote_snapshot(
+                        &state.work_root,
+                        snapshot,
+                    ) {
+                        warn_ctrl!(
+                            "admin api reload rollback failed request_id={} remote={} error={}",
+                            request_id,
+                            remote_addr,
+                            restore_err
+                        );
+                    }
+                }
+            }
+            map_send_error(request_id, remote_addr, reason, err)
+        }
     }
 }
 

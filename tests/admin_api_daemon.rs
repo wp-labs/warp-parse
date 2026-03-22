@@ -482,8 +482,16 @@ fn tag_head(repo: &Repository, tag: &str) {
 }
 
 fn create_remote_project_repo(bind: SocketAddr, source_bind: SocketAddr) -> tempfile::TempDir {
+    create_remote_project_repo_with_options(bind, source_bind, FixtureOptions::default())
+}
+
+fn create_remote_project_repo_with_options(
+    bind: SocketAddr,
+    source_bind: SocketAddr,
+    options: FixtureOptions,
+) -> tempfile::TempDir {
     let temp = tempdir().expect("tempdir");
-    write_fixture(temp.path(), bind, source_bind);
+    write_fixture_with_options(temp.path(), bind, source_bind, options);
     append_project_remote_conf(
         temp.path(),
         temp.path().to_str().expect("repo path utf8"),
@@ -973,6 +981,87 @@ async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
             .expect("read updated version marker"),
         "1.4.3\n"
     );
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn daemon_admin_api_rejects_busy_update_without_changing_project_version() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo_with_options(
+        bind,
+        source_bind,
+        FixtureOptions {
+            blackhole_sleep_ms: Some(3_000),
+        },
+    );
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(clone.path(), "daemon");
+
+    wait_until_ready(
+        &mut child,
+        clone.path(),
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+
+    send_tcp_line(source_bind, "busy update test\n");
+    thread::sleep(Duration::from_millis(200));
+
+    let client = reqwest::Client::new();
+    let first_client = client.clone();
+    let first_base = base_url.clone();
+    let first = tokio::spawn(async move {
+        first_client
+            .post(format!("{}/admin/v1/reloads/model", first_base))
+            .bearer_auth("test-token")
+            .header("X-Request-Id", "integration-reload-busy-update-1")
+            .json(&serde_json::json!({
+                "wait": true,
+                "timeout_ms": 15000,
+                "reason": "busy update first reload"
+            }))
+            .send()
+            .await
+            .expect("send first reload request")
+    });
+
+    wait_until_reloading(&base_url, "test-token", Duration::from_secs(5)).await;
+
+    let second = client
+        .post(format!("{}/admin/v1/reloads/model", base_url))
+        .bearer_auth("test-token")
+        .header("X-Request-Id", "integration-reload-busy-update-2")
+        .json(&serde_json::json!({
+            "wait": false,
+            "update": true,
+            "version": "1.4.3",
+            "timeout_ms": 15000,
+            "reason": "busy update second reload"
+        }))
+        .send()
+        .await
+        .expect("send second reload request");
+
+    assert_eq!(second.status(), StatusCode::CONFLICT);
+    let second_body: Value = second.json().await.expect("decode conflict response");
+    assert_eq!(second_body["accepted"], false);
+    assert_eq!(second_body["result"], "reload_in_progress");
+    assert_eq!(
+        fs::read_to_string(clone.path().join("project/version.txt"))
+            .expect("read version marker after conflict"),
+        "1.4.2\n"
+    );
+
+    let first = first.await.expect("join first reload");
+    assert_eq!(first.status(), StatusCode::OK);
 
     shutdown_child(&mut child);
 }
