@@ -4,7 +4,8 @@ use orion_error::{ToStructError, UvsFrom};
 use std::env;
 use wp_self_update::{
     check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
-    UpdateChannel as CoreChannel, UpdateProduct, UpdateReport, UpdateRequest, VersionRelation,
+    SourceKind, UpdateChannel as CoreChannel, UpdateProduct, UpdateReport, UpdateRequest,
+    UpdateTarget, VersionRelation,
 };
 use wp_error::run_error::{RunReason, RunResult};
 
@@ -15,7 +16,7 @@ const SELF_UPDATE_ROOT_ENV: &str = "WPROJ_SELF_UPDATE_ROOT";
 
 pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
     let report = check(CheckRequest {
-        product: UpdateProduct::Suite,
+        product: UpdateProduct::Suite.as_str().to_string(),
         source: to_core_source(&args.source)?,
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         branch: warp_parse::build::BRANCH.to_string(),
@@ -33,7 +34,8 @@ pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
 
 pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
     let report = wp_self_update::update(UpdateRequest {
-        product: UpdateProduct::Suite,
+        product: UpdateProduct::Suite.as_str().to_string(),
+        target: UpdateTarget::Product(UpdateProduct::Suite),
         source: to_core_source(&args.source)?,
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         install_dir: args.install_dir.as_deref().map(std::path::PathBuf::from),
@@ -72,8 +74,10 @@ fn to_core_source(source: &SelfSourceArgs) -> RunResult<SourceConfig> {
 
     Ok(SourceConfig {
         channel: to_core_channel(source.channel),
-        updates_base_url: updates_base_url.unwrap_or_default(),
-        updates_root,
+        kind: SourceKind::Manifest {
+            updates_base_url: updates_base_url.unwrap_or_default(),
+            updates_root,
+        },
     })
 }
 

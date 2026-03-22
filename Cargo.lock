@@ -736,10 +736,11 @@ checksum = "119771309b95163ec7aaf79810da82f7cd0599c19722d48b9c03894dca833966"
 
 [[package]]
 name = "borsh"
-version = "1.6.0"
+version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d1da5ab77c1437701eeff7c88d968729e7766172279eab0676857b3d63af7a6f"
+checksum = "cfd1e3f8955a5d7de9fab72fc8373fade9fb8a703968cb200ae3dc6cf08e185a"
 dependencies = [
+ "bytes",
  "cfg_aliases",
 ]
 
@@ -1042,6 +1043,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4ca0197aee26d1ae37445ee532fefce43251d24cc7c166799f4d46817f1d3973"
 dependencies = [
  "crossbeam-utils",
+]
+
+[[package]]
+name = "console"
+version = "0.16.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d64e8af5551369d19cf50138de61f1c42074ab970f74e99be916646777f8fc87"
+dependencies = [
+ "encode_unicode",
+ "libc",
+ "unicode-width",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1588,6 +1601,12 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
 dependencies = [
  "serde",
 ]
+
+[[package]]
+name = "encode_unicode"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34aa73646ffb006b8f5147f3dc182bd4bcb190227ce861fc4a4844bf8e3cb2c0"
 
 [[package]]
 name = "encoding_rs"
@@ -2518,36 +2537,32 @@ checksum = "e8a5a9a0ff0086c7a148acb942baaabeadf9504d10400b5a05645853729b9cd2"
 
 [[package]]
 name = "include-flate"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e01b7cb6ca682a621e7cda1c358c9724b53a7b4409be9be1dd443b7f3a26f998"
+checksum = "8a05fb00d9abc625268e0573a519506b264a7d6965de09bac13201bfb44e723d"
 dependencies = [
  "include-flate-codegen",
  "include-flate-compress",
- "libflate",
- "zstd",
 ]
 
 [[package]]
 name = "include-flate-codegen"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f49bf5274aebe468d6e6eba14a977eaf1efa481dc173f361020de70c1c48050"
+checksum = "92c3c319a7527668538a8530c541e74e881e94c4f41e1425622d0a41c16468af"
 dependencies = [
  "include-flate-compress",
- "libflate",
- "proc-macro-error",
+ "proc-macro-error2",
  "proc-macro2",
  "quote",
  "syn 2.0.117",
- "zstd",
 ]
 
 [[package]]
 name = "include-flate-compress"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eae6a40e716bcd5931f5dbb79cd921512a4f647e2e9413fded3171fca3824dbc"
+checksum = "ed0bd9ea81b94169d61c5a397e9faef02153d3711fc62d3270bcde3ac85380d9"
 dependencies = [
  "libflate",
  "zstd",
@@ -2563,6 +2578,19 @@ dependencies = [
  "hashbrown 0.16.1",
  "serde",
  "serde_core",
+]
+
+[[package]]
+name = "indicatif"
+version = "0.18.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25470f23803092da7d239834776d653104d551bc4d7eacaf31e6837854b8e9eb"
+dependencies = [
+ "console",
+ "portable-atomic",
+ "unicode-width",
+ "unit-prefix",
+ "web-time",
 ]
 
 [[package]]
@@ -3536,7 +3564,7 @@ dependencies = [
  "serde_yaml",
  "thiserror 2.0.18",
  "toml 0.9.12+spec-1.1.0",
- "winnow",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -3559,8 +3587,8 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
- "winnow",
+ "toml 1.0.7+spec-1.1.0",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -3596,7 +3624,7 @@ dependencies = [
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
 ]
 
 [[package]]
@@ -3630,7 +3658,7 @@ dependencies = [
  "derive-getters",
  "serde",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
 ]
 
 [[package]]
@@ -3910,6 +3938,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "portable-atomic"
+version = "1.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
+
+[[package]]
 name = "potential_utf"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3976,30 +4010,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e67ba7e9b2b56446f1d419b1d807906278ffa1a658a8a5d8a39dcb1f5a78614f"
 dependencies = [
  "toml_edit",
-]
-
-[[package]]
-name = "proc-macro-error"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da25490ff9892aab3fcf7c36f08cfb902dd3e71ca0f9f9517bea02a73a5ce38c"
-dependencies = [
- "proc-macro-error-attr",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
- "version_check",
-]
-
-[[package]]
-name = "proc-macro-error-attr"
-version = "1.0.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1be40180e52ecc98ad80b184934baf3d0d29f979574e439af5a55274b35f869"
-dependencies = [
- "proc-macro2",
- "quote",
- "version_check",
 ]
 
 [[package]]
@@ -5274,6 +5284,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "af23d6f6c1a224baef9d3f61e287d2761385a5b88fdab4eb4c6f11aeb54c4bcf"
 
 [[package]]
+name = "strum"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9628de9b8791db39ceda2b119bbe13134770b56c138ec1d3af810d045c04f9bd"
+
+[[package]]
 name = "strum_macros"
 version = "0.27.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5650,22 +5666,22 @@ dependencies = [
  "toml_datetime 0.7.5+spec-1.1.0",
  "toml_parser",
  "toml_writer",
- "winnow",
+ "winnow 0.7.15",
 ]
 
 [[package]]
 name = "toml"
-version = "1.0.6+spec-1.1.0"
+version = "1.0.7+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "399b1124a3c9e16766831c6bba21e50192572cdd98706ea114f9502509686ffc"
+checksum = "dd28d57d8a6f6e458bc0b8784f8fdcc4b99a437936056fa122cb234f18656a96"
 dependencies = [
  "indexmap",
  "serde_core",
  "serde_spanned",
- "toml_datetime 1.0.0+spec-1.1.0",
+ "toml_datetime 1.0.1+spec-1.1.0",
  "toml_parser",
  "toml_writer",
- "winnow",
+ "winnow 1.0.0",
 ]
 
 [[package]]
@@ -5679,39 +5695,39 @@ dependencies = [
 
 [[package]]
 name = "toml_datetime"
-version = "1.0.0+spec-1.1.0"
+version = "1.0.1+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32c2555c699578a4f59f0cc68e5116c8d7cabbd45e1409b989d4be085b53f13e"
+checksum = "9b320e741db58cac564e26c607d3cc1fdc4a88fd36c879568c07856ed83ff3e9"
 dependencies = [
  "serde_core",
 ]
 
 [[package]]
 name = "toml_edit"
-version = "0.25.4+spec-1.1.0"
+version = "0.25.5+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7193cbd0ce53dc966037f54351dbbcf0d5a642c7f0038c382ef9e677ce8c13f2"
+checksum = "8ca1a40644a28bce036923f6a431df0b34236949d111cc07cb6dca830c9ef2e1"
 dependencies = [
  "indexmap",
- "toml_datetime 1.0.0+spec-1.1.0",
+ "toml_datetime 1.0.1+spec-1.1.0",
  "toml_parser",
- "winnow",
+ "winnow 1.0.0",
 ]
 
 [[package]]
 name = "toml_parser"
-version = "1.0.9+spec-1.1.0"
+version = "1.0.10+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "702d4415e08923e7e1ef96cd5727c0dfed80b4d2fa25db9647fe5eb6f7c5a4c4"
+checksum = "7df25b4befd31c4816df190124375d5a20c6b6921e2cad937316de3fccd63420"
 dependencies = [
- "winnow",
+ "winnow 1.0.0",
 ]
 
 [[package]]
 name = "toml_writer"
-version = "1.0.6+spec-1.1.0"
+version = "1.0.7+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab16f14aed21ee8bfd8ec22513f7287cd4a91aa92e44edfe2c17ddd004e92607"
+checksum = "f17aaa1c6e3dc22b1da4b6bba97d066e354c7945cac2f7852d4e4e7ca7a6b56d"
 
 [[package]]
 name = "tower"
@@ -5889,6 +5905,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
 
 [[package]]
+name = "unit-prefix"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "81e544489bf3d8ef66c953931f56617f423cd4b5494be343d9b9d3dda037b9a3"
+
+[[package]]
 name = "unsafe-any-ors"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6052,11 +6074,11 @@ dependencies = [
  "tokio-async-drop",
  "tokio-rustls",
  "tokio-util",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "uuid",
  "walkdir",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-cli-core",
  "wp-conf-base",
  "wp-config",
@@ -6713,6 +6735,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "winnow"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a90e88e4667264a994d34e6d1ab2d26d398dcdca8b7f52bec8668957517fc7d8"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "wit-bindgen"
 version = "0.51.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6823,7 +6854,7 @@ dependencies = [
  "orion_conf 0.5.1",
  "serde",
  "serde_json",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "walkdir",
  "wp-config",
  "wp-knowledge",
@@ -6834,7 +6865,7 @@ name = "wp-condition"
 version = "1.19.4"
 dependencies = [
  "orion_exp 1.19.4",
- "winnow",
+ "winnow 0.7.15",
  "wp-primitives",
 ]
 
@@ -6855,8 +6886,8 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
- "winnow",
+ "toml 1.0.7+spec-1.1.0",
+ "winnow 0.7.15",
  "wp-connector-api 0.8.1",
  "wp-model-core",
 ]
@@ -6884,9 +6915,9 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-condition",
  "wp-conf-base",
  "wp-connector-api 0.8.1",
@@ -6941,7 +6972,7 @@ dependencies = [
  "smallvec",
  "smol_str",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wp-model-core",
 ]
 
@@ -6973,10 +7004,10 @@ dependencies = [
  "serde",
  "serde_json",
  "tokio",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "urlencoding",
  "uuid",
- "winnow",
+ "winnow 0.7.15",
  "wp-conf-base",
  "wp-connector-api 0.8.1",
  "wp-data-fmt",
@@ -7006,7 +7037,7 @@ dependencies = [
  "serde_json",
  "socket2 0.6.3",
  "tokio",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wp-arrow",
  "wp-connector-api 0.8.1",
  "wp-data-fmt",
@@ -7107,11 +7138,11 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "uuid",
  "walkdir",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-arrow",
  "wp-cli-core",
  "wp-conf-base",
@@ -7164,7 +7195,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml 0.9.12+spec-1.1.0",
  "unicode-segmentation",
- "winnow",
+ "winnow 0.7.15",
  "wp-connector-api 0.7.2",
  "wp-log 0.1.3",
  "wp-model-core",
@@ -7190,9 +7221,9 @@ dependencies = [
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "unicode-segmentation",
- "winnow",
+ "winnow 0.7.15",
  "wp-connector-api 0.8.1",
  "wp-log 0.2.0",
  "wp-model-core",
@@ -7227,7 +7258,7 @@ dependencies = [
  "strfmt",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wildmatch",
  "wp-data-fmt",
  "wp-error 0.8.2",
@@ -7238,9 +7269,9 @@ dependencies = [
 
 [[package]]
 name = "wp-lang"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a98b613f0b536d4b89b66223ad5377e51e551266b866454b07c1d70c9d5176d"
+checksum = "f1b32c823cd2c7843499250400468f1e7364d0a18b2f2314fb8a2056ae674667"
 dependencies = [
  "ahash",
  "anyhow",
@@ -7273,14 +7304,14 @@ dependencies = [
  "serde_json",
  "smol_str",
  "strfmt",
- "strum 0.27.2",
+ "strum 0.28.0",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "unicode-segmentation",
  "url",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-connector-api 0.8.1",
  "wp-data-fmt",
  "wp-error 0.8.2",
@@ -7312,7 +7343,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml 0.9.12+spec-1.1.0",
  "unicode-segmentation",
- "winnow",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -7334,9 +7365,9 @@ dependencies = [
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "unicode-segmentation",
- "winnow",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -7394,10 +7425,10 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "url",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-condition",
  "wp-data-fmt",
  "wp-data-utils",
@@ -7446,7 +7477,7 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4de22e9b9fdac31efc29311725b239d4cf95d1bf81a1363478d48999d017f668"
 dependencies = [
- "winnow",
+ "winnow 0.7.15",
 ]
 
 [[package]]
@@ -7461,7 +7492,7 @@ dependencies = [
  "orion_conf 0.5.1",
  "serde",
  "serde_json",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wildmatch",
  "wp-cli-core",
  "wp-config",
@@ -7489,19 +7520,20 @@ dependencies = [
  "orion_conf 0.4.2",
  "serde",
  "serde_json",
- "winnow",
+ "winnow 0.7.15",
  "wp-error 0.7.7",
  "wp-log 0.1.3",
 ]
 
 [[package]]
 name = "wp-self-update"
-version = "0.1.2"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6824a131ce6c9d532128f6dd983054812f160ce2ca46f5914ab0ce710aae44eb"
+checksum = "3c36875d4f4149af08d178115fd5070522df0a327e68d408f9ed7a5ba98c0e9c"
 dependencies = [
  "flate2",
  "hex",
+ "indicatif",
  "libc",
  "orion-error 0.6.0",
  "reqwest",
@@ -7530,9 +7562,9 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wildmatch",
- "winnow",
+ "winnow 0.7.15",
  "wp-connector-api 0.8.1",
  "wp-model-core",
 ]
@@ -7558,7 +7590,7 @@ dependencies = [
  "smol_str",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.6+spec-1.1.0",
+ "toml 1.0.7+spec-1.1.0",
  "wildmatch",
  "wp-log 0.2.0",
  "wp-model-core",
