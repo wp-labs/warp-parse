@@ -19,7 +19,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
     match cli.cmd {
         WProj::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
         WProj::Engine(sub) => dispatch_engine_cmd(sub).await?,
-        WProj::Conf(sub) => dispatch_conf_cmd(sub)?,
+        WProj::Conf(sub) => dispatch_conf_cmd(sub).await?,
         other => {
             let dict = load_sec_dict()?;
             match other {
@@ -52,9 +52,9 @@ async fn dispatch_engine_cmd(cmd: EngineCmd) -> RunResult<()> {
     }
 }
 
-fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
+async fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
     match cmd {
-        ConfCmd::Update(args) => run_conf_update(args),
+        ConfCmd::Update(args) => run_conf_update(args).await,
     }
 }
 

@@ -7170,6 +7170,7 @@ dependencies = [
  "socket2 0.6.3",
  "strfmt",
  "sysinfo",
+ "tempfile",
  "thiserror 2.0.18",
  "time",
  "tokio",

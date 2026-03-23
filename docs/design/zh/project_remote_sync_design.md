@@ -506,6 +506,58 @@ wproj check --what wpl --fail-fast
 - 校验失败时 reload / restart 都不会继续
 - 结果可结构化追踪
 
+## 日志与排障
+
+建议把远程更新链路的日志视为排障主入口。
+
+关键日志：
+
+- `project remote sync start`
+- `project remote sync target resolved`
+- `project remote sync tag resolved`
+- `project remote sync diff`
+- `project remote sync apply managed dirs`
+- `project remote sync done`
+- `project remote sync apply failed`
+- `project remote sync rollback done`
+- `wproj conf update start`
+- `wproj conf update validate failed`
+- `wproj conf update rollback done`
+- `admin api project update start`
+- `admin api project update done`
+- `admin api project update failed`
+- `admin api project rollback done`
+
+建议重点关注的字段：
+
+- `request_id`
+- `work_root`
+- `requested_version`
+- `current_version`
+- `resolved_tag`
+- `from_revision`
+- `to_revision`
+- `changed`
+- `error`
+
+常用排障示例：
+
+```bash
+grep -E "project remote sync|wproj conf update|admin api project update" data/logs/wparse.log
+```
+
+```bash
+grep -E "project remote sync apply failed|validate failed|rollback" data/logs/wparse.log
+```
+
+用途：
+
+- 看请求想更新到哪个版本
+- 看最终解析到了哪个 tag / commit
+- 看这次是否真的切换了受管目录
+- 看失败发生在同步、检测还是 reload 阶段
+- 看回滚是否已经执行，以及回滚是否失败
+
 ## 对应英文版
 
 - [../en/project_remote_sync_design.md](../en/project_remote_sync_design.md)

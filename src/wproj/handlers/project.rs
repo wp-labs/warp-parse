@@ -19,14 +19,33 @@ pub fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
 }
 
 pub fn check_project(args: ProjectCheckArgs, dict: &EnvDict) -> RunResult<()> {
-    let project = WarpProject::load(args.work_root.clone(), PrjScope::Normal, dict)?;
-    let mut opts = checker::CheckOptions::new(&args.work_root);
-    opts.what = args.what.clone();
-    opts.console = args.console;
-    opts.fail_fast = args.fail_fast;
-    opts.json = args.json;
-    opts.only_fail = args.only_fail;
     let comps = build_components(&args)?;
+    check_project_components(
+        &args.work_root,
+        comps,
+        args.console,
+        args.fail_fast,
+        args.json,
+        args.only_fail,
+        dict,
+    )
+}
+
+pub fn check_project_components(
+    work_root: &str,
+    comps: checker::CheckComponents,
+    console: bool,
+    fail_fast: bool,
+    json: bool,
+    only_fail: bool,
+    dict: &EnvDict,
+) -> RunResult<()> {
+    let project = WarpProject::load(work_root.to_string(), PrjScope::Normal, dict)?;
+    let mut opts = checker::CheckOptions::new(work_root);
+    opts.console = console;
+    opts.fail_fast = fail_fast;
+    opts.json = json;
+    opts.only_fail = only_fail;
     checker::check_with(&project, &opts, &comps, dict)
 }
 
@@ -87,9 +106,11 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
     }
 
     let mut conf = fs::read_to_string(&conf_path).map_err(|e| {
-        RunReason::from_conf()
-            .to_err()
-            .with_detail(format!("read {} failed: {}", conf_path.display(), e))
+        RunReason::from_conf().to_err().with_detail(format!(
+            "read {} failed: {}",
+            conf_path.display(),
+            e
+        ))
     })?;
     if conf.contains("[admin_api]") {
         return Ok(());
@@ -101,9 +122,11 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
     conf.push_str(DEFAULT_ADMIN_API_BLOCK);
 
     fs::write(&conf_path, conf).map_err(|e| {
-        RunReason::from_conf()
-            .to_err()
-            .with_detail(format!("write {} failed: {}", conf_path.display(), e))
+        RunReason::from_conf().to_err().with_detail(format!(
+            "write {} failed: {}",
+            conf_path.display(),
+            e
+        ))
     })?;
     Ok(())
 }

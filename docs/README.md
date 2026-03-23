@@ -3,14 +3,14 @@
 This directory is organized by two axes:
 
 - Category: `use` and `design`
-- Language: `zh-CN` and `en`
+- Language: `zh` and `en`
 
 ## Quick Links
 
 ### 中文
 
-- 使用类入口: [use/zh-CN/README.md](use/zh-CN/README.md)
-- 设计类入口: [design/zh-CN/README.md](design/zh-CN/README.md)
+- 使用类入口: [use/zh/README.md](use/zh/README.md)
+- 设计类入口: [design/zh/README.md](design/zh/README.md)
 
 ### English
 

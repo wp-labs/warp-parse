@@ -501,6 +501,58 @@ Future work:
 - reload/restart does not continue after validation failure
 - results are traceable in structured form
 
+## Logging And Troubleshooting
+
+Treat the remote update logs as the primary troubleshooting entry point.
+
+Key log messages:
+
+- `project remote sync start`
+- `project remote sync target resolved`
+- `project remote sync tag resolved`
+- `project remote sync diff`
+- `project remote sync apply managed dirs`
+- `project remote sync done`
+- `project remote sync apply failed`
+- `project remote sync rollback done`
+- `wproj conf update start`
+- `wproj conf update validate failed`
+- `wproj conf update rollback done`
+- `admin api project update start`
+- `admin api project update done`
+- `admin api project update failed`
+- `admin api project rollback done`
+
+Recommended fields to grep:
+
+- `request_id`
+- `work_root`
+- `requested_version`
+- `current_version`
+- `resolved_tag`
+- `from_revision`
+- `to_revision`
+- `changed`
+- `error`
+
+Common troubleshooting examples:
+
+```bash
+grep -E "project remote sync|wproj conf update|admin api project update" data/logs/wparse.log
+```
+
+```bash
+grep -E "project remote sync apply failed|validate failed|rollback" data/logs/wparse.log
+```
+
+Use these logs to answer:
+
+- which version was requested
+- which tag / commit was finally resolved
+- whether managed directories were actually switched
+- whether the failure happened in sync, validation, or reload
+- whether rollback ran and whether rollback itself failed
+
 ## Chinese Counterpart
 
 - [../zh/project_remote_sync_design.md](../zh/project_remote_sync_design.md)

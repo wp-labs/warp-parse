@@ -16,6 +16,8 @@ use tempfile::tempdir;
 #[derive(Clone, Copy, Default)]
 struct FixtureOptions {
     blackhole_sleep_ms: Option<u64>,
+    broken_runtime_release: bool,
+    invalid_conf_release: bool,
 }
 
 fn reserve_local_addr() -> SocketAddr {
@@ -294,6 +296,14 @@ fn run_wproj(work_root: &Path, args: &[&str]) -> Output {
         .expect("run wproj")
 }
 
+fn run_wproj_from_cwd(cwd: &Path, args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_wproj"))
+        .current_dir(cwd)
+        .args(args)
+        .output()
+        .expect("run wproj from custom cwd")
+}
+
 async fn wait_until_ready(
     child: &mut Child,
     work_root: &Path,
@@ -497,12 +507,22 @@ fn create_remote_project_repo_with_options(
         temp.path().to_str().expect("repo path utf8"),
         "1.4.2",
     );
-    write_file(temp.path(), "project/version.txt", "1.4.2\n");
+    write_file(temp.path(), "models/version.txt", "1.4.2\n");
     let repo = Repository::init(temp.path()).expect("init remote repo");
     commit_all(&repo, "release 1.4.2");
     tag_head(&repo, "v1.4.2");
 
-    write_file(temp.path(), "project/version.txt", "1.4.3\n");
+    write_file(temp.path(), "models/version.txt", "1.4.3\n");
+    if options.broken_runtime_release {
+        write_file(
+            temp.path(),
+            "topology/sinks/business.d/demo.toml",
+            "this is not valid toml\n",
+        );
+    }
+    if options.invalid_conf_release {
+        write_file(temp.path(), "conf/wparse.toml", "this is not valid toml\n");
+    }
     commit_all(&repo, "release 1.4.3");
     tag_head(&repo, "v1.4.3");
 
@@ -717,6 +737,7 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
         source_bind,
         FixtureOptions {
             blackhole_sleep_ms: Some(3_000),
+            ..FixtureOptions::default()
         },
     );
     let base_url = format!("http://{}", bind);
@@ -794,6 +815,7 @@ async fn daemon_admin_api_reports_force_replace_when_drain_times_out() {
         source_bind,
         FixtureOptions {
             blackhole_sleep_ms: Some(15_000),
+            ..FixtureOptions::default()
         },
     );
     let base_url = format!("http://{}", bind);
@@ -977,9 +999,94 @@ async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
     assert_eq!(body["current_version"], "1.4.3");
     assert_eq!(body["resolved_tag"], "v1.4.3");
     assert_eq!(
-        fs::read_to_string(clone.path().join("project/version.txt"))
+        fs::read_to_string(clone.path().join("models/version.txt"))
             .expect("read updated version marker"),
         "1.4.3\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("runtime/admin_api.token"))
+            .expect("read runtime token after update"),
+        "test-token\n"
+    );
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn daemon_admin_api_reload_with_update_rolls_back_on_reload_failure() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo_with_options(
+        bind,
+        source_bind,
+        FixtureOptions {
+            broken_runtime_release: true,
+            ..FixtureOptions::default()
+        },
+    );
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(clone.path(), "daemon");
+
+    wait_until_ready(
+        &mut child,
+        clone.path(),
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+    let original_rule_mapping = fs::read(clone.path().join(".run/rule_mapping.dat"))
+        .expect("read original runtime rule mapping");
+
+    let client = reqwest::Client::new();
+    let resp = client
+        .post(format!("{}/admin/v1/reloads/model", base_url))
+        .bearer_auth("test-token")
+        .header("X-Request-Id", "integration-reload-update-fail-1")
+        .json(&serde_json::json!({
+            "wait": true,
+            "update": true,
+            "version": "1.4.3",
+            "timeout_ms": 15000,
+            "reason": "integration reload rollback"
+        }))
+        .send()
+        .await
+        .expect("send reload update request");
+
+    assert_eq!(resp.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    let body: Value = resp.json().await.expect("decode reload failure response");
+    assert_eq!(body["accepted"], true);
+    assert_eq!(body["result"], "reload_failed");
+    assert_eq!(body["update"], true);
+    assert_eq!(body["requested_version"], "1.4.3");
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read rolled back version marker"),
+        "1.4.2\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("runtime/admin_api.token"))
+            .expect("read runtime token after rollback"),
+        "test-token\n"
+    );
+    assert_eq!(
+        fs::read(clone.path().join(".run/rule_mapping.dat"))
+            .expect("read restored runtime rule mapping"),
+        original_rule_mapping
+    );
+
+    let log_dump = read_wparse_log(clone.path());
+    assert!(
+        log_dump.contains(
+            "admin api project rollback done request_id=integration-reload-update-fail-1"
+        ),
+        "expected rollback log, got:\n{}",
+        log_dump
     );
 
     shutdown_child(&mut child);
@@ -995,6 +1102,7 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
         source_bind,
         FixtureOptions {
             blackhole_sleep_ms: Some(3_000),
+            ..FixtureOptions::default()
         },
     );
     let clone = clone_project_repo(remote.path());
@@ -1055,8 +1163,99 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
     assert_eq!(second_body["accepted"], false);
     assert_eq!(second_body["result"], "reload_in_progress");
     assert_eq!(
-        fs::read_to_string(clone.path().join("project/version.txt"))
+        fs::read_to_string(clone.path().join("models/version.txt"))
             .expect("read version marker after conflict"),
+        "1.4.2\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("runtime/admin_api.token"))
+            .expect("read runtime token after conflict"),
+        "test-token\n"
+    );
+
+    let first = first.await.expect("join first reload");
+    assert_eq!(first.status(), StatusCode::OK);
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo_with_options(
+        bind,
+        source_bind,
+        FixtureOptions {
+            blackhole_sleep_ms: Some(3_000),
+            ..FixtureOptions::default()
+        },
+    );
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(clone.path(), "daemon");
+
+    wait_until_ready(
+        &mut child,
+        clone.path(),
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+
+    send_tcp_line(source_bind, "lock during reload test\n");
+    thread::sleep(Duration::from_millis(200));
+
+    let client = reqwest::Client::new();
+    let first_client = client.clone();
+    let first_base = base_url.clone();
+    let first = tokio::spawn(async move {
+        first_client
+            .post(format!("{}/admin/v1/reloads/model", first_base))
+            .bearer_auth("test-token")
+            .header("X-Request-Id", "integration-reload-lock-1")
+            .json(&serde_json::json!({
+                "wait": true,
+                "timeout_ms": 15000,
+                "reason": "hold project remote lock during reload"
+            }))
+            .send()
+            .await
+            .expect("send reload request")
+    });
+
+    wait_until_reloading(&base_url, "test-token", Duration::from_secs(5)).await;
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+        ],
+    );
+    assert!(
+        !conf_update.status.success(),
+        "wproj conf update unexpectedly succeeded during runtime reload: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    let stderr = String::from_utf8_lossy(&conf_update.stderr);
+    assert!(
+        stderr.contains("project remote update already in progress"),
+        "expected project remote lock conflict, got stderr=\n{}",
+        stderr
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read version marker after rejected update"),
         "1.4.2\n"
     );
 
@@ -1064,6 +1263,214 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
     assert_eq!(first.status(), StatusCode::OK);
 
     shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_rolls_back_when_project_check_fails() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo_with_options(
+        bind,
+        source_bind,
+        FixtureOptions {
+            invalid_conf_release: true,
+            ..FixtureOptions::default()
+        },
+    );
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+        ],
+    );
+    assert!(
+        !conf_update.status.success(),
+        "wproj conf update unexpectedly succeeded: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read rolled back version marker"),
+        "1.4.2\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("runtime/admin_api.token"))
+            .expect("read runtime token after rollback"),
+        "test-token\n"
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo(bind, source_bind);
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+    write_file(clone.path(), ".warp_parse/sec_key.toml", "X = \n");
+    write_file(clone.path(), ".run/rule_mapping.dat", "original mapping\n");
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+        ],
+    );
+    assert!(
+        !conf_update.status.success(),
+        "wproj conf update unexpectedly succeeded: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read rolled back version marker"),
+        "1.4.2\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join(".run/rule_mapping.dat"))
+            .expect("read restored runtime mapping"),
+        "original mapping\n"
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo_with_options(
+        bind,
+        source_bind,
+        FixtureOptions {
+            broken_runtime_release: true,
+            ..FixtureOptions::default()
+        },
+    );
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+        ],
+    );
+    assert!(
+        !conf_update.status.success(),
+        "wproj conf update unexpectedly succeeded: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read rolled back version marker"),
+        "1.4.2\n"
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo(bind, source_bind);
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+    let outside = tempdir().expect("tempdir");
+
+    let conf_update = run_wproj_from_cwd(
+        outside.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+            "--json",
+        ],
+    );
+    assert!(
+        conf_update.status.success(),
+        "wproj conf update from external cwd failed: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    let conf_body: Value = serde_json::from_slice(&conf_update.stdout).unwrap_or_else(|err| {
+        panic!(
+            "decode conf update json failed: {} stdout=\n{}\nstderr=\n{}",
+            err,
+            String::from_utf8_lossy(&conf_update.stdout),
+            String::from_utf8_lossy(&conf_update.stderr)
+        )
+    });
+    assert_eq!(conf_body["current_version"], "1.4.3");
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read updated version marker"),
+        "1.4.3\n"
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
+    let bind = reserve_local_addr();
+    let source_bind = reserve_local_addr();
+    let remote = create_remote_project_repo(bind, source_bind);
+    let clone = clone_project_repo(remote.path());
+    checkout_tag(clone.path(), "v1.4.2");
+    write_file(clone.path(), ".run/rule_mapping.dat", "original mapping\n");
+
+    let conf_update = run_wproj(
+        clone.path(),
+        &[
+            "conf",
+            "update",
+            "--work-root",
+            clone.path().to_str().expect("work root utf8"),
+            "--version",
+            "1.4.3",
+        ],
+    );
+    assert!(
+        conf_update.status.success(),
+        "wproj conf update failed: stdout=\n{}\nstderr=\n{}",
+        String::from_utf8_lossy(&conf_update.stdout),
+        String::from_utf8_lossy(&conf_update.stderr)
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("models/version.txt"))
+            .expect("read updated version marker"),
+        "1.4.3\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join(".run/rule_mapping.dat"))
+            .expect("read preserved runtime mapping"),
+        "original mapping\n"
+    );
 }
 
 #[tokio::test]
@@ -1093,15 +1500,26 @@ async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_rem
         String::from_utf8_lossy(&conf_update.stdout),
         String::from_utf8_lossy(&conf_update.stderr)
     );
-    let conf_body: Value =
-        serde_json::from_slice(&conf_update.stdout).expect("decode conf update json");
+    let conf_body: Value = serde_json::from_slice(&conf_update.stdout).unwrap_or_else(|err| {
+        panic!(
+            "decode conf update json failed: {} stdout=\n{}\nstderr=\n{}",
+            err,
+            String::from_utf8_lossy(&conf_update.stdout),
+            String::from_utf8_lossy(&conf_update.stderr)
+        )
+    });
     assert_eq!(conf_body["requested_version"], "1.4.3");
     assert_eq!(conf_body["current_version"], "1.4.3");
     assert_eq!(conf_body["resolved_tag"], "v1.4.3");
     assert_eq!(
-        fs::read_to_string(clone.path().join("project/version.txt"))
+        fs::read_to_string(clone.path().join("models/version.txt"))
             .expect("read updated version marker"),
         "1.4.3\n"
+    );
+    assert_eq!(
+        fs::read_to_string(clone.path().join("runtime/admin_api.token"))
+            .expect("read runtime token after reload"),
+        "test-token\n"
     );
 
     checkout_tag(clone.path(), "v1.4.2");

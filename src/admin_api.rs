@@ -469,6 +469,13 @@ struct AppState {
     version: String,
 }
 
+struct ProjectRemoteReloadContext {
+    _lock_guard: crate::project_remote::ProjectRemoteLockGuard,
+    snapshot: Option<crate::project_remote::ProjectRemoteSnapshot>,
+    runtime_snapshot: Option<crate::project_remote::ProjectRuntimeArtifactSnapshot>,
+    update_result: Option<crate::project_remote::ProjectRemoteUpdateResult>,
+}
+
 #[derive(Debug, Deserialize, Default)]
 struct ReloadRequest {
     #[serde(default = "default_wait")]
@@ -707,6 +714,27 @@ async fn reload_response(
         );
     }
 
+    let reload_lock = match crate::project_remote::acquire_project_remote_lock(&state.work_root) {
+        Ok(lock) => lock,
+        Err(err) => {
+            return json_response(
+                StatusCode::CONFLICT,
+                &ReloadResponse {
+                    request_id: request_id.to_string(),
+                    accepted: false,
+                    result: "update_in_progress",
+                    update: Some(reload_req.update),
+                    requested_version: reload_req.version.clone(),
+                    current_version: None,
+                    resolved_tag: None,
+                    force_replaced: None,
+                    warning: None,
+                    error: Some(err.to_string()),
+                },
+            );
+        }
+    };
+
     let rollback_snapshot = if reload_req.update {
         match crate::project_remote::capture_project_remote_snapshot(&state.work_root) {
             Ok(snapshot) => Some(snapshot),
@@ -725,13 +753,9 @@ async fn reload_response(
     } else {
         None
     };
-
-    let update_result = if reload_req.update {
-        match crate::project_remote::sync_project_remote(
-            &state.work_root,
-            reload_req.version.as_deref(),
-        ) {
-            Ok(result) => Some(result),
+    let runtime_snapshot = if reload_req.update {
+        match crate::project_remote::capture_runtime_artifact_snapshot(&state.work_root) {
+            Ok(snapshot) => Some(snapshot),
             Err(err) => {
                 return json_response(
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -748,6 +772,60 @@ async fn reload_response(
         None
     };
 
+    let update_result = if reload_req.update {
+        info_ctrl!(
+            "admin api project update start request_id={} remote={} requested_version={}",
+            request_id,
+            remote_addr,
+            reload_req.version.as_deref().unwrap_or("(auto)")
+        );
+        match crate::project_remote::sync_project_remote(
+            &state.work_root,
+            reload_req.version.as_deref(),
+        ) {
+            Ok(result) => {
+                info_ctrl!(
+                    "admin api project update done request_id={} remote={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
+                    request_id,
+                    remote_addr,
+                    reload_req.version.as_deref().unwrap_or("(auto)"),
+                    result.current_version,
+                    result.resolved_tag,
+                    result.from_revision.as_deref().unwrap_or("-"),
+                    result.to_revision,
+                    result.changed
+                );
+                Some(result)
+            }
+            Err(err) => {
+                warn_ctrl!(
+                    "admin api project update failed request_id={} remote={} requested_version={} error={}",
+                    request_id,
+                    remote_addr,
+                    reload_req.version.as_deref().unwrap_or("(auto)"),
+                    err
+                );
+                return json_response(
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "update_failed",
+                        error: err.to_string(),
+                    },
+                );
+            }
+        }
+    } else {
+        None
+    };
+    let mut reload_ctx = Some(ProjectRemoteReloadContext {
+        _lock_guard: reload_lock,
+        snapshot: rollback_snapshot,
+        runtime_snapshot,
+        update_result: update_result.clone(),
+    });
+
     match state
         .control_handle
         .request_load_model(request_id.to_string())
@@ -762,6 +840,15 @@ async fn reload_response(
                 reason
             );
             if !reload_req.wait {
+                if let Some(ctx) = reload_ctx.take() {
+                    tokio::spawn(monitor_reload_result(
+                        reply_rx,
+                        state.work_root.clone(),
+                        ctx,
+                        remote_addr,
+                        reason.to_string(),
+                    ));
+                }
                 return json_response(
                     StatusCode::ACCEPTED,
                     &ReloadResponse {
@@ -790,9 +877,28 @@ async fn reload_response(
                     .timeout_ms
                     .unwrap_or(state.request_timeout.as_millis() as u64),
             );
-            match timeout(wait_timeout, reply_rx).await {
+            let mut reply_rx = reply_rx;
+            match timeout(wait_timeout, &mut reply_rx).await {
                 Ok(Ok(resp)) => {
-                    map_runtime_response(resp, remote_addr, reason, update_result.as_ref())
+                    let rollback_warning =
+                        if matches!(resp.result, RuntimeCommandResult::ReloadFailed { .. }) {
+                            rollback_updated_project(
+                                &state.work_root,
+                                reload_ctx.as_ref(),
+                                request_id,
+                                remote_addr,
+                                "reload_failed",
+                            )
+                        } else {
+                            None
+                        };
+                    map_runtime_response(
+                        resp,
+                        remote_addr,
+                        reason,
+                        update_result.as_ref(),
+                        rollback_warning,
+                    )
                 }
                 Ok(Err(_)) => json_response(
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -811,11 +917,26 @@ async fn reload_response(
                             .as_ref()
                             .map(|result| result.resolved_tag.clone()),
                         force_replaced: None,
-                        warning: None,
+                        warning: rollback_updated_project(
+                            &state.work_root,
+                            reload_ctx.as_ref(),
+                            request_id,
+                            remote_addr,
+                            "response_channel_closed",
+                        ),
                         error: Some("runtime response channel closed".to_string()),
                     },
                 ),
                 Err(_) => {
+                    if let Some(ctx) = reload_ctx.take() {
+                        tokio::spawn(monitor_reload_result(
+                            reply_rx,
+                            state.work_root.clone(),
+                            ctx,
+                            remote_addr,
+                            reason.to_string(),
+                        ));
+                    }
                     info_ctrl!(
                         "admin api reload still running request_id={} remote={} timeout_ms={} reason={}",
                         request_id,
@@ -848,23 +969,13 @@ async fn reload_response(
             }
         }
         Err(err) => {
-            if let (Some(snapshot), Some(update_result)) =
-                (rollback_snapshot.as_ref(), update_result.as_ref())
-            {
-                if update_result.changed {
-                    if let Err(restore_err) = crate::project_remote::restore_project_remote_snapshot(
-                        &state.work_root,
-                        snapshot,
-                    ) {
-                        warn_ctrl!(
-                            "admin api reload rollback failed request_id={} remote={} error={}",
-                            request_id,
-                            remote_addr,
-                            restore_err
-                        );
-                    }
-                }
-            }
+            let _ = rollback_updated_project(
+                &state.work_root,
+                reload_ctx.as_ref(),
+                request_id,
+                remote_addr,
+                "send_error",
+            );
             map_send_error(request_id, remote_addr, reason, err)
         }
     }
@@ -875,6 +986,7 @@ fn map_runtime_response(
     remote_addr: SocketAddr,
     reason: &str,
     update_result: Option<&crate::project_remote::ProjectRemoteUpdateResult>,
+    rollback_warning: Option<String>,
 ) -> Response<Full<Bytes>> {
     match resp.result {
         RuntimeCommandResult::ReloadDone => {
@@ -896,7 +1008,7 @@ fn map_runtime_response(
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: Some(false),
-                    warning: None,
+                    warning: rollback_warning,
                     error: None,
                 },
             )
@@ -920,9 +1032,9 @@ fn map_runtime_response(
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: Some(true),
-                    warning: Some(
-                        "graceful drain timed out, fallback to force replace".to_string(),
-                    ),
+                    warning: rollback_warning.or_else(|| {
+                        Some("graceful drain timed out, fallback to force replace".to_string())
+                    }),
                     error: None,
                 },
             )
@@ -947,10 +1059,121 @@ fn map_runtime_response(
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
                     force_replaced: None,
-                    warning: None,
+                    warning: rollback_warning,
                     error: Some(err),
                 },
             )
+        }
+    }
+}
+
+fn rollback_updated_project(
+    work_root: &Path,
+    reload_ctx: Option<&ProjectRemoteReloadContext>,
+    request_id: &str,
+    remote_addr: SocketAddr,
+    stage: &str,
+) -> Option<String> {
+    let ctx = reload_ctx?;
+    let Some(snapshot) = ctx.snapshot.as_ref() else {
+        return None;
+    };
+    let Some(runtime_snapshot) = ctx.runtime_snapshot.as_ref() else {
+        return None;
+    };
+    let Some(update_result) = ctx.update_result.as_ref() else {
+        return None;
+    };
+    match rollback_project_and_runtime(work_root, snapshot, update_result.changed, runtime_snapshot)
+    {
+        Ok(()) => {
+            info_ctrl!(
+                "admin api project rollback done request_id={} remote={} stage={} target_version={} changed={}",
+                request_id,
+                remote_addr,
+                stage,
+                update_result.current_version,
+                update_result.changed
+            );
+            None
+        }
+        Err(err) => {
+            warn_ctrl!(
+                "admin api project rollback failed request_id={} remote={} stage={} error={}",
+                request_id,
+                remote_addr,
+                stage,
+                err
+            );
+            Some(format!("project rollback failed: {}", err))
+        }
+    }
+}
+
+fn rollback_project_and_runtime(
+    work_root: &Path,
+    snapshot: &crate::project_remote::ProjectRemoteSnapshot,
+    changed: bool,
+    runtime_snapshot: &crate::project_remote::ProjectRuntimeArtifactSnapshot,
+) -> wp_error::run_error::RunResult<()> {
+    let mut errs = Vec::new();
+    if let Err(err) =
+        crate::project_remote::restore_project_remote_update(work_root, snapshot, changed)
+    {
+        errs.push(format!("restore project failed: {}", err));
+    }
+    if let Err(err) =
+        crate::project_remote::restore_runtime_artifact_snapshot(work_root, runtime_snapshot)
+    {
+        errs.push(format!("restore runtime artifacts failed: {}", err));
+    }
+    if errs.is_empty() {
+        return Ok(());
+    }
+    Err(wp_error::run_error::RunReason::from_conf()
+        .to_err()
+        .with_detail(errs.join("; ")))
+}
+
+async fn monitor_reload_result(
+    reply_rx: oneshot::Receiver<RuntimeCommandResp>,
+    work_root: PathBuf,
+    reload_ctx: ProjectRemoteReloadContext,
+    remote_addr: SocketAddr,
+    reason: String,
+) {
+    match reply_rx.await {
+        Ok(resp) => {
+            if matches!(resp.result, RuntimeCommandResult::ReloadFailed { .. }) {
+                let _ = rollback_updated_project(
+                    &work_root,
+                    Some(&reload_ctx),
+                    &resp.request_id,
+                    remote_addr,
+                    "background_reload_failed",
+                );
+            }
+            info_ctrl!(
+                "admin api background reload finished request_id={} remote={} result={} reason={}",
+                resp.request_id,
+                remote_addr,
+                result_code(&resp.result),
+                reason
+            );
+        }
+        Err(_) => {
+            let _ = rollback_updated_project(
+                &work_root,
+                Some(&reload_ctx),
+                "<unknown>",
+                remote_addr,
+                "background_channel_closed",
+            );
+            warn_ctrl!(
+                "admin api background reload response channel closed remote={} reason={}",
+                remote_addr,
+                reason
+            );
         }
     }
 }
