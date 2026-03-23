@@ -1,16 +1,23 @@
 use crate::args::{SelfCheckArgs, SelfSourceArgs, SelfUpdateArgs, UpdateChannel};
 use crate::format::print_json;
-use wp_error::run_error::RunResult;
+use orion_error::{ToStructError, UvsFrom};
+use std::env;
+use wp_error::run_error::{RunReason, RunResult};
 use wp_self_update::{
     check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
     SourceKind, UpdateChannel as CoreChannel, UpdateProduct, UpdateReport, UpdateRequest,
     UpdateTarget, VersionRelation,
 };
 
+const DEFAULT_SELF_UPDATE_BASE_URL: &str =
+    "https://raw.githubusercontent.com/wp-labs/wp-install/refs/heads/main/updates";
+const SELF_UPDATE_BASE_URL_ENV: &str = "UPDATE_BASE_URL";
+const SELF_UPDATE_ROOT_ENV: &str = "WPROJ_SELF_UPDATE_ROOT";
+
 pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
     let report = check(CheckRequest {
-        product: self_update_product_name(),
-        source: to_core_source(&args.source),
+        product: UpdateProduct::Suite.as_str().to_string(),
+        source: to_core_source(&args.source)?,
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         branch: warp_parse::build::BRANCH.to_string(),
     })
@@ -27,9 +34,9 @@ pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
 
 pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
     let report = wp_self_update::update(UpdateRequest {
-        product: self_update_product_name(),
+        product: UpdateProduct::Suite.as_str().to_string(),
         target: UpdateTarget::Product(UpdateProduct::Suite),
-        source: to_core_source(&args.source),
+        source: to_core_source(&args.source)?,
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         install_dir: args.install_dir.as_deref().map(std::path::PathBuf::from),
         yes: args.yes,
@@ -46,18 +53,32 @@ pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
     Ok(())
 }
 
-fn to_core_source(source: &SelfSourceArgs) -> SourceConfig {
-    SourceConfig {
+fn to_core_source(source: &SelfSourceArgs) -> RunResult<SourceConfig> {
+    let updates_root = source
+        .updates_root
+        .as_deref()
+        .map(std::path::PathBuf::from)
+        .or_else(|| env::var_os(SELF_UPDATE_ROOT_ENV).map(std::path::PathBuf::from));
+    let updates_base_url = source
+        .updates_base_url
+        .clone()
+        .or_else(|| env::var(SELF_UPDATE_BASE_URL_ENV).ok())
+        .or_else(|| Some(DEFAULT_SELF_UPDATE_BASE_URL.to_string()));
+
+    if updates_root.is_none() && updates_base_url.is_none() {
+        return Err(RunReason::from_conf().to_err().with_detail(format!(
+            "self-update manifest source is required: provide --updates-base-url, --updates-root, or set {} / {}",
+            SELF_UPDATE_BASE_URL_ENV, SELF_UPDATE_ROOT_ENV
+        )));
+    }
+
+    Ok(SourceConfig {
         channel: to_core_channel(source.channel),
         kind: SourceKind::Manifest {
-            updates_base_url: source.updates_base_url.clone(),
-            updates_root: source.updates_root.as_deref().map(std::path::PathBuf::from),
+            updates_base_url: updates_base_url.unwrap_or_default(),
+            updates_root,
         },
-    }
-}
-
-fn self_update_product_name() -> String {
-    "warp-parse".to_string()
+    })
 }
 
 fn to_core_channel(channel: UpdateChannel) -> CoreChannel {
@@ -70,6 +91,7 @@ fn to_core_channel(channel: UpdateChannel) -> CoreChannel {
 
 fn print_check_report(report: &CheckReport, relation: VersionRelation) {
     println!("Self-check result");
+    println!("  Product  : {}", report.product);
     println!("  Channel  : {}", render_channel(&report.channel));
     println!("  Branch   : {}", report.branch);
     println!("  Manifest : {}", report.source);
@@ -87,6 +109,7 @@ fn print_check_report(report: &CheckReport, relation: VersionRelation) {
 fn print_update_report(report: &UpdateReport) {
     if report.updated {
         println!("Self-update complete");
+        println!("  Product  : {}", report.product);
         println!("  Channel  : {}", report.channel);
         println!("  Install  : {}", report.install_dir);
         println!("  Current  : {}", report.current_version);
@@ -98,6 +121,7 @@ fn print_update_report(report: &UpdateReport) {
 
     if report.status == "dry-run" {
         println!("Self-update dry run");
+        println!("  Product  : {}", report.product);
         println!("  Channel  : {}", report.channel);
         println!("  Install  : {}", report.install_dir);
         println!("  Current  : {}", report.current_version);
@@ -113,6 +137,7 @@ fn print_update_report(report: &UpdateReport) {
     }
 
     println!("Self-update skipped");
+    println!("  Product  : {}", report.product);
     println!("  Channel  : {}", report.channel);
     println!("  Install  : {}", report.install_dir);
     println!("  Current  : {}", report.current_version);
@@ -199,5 +224,27 @@ mod tests {
         assert_eq!(relation, VersionRelation::UpdateAvailable);
         let parsed = semver::Version::parse("0.20.0").unwrap();
         assert_eq!(parsed.to_string(), "0.20.0");
+    }
+
+    #[test]
+    fn to_core_source_uses_default_manifest_source() {
+        let source = to_core_source(&SelfSourceArgs {
+            channel: UpdateChannel::Stable,
+            updates_base_url: None,
+            updates_root: None,
+            json: false,
+        })
+        .expect("default manifest source should be available");
+
+        match source.kind {
+            SourceKind::Manifest {
+                updates_base_url,
+                updates_root,
+            } => {
+                assert_eq!(updates_base_url, DEFAULT_SELF_UPDATE_BASE_URL);
+                assert_eq!(updates_root, None);
+            }
+            other => panic!("unexpected source kind: {:?}", other),
+        }
     }
 }

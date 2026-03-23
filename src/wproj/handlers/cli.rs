@@ -1,4 +1,8 @@
-use crate::args::{KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, WProj, WProjCli};
+use crate::args::{
+    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, WProj, WProjCli,
+};
+use crate::handlers::conf::run_conf_update;
+use crate::handlers::engine::{run_engine_reload, run_engine_status};
 use crate::handlers::rescue::dispatch_rescue_cmd;
 use crate::handlers::rule::dispatch_rule_cmd;
 use crate::handlers::self_update::{run_self_check, run_self_update};
@@ -14,16 +18,20 @@ use wp_error::run_error::RunResult;
 pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
     match cli.cmd {
         WProj::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
+        WProj::Engine(sub) => dispatch_engine_cmd(sub).await?,
+        WProj::Conf(sub) => dispatch_conf_cmd(sub).await?,
         other => {
             let dict = load_sec_dict()?;
             match other {
                 WProj::Rule(sub) => dispatch_rule_cmd(sub, &dict)?,
-                WProj::Init(args) => project::init_project(args, &dict)?,
+                WProj::Init(args) => project::init_project(args, &dict).await?,
                 WProj::Check(args) => project::check_project(args, &dict)?,
                 WProj::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
                 WProj::Model(sub) => dispatch_model_cmd(sub, &dict)?,
                 WProj::Rescue(sub) => dispatch_rescue_cmd(sub)?,
                 WProj::SelfUpdate(_) => unreachable!("self command handled above"),
+                WProj::Engine(_) => unreachable!("engine command handled above"),
+                WProj::Conf(_) => unreachable!("conf command handled above"),
             }
         }
     }
@@ -34,6 +42,19 @@ async fn dispatch_self_cmd(cmd: SelfCmd) -> RunResult<()> {
     match cmd {
         SelfCmd::Check(args) => run_self_check(args).await,
         SelfCmd::Update(args) => run_self_update(args).await,
+    }
+}
+
+async fn dispatch_engine_cmd(cmd: EngineCmd) -> RunResult<()> {
+    match cmd {
+        EngineCmd::Status(args) => run_engine_status(args).await,
+        EngineCmd::Reload(args) => run_engine_reload(args).await,
+    }
+}
+
+async fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
+    match cmd {
+        ConfCmd::Update(args) => run_conf_update(args).await,
     }
 }
 
@@ -114,8 +135,8 @@ mod tests {
         let temp = tempfile::tempdir().expect("create temp dir");
         let _guard = CwdGuard::enter(temp.path());
 
-        let updates_dir = temp.path().join("updates").join("stable");
-        std::fs::create_dir_all(&updates_dir).expect("create updates dir");
+        let updates_dir = temp.path().join("stable");
+        std::fs::create_dir_all(&updates_dir).expect("create manifest dir");
 
         let manifest_path = updates_dir.join("manifest.json");
         let body = format!(
@@ -139,8 +160,7 @@ mod tests {
             cmd: WProj::SelfUpdate(SelfCmd::Check(SelfCheckArgs {
                 source: SelfSourceArgs {
                     channel: crate::args::UpdateChannel::Stable,
-                    updates_base_url: "https://raw.githubusercontent.com/wp-labs/wp-install/main"
-                        .to_string(),
+                    updates_base_url: None,
                     updates_root: Some(".".to_string()),
                     json: true,
                 },

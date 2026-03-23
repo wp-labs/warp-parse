@@ -10,17 +10,20 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.21.0 Unreleased]
 
 ### Added
-- **wproj self update**: 新增可执行安装的 `wproj self update` 流程，支持下载制品、校验 `sha256`、替换二进制、健康检查失败回滚，以及 `--yes`、`--dry-run`、`--force` 等控制参数。
-- **Self Update Core**: 新增独立 `warp-self-update` crate，集中承载 manifest 解析、版本比较、资产下载、安装与回滚逻辑。
+- **Self Update**: 新增可执行安装的 `wproj self update`，并引入独立 `warp-self-update` crate，统一承载 manifest 解析、版本比较、资产下载、安装与回滚逻辑；支持 `sha256` 校验、健康检查失败回滚，以及 `--yes`、`--dry-run`、`--force` 等控制参数。
+- **Admin API Dev Docs**: 新增独立的 Admin API 接口开发文档，单独说明 `GET /admin/v1/runtime/status`、`POST /admin/v1/reloads/model` 的请求/响应、状态码、并发冲突和 `update/version` 语义。
 
 ### Changed
-- **wp-motor**: 核心引擎依赖从 `v1.18.1` 升级到 `v1.19.3`，同步引入上游运行时命令总线、reload 结果结构化输出，以及 `wp-knowledge` / `wp-lang` 外部化依赖轨道调整。
-- **Self Update Architecture**: 移除重复的 `wp-self-update` crate，并将 self-check / self-update 逻辑统一收敛到 `warp-self-update`，避免同时维护两套 manifest / 版本解析实现。
-- **Self Update Refactor**: 将 `warp-self-update` 从单文件实现拆分为 `types`、`versioning`、`manifest`、`platform`、`fetch`、`install`、`lock` 等模块，同时保持对外 API 稳定。
+- **wp-motor**: 核心引擎依赖从 `v1.18.1` 升级到 `v1.19.6`，同步引入上游运行时命令总线、reload 结果结构化输出、事件驱动 drain，以及 `reload_timeout_ms` 配置能力。
+- **Remote Project Sync**: 远端初始化入口统一为 `wproj init --repo <REPO> [--version <VERSION>]`，移除 `--remote`；自动版本解析在未显式指定 `--version` 时优先选择最新 release tag，若远端没有 release tag，则自动回退到默认分支 `HEAD`，并以 `current_version=<branch>`、`resolved_tag=HEAD@<branch>` 记录状态。
+- **Runtime Status**: Admin API `GET /admin/v1/runtime/status` 与 `wproj engine status` 新增 `project_version`，用于返回当前工作目录实际使用的工程配置版本。
+- **Self Update Internal Layout**: self check / self update 能力统一收敛到 `warp-self-update`，不再维护两套 manifest / 版本解析实现；同时将内部实现拆分为 `types`、`versioning`、`manifest`、`platform`、`fetch`、`install`、`lock` 等模块。
+- **Test Stability**: 管理面与 project remote 集成测试为超时敏感场景显式设置较小 `reload_timeout_ms`，并移除一批不必要的 `#[serial]`，降低整组测试被串行队列放大的概率。
 
 ### Fixed
-- **Self Update Build/Test**: 修复 `wproj self` 混用新旧 self-update API 导致的合并后编译失败问题，并重写 crate 级安装 / 回滚覆盖用例，避免依赖本地监听端口。
-
+- **Project Remote Sync**: 修复 `wproj init --repo`、`wproj conf update` 与 admin reload/update 链路的参数对齐问题，并补齐远端初始化测试夹具以及首次引导场景的帮助、状态输出与文档一致性。
+- **Project Init Admin Token Path**: 修复 `wproj init` 在骨架已包含 `[admin_api]` 时未规范 token 路径的问题；当前会统一收敛为项目内 `runtime/admin_api.token`，避免遗留 `${HOME}/.warp_parse/admin_api.token`。
+- **Self Update Build/Test**: 修复 `wproj self` 合并后混用新旧 self update API 导致的构建失败，并重写相关安装/回滚覆盖，避免依赖本地监听端口。
 
 
 ## [0.20.2 ]
