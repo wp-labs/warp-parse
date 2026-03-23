@@ -4,8 +4,8 @@
 
 This document covers the operator workflow for:
 
-- pulling a WP project onto a remote machine
-- updating the project later with `git pull`
+- initializing a WP project on a remote machine from a remote version repository
+- updating the project later with `wproj conf update`
 - reloading rules or models without stopping `wparse daemon`
 
 This document does not cover authoring or debugging `parse.wpl`.
@@ -14,7 +14,7 @@ This document does not cover authoring or debugging `parse.wpl`.
 
 Treat a rule update as two separate actions:
 
-1. update files in the project working tree
+1. update managed project configuration files
 2. send a reload request to the live runtime
 
 That separation keeps repository sync independent from process lifecycle control.
@@ -23,10 +23,9 @@ That separation keeps repository sync independent from process lifecycle control
 
 The remote machine should have:
 
-- `git`
 - working `wproj` and `wparse` binaries, or the ability to run them with `cargo run --bin ...`
 - a fixed work root such as `/srv/wp/<project>`
-- a repository that already contains a valid WP project layout
+- a remote repository that already contains a valid WP project layout
 
 Before rollout, confirm:
 
@@ -71,13 +70,22 @@ Constraints:
 
 ## First Deployment
 
-### 1. Clone The Project
+### 1. Initialize From Remote
 
 ```bash
-mkdir -p /srv/wp
-git clone <repo> /srv/wp/<project>
-cd /srv/wp/<project>
+wproj init \
+  --work-root /srv/wp/<project> \
+  --remote https://github.com/wp-labs/editor-monitor-conf.git \
+  --version 1.4.2
 ```
+
+Notes:
+
+- `wproj init --remote` creates the local project skeleton first
+- `--remote` / `--version` are used only as bootstrap parameters for first sync
+- then it reuses `wproj conf update` for first sync and validation
+- after first sync, configuration from the remote repository becomes authoritative
+- if `--version` is omitted, it resolves the latest released version from remote
 
 ### 2. Validate The Project
 
@@ -120,10 +128,16 @@ Move into the target project:
 cd /srv/wp/<project>
 ```
 
-Pull the latest revision:
+Update to the default or resolved target version:
 
 ```bash
-git pull
+wproj conf update --work-root /srv/wp/<project>
+```
+
+To upgrade or roll back to a specific version:
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --version 1.4.3
 ```
 
 Run a minimal gate before reload:
@@ -178,7 +192,7 @@ This is not an immediate failure, but it should trigger extra observation.
 
 Use this fixed sequence:
 
-1. `git pull`
+1. `wproj conf update`
 2. `wproj check --what wpl --fail-fast`
 3. `wproj engine status`
 4. `wproj engine reload`
@@ -193,15 +207,12 @@ wproj check
 
 ## Rollback SOP
 
-If a reload introduces parse failures, field regressions, or downstream alarms, do not restart the daemon first. Roll back the project revision and reload again:
+If a reload introduces parse failures, field regressions, or downstream alarms, do not restart the daemon first. Roll back the project version and reload again:
 
 ```bash
-cd /srv/wp/<project>
-git log --oneline -n 5
-git checkout <last-known-good-revision>
-wproj check --what wpl --fail-fast
+wproj conf update --work-root /srv/wp/<project> --version 1.4.2
 cargo run --bin wproj -- engine reload \
-  --work-root . \
+  --work-root /srv/wp/<project> \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback rule set"
 ```
@@ -212,11 +223,10 @@ After rollback, verify:
 - `data/logs/`
 - sink output recovery
 
-If you need to return to the branch tip later:
+If you need to return to the latest release later:
 
 ```bash
-git checkout <branch>
-git pull
+wproj conf update --work-root /srv/wp/<project>
 ```
 
 ## Remote Override

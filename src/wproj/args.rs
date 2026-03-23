@@ -558,6 +558,22 @@ pub struct ProjectInitArgs {
         help = "初始化模式：full/normal/model/conf/data | Initialization mode: full/normal/model/conf/data"
     )]
     pub mode: String,
+
+    /// 远程项目仓库地址；指定后将在本地骨架初始化后立即执行远程配置同步 | Remote project repo URL
+    #[clap(
+        long = "remote",
+        visible_alias = "远程",
+        help = "远程项目仓库地址；指定后将在本地骨架初始化后立即执行远程配置同步 | Remote project repo URL; when set, run remote config sync after local init"
+    )]
+    pub remote: Option<String>,
+
+    /// 首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization
+    #[clap(
+        long = "version",
+        visible_alias = "版本",
+        help = "首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization; when omitted, resolve the latest released version from remote"
+    )]
+    pub version: Option<String>,
 }
 
 // 旧 Sink 工具组（Kafka/DB/Syslog）已迁移至 wpsink，这里不再暴露。

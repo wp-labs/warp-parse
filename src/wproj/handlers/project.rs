@@ -8,13 +8,24 @@ use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::project::{checker, init::PrjScope, WarpProject};
 
 use crate::args::{ProjectCheckArgs, ProjectInitArgs};
+use crate::handlers::conf::run_conf_update_from_repo;
 
-pub fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
+pub async fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
     WarpProject::init(
         args.work_root.clone(),
         PrjScope::from_str(args.mode.as_str())?,
         dict,
     )?;
+    let remote_repo = args
+        .remote
+        .as_deref()
+        .map(str::trim)
+        .filter(|repo| !repo.is_empty());
+    if let Some(remote_repo) = remote_repo {
+        return run_conf_update_from_repo(&args.work_root, remote_repo, args.version.as_deref())
+            .await;
+    }
+
     ensure_admin_api_config_block(Path::new(&args.work_root))
 }
 
@@ -136,10 +147,13 @@ mod tests {
     use crate::args::ProjectInitArgs;
 
     use super::*;
+    use git2::{Repository, Signature};
     use rand::{rng, RngCore};
     use serial_test::serial;
+    use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
     use wp_config::test_support::ForTest;
+    use wp_proj::project::init::PrjScope;
 
     fn uniq_tmp_dir() -> String {
         let base = std::path::PathBuf::from("./tmp");
@@ -154,9 +168,92 @@ mod tests {
             .to_string()
     }
 
-    #[test]
+    struct RemoteFixture {
+        _temp: tempfile::TempDir,
+        remote_path: PathBuf,
+    }
+
+    fn commit_all(repo: &Repository, message: &str) {
+        let mut index = repo.index().expect("open index");
+        index
+            .add_all(["*"], git2::IndexAddOption::DEFAULT, None)
+            .expect("add all");
+        index.write().expect("write index");
+        let tree_id = index.write_tree().expect("write tree");
+        let tree = repo.find_tree(tree_id).expect("find tree");
+        let sig = Signature::now("warp-parse-test", "warp-parse@test.local").expect("signature");
+        let parent = repo
+            .head()
+            .ok()
+            .and_then(|head| head.target())
+            .and_then(|oid| repo.find_commit(oid).ok());
+        match parent.as_ref() {
+            Some(parent) => repo
+                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[parent])
+                .expect("commit with parent"),
+            None => repo
+                .commit(Some("HEAD"), &sig, &sig, message, &tree, &[])
+                .expect("initial commit"),
+        };
+    }
+
+    fn tag_head(repo: &Repository, tag: &str) {
+        let obj = repo
+            .head()
+            .expect("head")
+            .peel(git2::ObjectType::Commit)
+            .expect("peel head");
+        repo.tag_lightweight(tag, &obj, false)
+            .expect("create lightweight tag");
+    }
+
+    fn rewrite_project_remote_conf(work_root: &Path, repo_url: &str, init_version: &str) {
+        let conf_path = work_root.join("conf/wparse.toml");
+        let conf = fs::read_to_string(&conf_path).expect("read wparse conf");
+        let conf = conf.replace(
+            "[project_remote]\nenabled = false\nrepo = \"\"\ninit_version = \"\"\n",
+            &format!(
+                "[project_remote]\nenabled = true\nrepo = \"{}\"\ninit_version = \"{}\"\n",
+                repo_url, init_version
+            ),
+        );
+        fs::write(&conf_path, conf).expect("write wparse conf");
+    }
+
+    fn create_remote_fixture(dict: &EnvDict) -> RemoteFixture {
+        let temp = tempfile::tempdir().expect("tempdir");
+        WarpProject::init(
+            temp.path().to_string_lossy().to_string(),
+            PrjScope::Normal,
+            dict,
+        )
+        .expect("init remote project");
+        ensure_admin_api_config_block(temp.path()).expect("append admin block");
+
+        let repo = Repository::init(temp.path()).expect("init remote repo");
+        rewrite_project_remote_conf(
+            temp.path(),
+            temp.path().to_str().expect("repo path utf8"),
+            "1.4.2",
+        );
+        fs::write(temp.path().join("models/version.txt"), "1.4.2\n").expect("write 1.4.2");
+        commit_all(&repo, "release 1.4.2");
+        tag_head(&repo, "v1.4.2");
+
+        fs::write(temp.path().join("models/version.txt"), "1.4.3\n").expect("write 1.4.3");
+        commit_all(&repo, "release 1.4.3");
+        tag_head(&repo, "v1.4.3");
+        let remote_path = temp.path().to_path_buf();
+
+        RemoteFixture {
+            _temp: temp,
+            remote_path,
+        }
+    }
+
+    #[tokio::test]
     #[serial]
-    fn wproj_project_init_full_ok() {
+    async fn wproj_project_init_full_ok() {
         let work = uniq_tmp_dir();
         // run project init (default full)
         println!("DEBUG: Attempting to initialize project at: {}", work);
@@ -171,9 +268,13 @@ mod tests {
             ProjectInitArgs {
                 work_root: work.clone(),
                 mode: "full".into(),
+                remote: None,
+                version: None,
             },
             &orion_variate::EnvDict::test_default(),
-        ) {
+        )
+        .await
+        {
             Ok(_) => println!("DEBUG: Project init succeeded"),
             Err(e) => {
                 println!("DEBUG: Project init failed with error: {:?}", e);
@@ -252,5 +353,30 @@ mod tests {
         let conf = std::fs::read_to_string(conf_path).expect("read conf");
         assert_eq!(conf.matches("[admin_api]").count(), 1);
         assert!(conf.contains("bind = \"127.0.0.1:19090\""));
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn wproj_project_init_remote_defaults_to_latest_release() {
+        let dict = orion_variate::EnvDict::test_default();
+        let fixture = create_remote_fixture(&dict);
+        let work = uniq_tmp_dir();
+
+        init_project(
+            ProjectInitArgs {
+                work_root: work.clone(),
+                mode: "normal".into(),
+                remote: Some(fixture.remote_path.to_string_lossy().to_string()),
+                version: None,
+            },
+            &dict,
+        )
+        .await
+        .expect("remote init");
+
+        assert_eq!(
+            fs::read_to_string(Path::new(&work).join("models/version.txt")).expect("read version"),
+            "1.4.3\n"
+        );
     }
 }

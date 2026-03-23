@@ -118,6 +118,10 @@ pub(super) fn resolve_default_version(
     latest_released_version(repo)
 }
 
+pub(super) fn resolve_latest_released_version(repo: &Repository) -> RunResult<String> {
+    latest_released_version(repo)
+}
+
 fn is_first_initialization(work_root: &Path) -> RunResult<bool> {
     Ok(!work_root.join(STATE_PATH).exists())
 }

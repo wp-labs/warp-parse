@@ -4,8 +4,8 @@
 
 本文用于整理以下运维任务：
 
-- 在远程机器上拉取一个 WP 工程
-- 后续通过 `git pull` 更新工程内容
+- 在远程机器上初始化一个来自远端版本仓库的 WP 工程
+- 后续通过 `wproj conf update` 更新工程内容
 - 在不中断 `wparse daemon` 进程的前提下触发规则或模型重载
 
 本文不覆盖具体 `parse.wpl` 的编写和调试。如果任务进入规则编写阶段，应转到独立的 WPL 验证流程。
@@ -14,7 +14,7 @@
 
 把“更新规则”拆成两个独立动作：
 
-1. 更新工程目录中的文件
+1. 更新工程目录中的受管配置文件
 2. 对在线运行的解析引擎发出重载请求
 
 这样可以避免把“代码/规则同步”和“进程生命周期管理”混在一起。
@@ -23,10 +23,9 @@
 
 远程机器应满足：
 
-- 已安装 `git`
 - 已安装可用的 `wproj`、`wparse`，或可通过 `cargo run --bin ...` 启动
 - 已约定固定工作目录，例如 `/srv/wp/<project>`
-- 目标工程仓库已经包含完整的 WP 目录结构与配置
+- 目标远端仓库已经包含完整的 WP 工程配置内容
 
 建议先确认：
 
@@ -71,13 +70,22 @@ chmod 600 runtime/admin_api.token
 
 ## 首次部署
 
-### 1. 拉取工程
+### 1. 远端初始化工程
 
 ```bash
-mkdir -p /srv/wp
-git clone <repo> /srv/wp/<project>
-cd /srv/wp/<project>
+wproj init \
+  --work-root /srv/wp/<project> \
+  --remote https://github.com/wp-labs/editor-monitor-conf.git \
+  --version 1.4.2
 ```
+
+说明：
+
+- `wproj init --remote` 会先生成本地工程骨架
+- `--remote` / `--version` 只作为首次同步引导参数
+- 然后自动复用 `wproj conf update` 完成首次同步和校验
+- 首次同步完成后，以远端仓库中的工程配置为准
+- 如果不指定 `--version`，会自动解析远端最新发布版本
 
 ### 2. 校验工程完整性
 
@@ -120,10 +128,16 @@ cargo run --bin wproj -- engine status --work-root .
 cd /srv/wp/<project>
 ```
 
-拉取最新内容：
+更新到指定版本或默认版本：
 
 ```bash
-git pull
+wproj conf update --work-root /srv/wp/<project>
+```
+
+如需显式升级或回退到某个版本：
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --version 1.4.3
 ```
 
 在发起重载前先做最小校验：
@@ -178,7 +192,7 @@ cargo run --bin wproj -- engine status --work-root .
 
 为避免把错误规则直接打进在线实例，建议将更新流程固定为：
 
-1. `git pull`
+1. `wproj conf update`
 2. `wproj check --what wpl --fail-fast`
 3. `wproj engine status`
 4. `wproj engine reload`
@@ -196,12 +210,9 @@ wproj check
 当新规则重载后出现解析错误、字段异常或下游告警时，不要先重启进程，先回滚工程版本并再次重载：
 
 ```bash
-cd /srv/wp/<project>
-git log --oneline -n 5
-git checkout <last-known-good-revision>
-wproj check --what wpl --fail-fast
+wproj conf update --work-root /srv/wp/<project> --version 1.4.2
 cargo run --bin wproj -- engine reload \
-  --work-root . \
+  --work-root /srv/wp/<project> \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback rule set"
 ```
@@ -212,11 +223,10 @@ cargo run --bin wproj -- engine reload \
 - `data/logs/`
 - 目标 sink 输出是否恢复
 
-如果后续仍需回到分支最新版本，再执行：
+如果后续仍需回到最新发布版本，再执行：
 
 ```bash
-git checkout <branch>
-git pull
+wproj conf update --work-root /srv/wp/<project>
 ```
 
 ## 远端覆盖方式
@@ -236,7 +246,7 @@ cargo run --bin wproj -- engine status \
 
 一次合格的远程规则更新至少应满足：
 
-- 仓库已成功 `clone` 或 `pull`
+- 首次远端初始化或后续 `wproj conf update` 已成功执行
 - `wproj check --what wpl --fail-fast` 通过
 - `wparse daemon` 持续运行，无需重启
 - `wproj engine reload` 返回可接受结果

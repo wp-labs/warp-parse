@@ -16,7 +16,7 @@ use self::managed::{
 };
 use self::repo::{
     checkout_commit, fetch_remote_tags, prepare_remote_repo, resolve_default_version,
-    resolve_tag_for_version,
+    resolve_latest_released_version, resolve_tag_for_version,
 };
 pub use self::state::{
     acquire_project_remote_lock, capture_project_remote_snapshot,
@@ -95,28 +95,67 @@ pub fn sync_project_remote<P: AsRef<Path>>(
     if remote_conf.repo.trim().is_empty() {
         return Err(conf_err("project_remote.repo must not be empty"));
     }
+    sync_project_remote_with_repo_inner(
+        work_root,
+        &remote_conf.repo,
+        requested_version,
+        Some(remote_conf.init_version.as_str()),
+        false,
+    )
+}
+
+pub fn sync_project_remote_from_repo<P: AsRef<Path>>(
+    work_root: P,
+    repo_url: &str,
+    requested_version: Option<&str>,
+) -> RunResult<ProjectRemoteUpdateResult> {
+    let work_root = work_root.as_ref();
+    if repo_url.trim().is_empty() {
+        return Err(conf_err("project_remote.repo must not be empty"));
+    }
+    sync_project_remote_with_repo_inner(work_root, repo_url, requested_version, None, true)
+}
+
+fn sync_project_remote_with_repo_inner(
+    work_root: &Path,
+    repo_url: &str,
+    requested_version: Option<&str>,
+    init_version: Option<&str>,
+    allow_latest_on_first_sync: bool,
+) -> RunResult<ProjectRemoteUpdateResult> {
     info_ctrl!(
         "project remote sync start work_root={} requested_version={} repo={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
-        remote_conf.repo
+        repo_url
     );
 
     let remote_root = work_root.join(REMOTE_CACHE_PATH);
-    let repo = prepare_remote_repo(&remote_root, &remote_conf.repo)?;
-    fetch_remote_tags(&repo, &remote_conf.repo)?;
+    let repo = prepare_remote_repo(&remote_root, repo_url)?;
+    fetch_remote_tags(&repo, repo_url)?;
 
     let previous_state = load_state(work_root)?;
     let target_version = match requested_version {
         Some(version) if !version.trim().is_empty() => version.trim().to_string(),
-        _ => resolve_default_version(work_root, &repo, remote_conf.init_version.as_str())?,
+        _ => match init_version
+            .map(str::trim)
+            .filter(|version| !version.is_empty())
+        {
+            Some(init_version) => resolve_default_version(work_root, &repo, init_version)?,
+            None if previous_state.is_none() && !allow_latest_on_first_sync => {
+                return Err(conf_err(
+                    "project_remote.init_version must be set for first-time initialization",
+                ))
+            }
+            None => resolve_latest_released_version(&repo)?,
+        },
     };
     info_ctrl!(
         "project remote sync target resolved work_root={} requested_version={} target_version={} init_version={} state_exists={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         target_version,
-        remote_conf.init_version,
+        init_version.unwrap_or("-"),
         previous_state.is_some()
     );
 

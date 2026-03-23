@@ -11,19 +11,62 @@ use wp_log::{info_ctrl, warn_ctrl};
 
 pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
     let work_root = resolve_work_root(&args.work_root)?;
+    run_conf_update_with_sync(
+        work_root,
+        args.version.as_deref(),
+        args.json,
+        |work_root, requested_version| {
+            project_remote::sync_project_remote(work_root, requested_version)
+        },
+    )
+    .await
+}
+
+pub async fn run_conf_update_from_repo(
+    work_root: &str,
+    repo_url: &str,
+    requested_version: Option<&str>,
+) -> RunResult<()> {
+    let work_root = resolve_work_root(work_root)?;
+    info_ctrl!(
+        "wproj conf update bootstrap source work_root={} requested_version={} repo={}",
+        work_root.display(),
+        requested_version.unwrap_or("(auto)"),
+        repo_url
+    );
+    run_conf_update_with_sync(
+        work_root,
+        requested_version,
+        false,
+        |work_root, requested_version| {
+            project_remote::sync_project_remote_from_repo(work_root, repo_url, requested_version)
+        },
+    )
+    .await
+}
+
+async fn run_conf_update_with_sync<F>(
+    work_root: PathBuf,
+    requested_version: Option<&str>,
+    json: bool,
+    sync_fn: F,
+) -> RunResult<()>
+where
+    F: Fn(&std::path::Path, Option<&str>) -> RunResult<project_remote::ProjectRemoteUpdateResult>,
+{
     info_ctrl!(
         "wproj conf update start work_root={} requested_version={} json={}",
         work_root.display(),
-        args.version.as_deref().unwrap_or("(auto)"),
-        args.json
+        requested_version.unwrap_or("(auto)"),
+        json
     );
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
     let rollback_snapshot = project_remote::capture_project_remote_snapshot(&work_root)?;
-    let result = project_remote::sync_project_remote(&work_root, args.version.as_deref())?;
+    let result = sync_fn(&work_root, requested_version)?;
     info_ctrl!(
         "wproj conf update synced work_root={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
         work_root.display(),
-        args.version.as_deref().unwrap_or("(auto)"),
+        requested_version.unwrap_or("(auto)"),
         result.current_version,
         result.resolved_tag,
         result.from_revision.as_deref().unwrap_or("-"),
@@ -47,7 +90,7 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
         warn_ctrl!(
             "wproj conf update validate failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
             work_root.display(),
-            args.version.as_deref().unwrap_or("(auto)"),
+            requested_version.unwrap_or("(auto)"),
             result.current_version,
             result.resolved_tag,
             check_err
@@ -60,7 +103,7 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
             warn_ctrl!(
                 "wproj conf update rollback failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
                 work_root.display(),
-                args.version.as_deref().unwrap_or("(auto)"),
+                requested_version.unwrap_or("(auto)"),
                 result.current_version,
                 result.resolved_tag,
                 rollback_err
@@ -73,7 +116,7 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
         info_ctrl!(
             "wproj conf update rollback done work_root={} requested_version={} reverted_from_version={} resolved_tag={} changed={}",
             work_root.display(),
-            args.version.as_deref().unwrap_or("(auto)"),
+            requested_version.unwrap_or("(auto)"),
             result.current_version,
             result.resolved_tag,
             result.changed
@@ -85,16 +128,16 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
     info_ctrl!(
         "wproj conf update validate passed work_root={} requested_version={} current_version={} resolved_tag={}",
         work_root.display(),
-        args.version.as_deref().unwrap_or("(auto)"),
+        requested_version.unwrap_or("(auto)"),
         result.current_version,
         result.resolved_tag
     );
 
-    if args.json {
+    if json {
         info_ctrl!(
             "wproj conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=true",
             work_root.display(),
-            args.version.as_deref().unwrap_or("(auto)"),
+            requested_version.unwrap_or("(auto)"),
             result.current_version,
             result.resolved_tag
         );
@@ -104,7 +147,7 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
     info_ctrl!(
         "wproj conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=false",
         work_root.display(),
-        args.version.as_deref().unwrap_or("(auto)"),
+        requested_version.unwrap_or("(auto)"),
         result.current_version,
         result.resolved_tag
     );

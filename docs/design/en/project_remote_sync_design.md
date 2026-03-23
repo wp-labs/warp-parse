@@ -1,7 +1,7 @@
 # Remote Rule Version Update Design
 
 - Status: Draft
-- Scope: `wproj conf update`, `wparse restart`, and HTTP admin API runtime instructions
+- Scope: `wproj init --remote`, `wproj conf update`, `wparse restart`, and HTTP admin API runtime instructions
 
 ## Requirement Summary
 
@@ -13,15 +13,17 @@ This design follows these requirements:
 4. when `wparse` receives a restart instruction, it must also perform conf update first
 5. manual update and runtime restart must not maintain separate sync logic
 6. HTTP admin API must provide both an "update or not" flag and a version parameter
+7. `wproj init` must support direct project initialization from remote
 
 ## Design Conclusion
 
 Treat remote project synchronization as a shared project capability, not as private behavior of a single binary.
 
 - configuration lives in a project-level config file shared by `wproj` and `wparse`
+- `wproj init --remote` provides bootstrap remote parameters for first initialization and triggers the first sync
 - `wproj conf update` is the explicit operator entry
 - `wparse restart` is the implicit runtime entry
-- both entries reuse the same conf update core flow
+- all three entries reuse the same conf update core flow
 
 From the user perspective, the action is "sync rules from a remote version source", not low-level repository manipulation.
 
@@ -91,6 +93,22 @@ Repository available for testing and integration:
 
 ### 1. Explicit Entry
 
+First-time remote initialization entry:
+
+```bash
+wproj init --remote <REPO> [--version <VERSION>]
+```
+
+Semantics:
+
+- `wproj init --remote` initializes the local project skeleton first
+- `--remote` / `--version` are used only as bootstrap parameters for first sync
+- if `--version` is omitted, it resolves the latest released version from remote
+- then it directly reuses the same sync, validation, and rollback flow as `wproj conf update`
+- after first sync, the project configuration from the remote repository becomes authoritative
+
+Daily explicit update entry:
+
 ```bash
 wproj conf update
 ```
@@ -110,7 +128,7 @@ Options:
 
 Semantics:
 
-- `wproj conf update` performs remote version synchronization
+- `wproj conf update` performs version synchronization against an already configured remote
 - operators do not need to know whether this is first deployment or a daily update
 - operators do not deal with repository operations directly
 - `--version` explicitly defines the target version for this update, which supports both upgrade and rollback
@@ -169,7 +187,7 @@ If reload and restart later become separate endpoints, both should reuse these t
 
 ## Shared Core Flow
 
-`wproj conf update` and `wparse restart` must reuse the same core module.
+`wproj init --remote`, `wproj conf update`, and `wparse restart` must reuse the same core module.
 
 Suggested internal abstraction:
 
@@ -210,7 +228,7 @@ This design does not switch Git state directly inside the live working directory
 
 Rules:
 
-- operators interact only through `wproj conf update` or runtime update/reload instructions
+- operators interact only through `wproj init --remote`, `wproj conf update`, or runtime update/reload instructions
 - Git operations happen only in `remote`
 - `current` must always represent a runnable project snapshot
 - if validation or reload fails, the system must restore `current` from `backup`
@@ -239,7 +257,7 @@ Rules:
 
 ## Unified Update Flow
 
-No matter whether the entry comes from `wproj conf update` or runtime update/reload, the system should follow this flow:
+No matter whether the entry comes from `wproj init --remote`, `wproj conf update`, or runtime update/reload, the system should follow this flow:
 
 1. resolve the remote directory from configuration
 2. update the remote directory and switch it to the target version
@@ -248,6 +266,11 @@ No matter whether the entry comes from `wproj conf update` or runtime update/rel
 5. run post-update validation
 6. if validation succeeds and the caller requested reload/restart, continue with that runtime action
 7. if validation fails or reload fails, restore the managed-directory whitelist from backup
+
+For `wproj init --remote`, two extra steps happen before entering the flow above:
+
+1. generate the local project skeleton
+2. pass `--remote` / `--version` into the core flow as bootstrap parameters
 
 This keeps the update source separate from the live working directory and makes rollback a directory-level restore instead of a repository-state restore.
 
@@ -457,6 +480,7 @@ Purpose:
 ## Relationship To Existing Capabilities
 
 - `wproj self update`: upgrades Warp Parse binaries
+- `wproj init --remote`: creates the project skeleton and triggers first remote sync
 - `wproj conf update`: manually triggers project config synchronization
 - `wparse restart`: runtime-triggered "sync first, restart second"
 - `wproj engine reload`: an independent runtime activation action
@@ -468,6 +492,7 @@ These capabilities are layered and should not replace each other.
 First version should include:
 
 - optional `[project_remote]` in `conf/wparse.toml`
+- `wproj init --remote`
 - `wproj conf update`
 - conf update before `wparse restart`
 - HTTP admin API `update` / `version` parameters
@@ -490,7 +515,8 @@ Future work:
 ## Acceptance Criteria
 
 - operators only need repo config and a switch; they do not use Git directly
-- `wproj conf update` handles both initial sync and later updates
+- `wproj init --remote` can complete first-time remote initialization directly
+- `wproj conf update` handles later updates
 - `wparse` performs conf update before restart
 - manual update and runtime restart share one sync core
 - HTTP admin API can explicitly specify whether to update and which version to use

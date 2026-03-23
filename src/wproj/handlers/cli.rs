@@ -24,7 +24,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
             let dict = load_sec_dict()?;
             match other {
                 WProj::Rule(sub) => dispatch_rule_cmd(sub, &dict)?,
-                WProj::Init(args) => project::init_project(args, &dict)?,
+                WProj::Init(args) => project::init_project(args, &dict).await?,
                 WProj::Check(args) => project::check_project(args, &dict)?,
                 WProj::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
                 WProj::Model(sub) => dispatch_model_cmd(sub, &dict)?,
