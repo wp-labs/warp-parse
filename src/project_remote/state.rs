@@ -24,6 +24,7 @@ pub fn acquire_project_remote_lock<P: AsRef<Path>>(
     }
     let file = std::fs::OpenOptions::new()
         .create(true)
+        .truncate(false)
         .read(true)
         .write(true)
         .open(&lock_path)
@@ -196,7 +197,7 @@ fn try_lock_file(file: &fs::File, lock_path: &Path) -> RunResult<()> {
             }
             _ => format!("lock {} failed: {}", lock_path.display(), err),
         };
-        return Err(conf_err(detail));
+        Err(conf_err(detail))
     }
     #[cfg(not(unix))]
     {

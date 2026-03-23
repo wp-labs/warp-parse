@@ -4,6 +4,7 @@ This directory contains release, branch governance, and capability design docume
 
 ## Documents
 
+- Admin API development guide: [admin_api_development.md](admin_api_development.md)
 - Release management: [release_management.md](release_management.md)
 - Branch protection rules: [branch_protection_rules.md](branch_protection_rules.md)
 - Branch source and maturity control: [branch_source_and_maturity_control.md](branch_source_and_maturity_control.md)

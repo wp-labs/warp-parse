@@ -13,11 +13,11 @@ use crate::handlers::conf::run_conf_update_from_repo;
 pub async fn init_project(args: ProjectInitArgs, dict: &EnvDict) -> RunResult<()> {
     WarpProject::init(
         args.work_root.clone(),
-        PrjScope::from_str(args.mode.as_str())?,
+        PrjScope::from_str(args.mode.as_deref().unwrap_or("normal"))?,
         dict,
     )?;
     let remote_repo = args
-        .remote
+        .repo
         .as_deref()
         .map(str::trim)
         .filter(|repo| !repo.is_empty());
@@ -51,7 +51,7 @@ pub fn check_project_components(
     only_fail: bool,
     dict: &EnvDict,
 ) -> RunResult<()> {
-    let project = WarpProject::load(work_root.to_string(), PrjScope::Normal, dict)?;
+    let project = WarpProject::load(work_root, PrjScope::Normal, dict)?;
     let mut opts = checker::CheckOptions::new(work_root);
     opts.console = console;
     opts.fail_fast = fail_fast;
@@ -110,6 +110,10 @@ mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#;
 
+const LEGACY_ADMIN_API_TOKEN_FILE_LINE: &str =
+    "token_file = \"${HOME}/.warp_parse/admin_api.token\"";
+const PROJECT_ADMIN_API_TOKEN_FILE_LINE: &str = "token_file = \"runtime/admin_api.token\"";
+
 fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
     let conf_path = work_root.join("conf/wparse.toml");
     if !conf_path.exists() {
@@ -124,6 +128,21 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
         ))
     })?;
     if conf.contains("[admin_api]") {
+        if !conf.contains(PROJECT_ADMIN_API_TOKEN_FILE_LINE)
+            && conf.contains(LEGACY_ADMIN_API_TOKEN_FILE_LINE)
+        {
+            conf = conf.replace(
+                LEGACY_ADMIN_API_TOKEN_FILE_LINE,
+                PROJECT_ADMIN_API_TOKEN_FILE_LINE,
+            );
+            fs::write(&conf_path, conf).map_err(|e| {
+                RunReason::from_conf().to_err().with_detail(format!(
+                    "write {} failed: {}",
+                    conf_path.display(),
+                    e
+                ))
+            })?;
+        }
         return Ok(());
     }
 
@@ -224,7 +243,7 @@ mod tests {
         let temp = tempfile::tempdir().expect("tempdir");
         WarpProject::init(
             temp.path().to_string_lossy().to_string(),
-            PrjScope::Normal,
+            PrjScope::Full,
             dict,
         )
         .expect("init remote project");
@@ -251,79 +270,93 @@ mod tests {
         }
     }
 
+    fn create_remote_fixture_without_tags(dict: &EnvDict) -> RemoteFixture {
+        let temp = tempfile::tempdir().expect("tempdir");
+        WarpProject::init(
+            temp.path().to_string_lossy().to_string(),
+            PrjScope::Full,
+            dict,
+        )
+        .expect("init remote project");
+        ensure_admin_api_config_block(temp.path()).expect("append admin block");
+
+        let repo = Repository::init(temp.path()).expect("init remote repo");
+        rewrite_project_remote_conf(
+            temp.path(),
+            temp.path().to_str().expect("repo path utf8"),
+            "",
+        );
+        fs::write(temp.path().join("models/version.txt"), "head\n").expect("write head marker");
+        commit_all(&repo, "initial head");
+        let remote_path = temp.path().to_path_buf();
+
+        RemoteFixture {
+            _temp: temp,
+            remote_path,
+        }
+    }
+
+    async fn run_remote_init_latest_release_case() {
+        let dict = orion_variate::EnvDict::test_default();
+        let fixture = create_remote_fixture(&dict);
+        let work = uniq_tmp_dir();
+
+        let result = init_project(
+            ProjectInitArgs {
+                work_root: work.clone(),
+                mode: None,
+                repo: Some(fixture.remote_path.to_string_lossy().to_string()),
+                version: None,
+            },
+            &dict,
+        )
+        .await;
+        result.expect("remote init");
+
+        assert_eq!(
+            fs::read_to_string(Path::new(&work).join("models/version.txt")).expect("read version"),
+            "1.4.3\n"
+        );
+    }
+
+    async fn run_remote_init_without_release_tags_case() {
+        let dict = orion_variate::EnvDict::test_default();
+        let fixture = create_remote_fixture_without_tags(&dict);
+        let work = uniq_tmp_dir();
+
+        init_project(
+            ProjectInitArgs {
+                work_root: work.clone(),
+                mode: None,
+                repo: Some(fixture.remote_path.to_string_lossy().to_string()),
+                version: None,
+            },
+            &dict,
+        )
+        .await
+        .expect("remote init without tags");
+
+        assert_eq!(
+            fs::read_to_string(Path::new(&work).join("models/version.txt")).expect("read version"),
+            "head\n"
+        );
+    }
+
     #[tokio::test]
     #[serial]
     async fn wproj_project_init_full_ok() {
         let work = uniq_tmp_dir();
-        // run project init (default full)
-        println!("DEBUG: Attempting to initialize project at: {}", work);
-        println!(
-            "DEBUG: Parent directory exists: {}",
-            std::path::Path::new(&work)
-                .parent()
-                .is_some_and(|p| p.exists())
-        );
-
-        match init_project(
+        init_project(
             ProjectInitArgs {
                 work_root: work.clone(),
-                mode: "full".into(),
-                remote: None,
+                mode: Some("full".into()),
+                repo: None,
                 version: None,
             },
             &orion_variate::EnvDict::test_default(),
         )
         .await
-        {
-            Ok(_) => println!("DEBUG: Project init succeeded"),
-            Err(e) => {
-                println!("DEBUG: Project init failed with error: {:?}", e);
-                println!(
-                    "DEBUG: Work directory exists after attempt: {}",
-                    std::path::Path::new(&work).exists()
-                );
-                if std::path::Path::new(&work).exists() {
-                    println!("DEBUG: Directory contents:");
-                    if let Ok(entries) = std::fs::read_dir(&work) {
-                        for entry in entries.flatten() {
-                            println!("  - {}", entry.path().display());
-                        }
-                    }
-                }
-                panic!("project init failed: {:?}", e);
-            }
-        }
-        // verify key files/directories
-        println!("DEBUG: Checking files in: {}", work);
-        println!(
-            "DEBUG: Directory exists: {}",
-            std::path::Path::new(&work).exists()
-        );
-
-        // List all files in the directory
-        if let Ok(entries) = std::fs::read_dir(&work) {
-            println!("DEBUG: Directory contents:");
-            for entry in entries.flatten() {
-                println!("  {}", entry.path().display());
-            }
-        }
-
-        // Check specific files with detailed info
-        let files_to_check = vec![
-            "conf/wparse.toml",
-            "conf/wpgen.toml",
-            "connectors/source.d/00-file_src.toml",
-            "connectors/sink.d/01-file_json_sink.toml",
-            "topology/sinks/business.d/demo.toml",
-            "topology/sources/wpsrc.toml",
-            "models/knowledge/knowdb.toml",
-        ];
-
-        for file in files_to_check {
-            let full_path = format!("{}/{}", work, file);
-            let exists = std::path::Path::new(&full_path).exists();
-            println!("DEBUG: {} exists: {}", file, exists);
-        }
+        .expect("project init");
 
         assert!(std::path::Path::new(&format!("{}/conf/wparse.toml", work)).exists());
         let wparse_conf =
@@ -336,7 +369,6 @@ mod tests {
             std::path::Path::new(&format!("{}/connectors/source.d/00-file_src.toml", work))
                 .exists()
         );
-        println!("DEBUG: Test directory NOT cleaned for debugging: {}", work);
     }
 
     #[test]
@@ -355,28 +387,77 @@ mod tests {
         assert!(conf.contains("bind = \"127.0.0.1:19090\""));
     }
 
+    #[test]
+    fn ensure_admin_api_block_normalizes_legacy_token_path() {
+        let temp = tempfile::tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        std::fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let conf_path = conf_dir.join("wparse.toml");
+        std::fs::write(
+            &conf_path,
+            format!(
+                "version = \"1.0\"\n\n[admin_api]\nenabled = false\n\n[admin_api.auth]\nmode = \"bearer_token\"\n{}\n",
+                LEGACY_ADMIN_API_TOKEN_FILE_LINE
+            ),
+        )
+        .expect("write conf");
+
+        ensure_admin_api_config_block(temp.path()).expect("normalize admin_api token path");
+
+        let conf = std::fs::read_to_string(conf_path).expect("read conf");
+        assert!(conf.contains(PROJECT_ADMIN_API_TOKEN_FILE_LINE));
+        assert!(!conf.contains(LEGACY_ADMIN_API_TOKEN_FILE_LINE));
+    }
+
     #[tokio::test]
     #[serial]
     async fn wproj_project_init_remote_defaults_to_latest_release() {
-        let dict = orion_variate::EnvDict::test_default();
-        let fixture = create_remote_fixture(&dict);
-        let work = uniq_tmp_dir();
-
-        init_project(
-            ProjectInitArgs {
-                work_root: work.clone(),
-                mode: "normal".into(),
-                remote: Some(fixture.remote_path.to_string_lossy().to_string()),
-                version: None,
-            },
-            &dict,
-        )
-        .await
-        .expect("remote init");
-
-        assert_eq!(
-            fs::read_to_string(Path::new(&work).join("models/version.txt")).expect("read version"),
-            "1.4.3\n"
+        let current_exe = std::env::current_exe().expect("current exe");
+        let status = std::process::Command::new(current_exe)
+            .env("WP_REMOTE_INIT_SUBPROCESS", "1")
+            .arg("--exact")
+            .arg("handlers::project::tests::remote_init_latest_release_subprocess_helper")
+            .arg("--nocapture")
+            .status()
+            .expect("spawn subprocess");
+        assert!(
+            status.success(),
+            "remote init subprocess failed with status: {}",
+            status
         );
+    }
+
+    #[tokio::test]
+    async fn remote_init_latest_release_subprocess_helper() {
+        if std::env::var_os("WP_REMOTE_INIT_SUBPROCESS").is_none() {
+            return;
+        }
+        run_remote_init_latest_release_case().await;
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn wproj_project_init_remote_defaults_to_remote_head_when_release_tags_are_missing() {
+        let current_exe = std::env::current_exe().expect("current exe");
+        let status = std::process::Command::new(current_exe)
+            .env("WP_REMOTE_INIT_SUBPROCESS", "1")
+            .arg("--exact")
+            .arg("handlers::project::tests::remote_init_without_release_tags_subprocess_helper")
+            .arg("--nocapture")
+            .status()
+            .expect("spawn subprocess");
+        assert!(
+            status.success(),
+            "remote init subprocess failed with status: {}",
+            status
+        );
+    }
+
+    #[tokio::test]
+    async fn remote_init_without_release_tags_subprocess_helper() {
+        if std::env::var_os("WP_REMOTE_INIT_SUBPROCESS").is_none() {
+            return;
+        }
+        run_remote_init_without_release_tags_case().await;
     }
 }

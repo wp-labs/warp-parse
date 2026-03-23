@@ -15,6 +15,7 @@ use wp_error::run_error::{RunReason, RunResult};
 struct EngineStatusResponse {
     instance_id: String,
     version: String,
+    project_version: Option<String>,
     accepting_commands: bool,
     reloading: bool,
     current_request_id: Option<String>,
@@ -85,6 +86,10 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
         println!("  Endpoint   : {}", profile.base_url);
         println!("  Instance   : {}", status.instance_id);
         println!("  Version    : {}", status.version);
+        println!(
+            "  Project V  : {}",
+            status.project_version.as_deref().unwrap_or("-")
+        );
         println!("  Accepting  : {}", status.accepting_commands);
         println!("  Reloading  : {}", status.reloading);
         println!(

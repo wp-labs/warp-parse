@@ -1,18 +1,18 @@
 # Remote Rule Version Update Design
 
 - Status: Draft
-- Scope: `wproj init --remote`, `wproj conf update`, `wparse restart`, and HTTP admin API runtime instructions
+- Scope: `wproj init --repo`, `wproj conf update`, `wproj engine reload`, and HTTP admin API `POST /admin/v1/reloads/model`
 
 ## Requirement Summary
 
 This design follows these requirements:
 
-1. project configuration must contain a remote Git repo address and an enable switch
+1. project configuration must contain a remote repo address and an enable switch
 2. operators should not need to use Git directly
 3. `wproj` must provide one explicit entry: `wproj conf update`
-4. when `wparse` receives a restart instruction, it must also perform conf update first
-5. manual update and runtime restart must not maintain separate sync logic
-6. HTTP admin API must provide both an "update or not" flag and a version parameter
+4. runtime "update and reload" must perform conf update first
+5. manual update and runtime reload must not maintain separate sync logic
+6. the HTTP admin API must provide both an "update or not" flag and a version parameter
 7. `wproj init` must support direct project initialization from remote
 
 ## Design Conclusion
@@ -20,10 +20,10 @@ This design follows these requirements:
 Treat remote project synchronization as a shared project capability, not as private behavior of a single binary.
 
 - configuration lives in a project-level config file shared by `wproj` and `wparse`
-- `wproj init --remote` provides bootstrap remote parameters for first initialization and triggers the first sync
+- `wproj init --repo` provides bootstrap remote parameters for first initialization and triggers the first sync
 - `wproj conf update` is the explicit operator entry
-- `wparse restart` is the implicit runtime entry
-- all three entries reuse the same conf update core flow
+- `wproj engine reload --update` and the HTTP admin API reload are runtime entries
+- all entries reuse the same conf update core flow
 
 From the user perspective, the action is "sync rules from a remote version source", not low-level repository manipulation.
 
@@ -34,23 +34,24 @@ From the user perspective, the action is "sync rules from a remote version sourc
 - rule authoring workflows
 - replacing `wproj self update`
 - multi-remote or multi-branch orchestration in the first version
+- designing a separate runtime restart API for now
 
 ## Config Boundary
 
-This capability is best treated as an optional `wparse` configuration section that `wproj` also reads.
+This capability is best treated as an optional project-level config section.
 
-So the better location is:
+Location:
 
 ```text
 conf/wparse.toml
 ```
 
-The rule is:
+Rules:
 
 - `wparse.toml` remains the only required config file
 - `[project_remote]` is an optional section inside it
 - if `[project_remote]` is absent, `wparse` still starts normally
-- `wproj conf update` reads the same section from the same file
+- `wproj conf update`, `wproj engine reload --update`, and HTTP admin API reload read the same section
 
 ## Config Model
 
@@ -67,23 +68,21 @@ Field notes:
 
 - `enabled`: master switch; remote sync is disabled when false
 - `repo`: remote repository address
-- `init_version`: initial version used only for first-time initialization when no local project content exists
+- `init_version`: initial version used only before remote state has ever been initialized locally
 
 Minimum required fields:
 
 - `enabled`
 - `repo`
 
-Recommended fields:
+Recommended field:
 
 - `init_version`
 
-If the repository follows a uniform release-tag rule such as `v1.4.2`, the system should resolve:
+Tag convention:
 
-- config `init_version = "1.4.2"`
-- to tag `v1.4.2` during initialization
-
-If other tag schemes are needed later, add them later. The first version should not expose extra strategy fields yet.
+- if the remote publishes `v1.4.2`, users still pass `1.4.2`
+- the system resolves it internally as a semantic release tag
 
 Repository available for testing and integration:
 
@@ -91,87 +90,93 @@ Repository available for testing and integration:
 
 ## External Interfaces
 
-### 1. Explicit Entry
-
-First-time remote initialization entry:
+### 1. First-Time Initialization Entry
 
 ```bash
-wproj init --remote <REPO> [--version <VERSION>]
+wproj init --repo <REPO> [--version <VERSION>]
 ```
 
 Semantics:
 
-- `wproj init --remote` initializes the local project skeleton first
-- `--remote` / `--version` are used only as bootstrap parameters for first sync
-- if `--version` is omitted, it resolves the latest released version from remote
-- then it directly reuses the same sync, validation, and rollback flow as `wproj conf update`
+- `wproj init --repo` initializes the local project skeleton first
+- `--repo` / `--version` are bootstrap parameters only for the first sync
+- then it reuses the same sync, validation, and rollback flow as `wproj conf update`
 - after first sync, the project configuration from the remote repository becomes authoritative
 
-Daily explicit update entry:
+Version-selection rules:
+
+- if `--version` is provided, it must resolve to one unique release tag
+- if `--version` is omitted, the system first tries the latest release tag
+- if the remote has no release tag, the system falls back to the remote default branch `HEAD`
+
+HEAD fallback result semantics:
+
+- `resolved_tag = "HEAD@<branch>"`
+- `current_version = "<branch>"`
+
+### 2. Explicit Update Entry
 
 ```bash
-wproj conf update
-```
-
-Suggested options:
-
-```bash
-wproj conf update [OPTIONS]
-
-Options:
-  -w, --work-root <DIR>
-      --version <VERSION>
-      --dry-run
-      --json
-      --reason <TEXT>
+wproj conf update [--version <VERSION>]
 ```
 
 Semantics:
 
-- `wproj conf update` performs version synchronization against an already configured remote
+- `wproj conf update` performs version synchronization against the configured remote
 - operators do not need to know whether this is first deployment or a daily update
-- operators do not deal with repository operations directly
-- `--version` explicitly defines the target version for this update, which supports both upgrade and rollback
-- if `--version` is absent:
-- first initialization uses `init_version`
-- later updates may follow the "latest released version" rule
+- `wproj conf update` does not imply automatic reload
+- whether reload happens next is decided explicitly by runtime control
 
-### 2. Implicit Entry
+Version-selection rules:
 
-When `wparse` receives a restart instruction:
+- if the command explicitly passes `--version`, use that version
+- if this is first initialization and no version is passed, use `init_version` first
+- if this is not first initialization and no version is passed, prefer the latest release tag
+- if the remote has no release tag, fall back to the remote default branch `HEAD`
 
-1. read `conf/wparse.toml`
-2. if `project_remote.enabled = true`
-3. resolve whether the restart instruction carries an explicit version
-4. if a version is present, use that version for conf update
-5. if no version is present:
-6. use `init_version` for first initialization
-7. use the latest released version rule for later updates
-8. only after successful conf update continue with restart
-9. if conf update fails, reject the restart
+Constraints:
 
-This is the core rule of the design.
+- explicit `--version` still supports only tag-based upgrade or rollback
+- automatic fallback to `HEAD` happens only when no explicit version is requested
 
-### 3. HTTP Admin API Entry
+### 3. Runtime Reload Entry
 
-The runtime admin API needs to express two things:
+CLI:
 
-- whether the runtime action should execute conf update first
-- which version should be used if update is requested
+```bash
+wproj engine reload [--update] [--version <VERSION>]
+```
 
-Suggested shared request-body fields:
+HTTP:
 
-- `update`: `bool`
-- `version`: `string | null`
+```http
+POST /admin/v1/reloads/model
+```
 
-Recommended semantics:
+Request fields added:
 
-- `update = true`: run conf update before the runtime action
-- `update = false`: do not run conf update for this runtime action
-- non-empty `version`: use this version as the target version for conf update
-- empty `version`: use the default version-selection rule
+- `update: bool`
+- `version: string | null`
 
-Suggested request body:
+Runtime semantics:
+
+- `update = false`: run `LoadModel` against the current working tree only
+- `update = true`: perform conf update first, then reload
+- non-empty `version`: use that version for conf update
+- empty `version`: resolve the target by the default version-selection rule
+
+Default version-selection rules are the same as `wproj conf update`:
+
+- first initialization prefers `init_version`
+- later updates prefer the latest release tag
+- if there is no release tag, fall back to the remote default branch `HEAD`
+
+Invalid combinations:
+
+- `update = false` with non-empty `version` -> reject directly
+- `project_remote.enabled = false` with `update = true` -> update fails and reload does not continue
+
+Example:
 
 ```json
 {
@@ -179,23 +184,15 @@ Suggested request body:
   "version": "1.4.3",
   "wait": true,
   "timeout_ms": 15000,
-  "reason": "restart with rule update"
+  "reason": "rule update and reload"
 }
 ```
 
-If reload and restart later become separate endpoints, both should reuse these two fields instead of inventing separate version parameters.
-
 ## Shared Core Flow
 
-`wproj init --remote`, `wproj conf update`, and `wparse restart` must reuse the same core module.
+`wproj init --repo`, `wproj conf update`, `wproj engine reload --update`, and the HTTP admin API reload must reuse the same core module.
 
-Suggested internal abstraction:
-
-```text
-project_sync_core
-```
-
-The core module is responsible for:
+The core flow is responsible for:
 
 1. reading project sync config
 2. resolving the target version for the current action
@@ -206,35 +203,24 @@ The core module is responsible for:
 7. returning structured results on success
 8. restoring the managed-directory whitelist from backup on failure
 
-`wproj` and `wparse` are responsible only for:
-
-- deciding when to call it
-- deciding whether the follow-up runtime action is `reload` or `restart`
-
-At the host layer, the HTTP admin API only maps request parameters into one unified action context:
-
-- `trigger = admin_api`
-- `update = true/false`
-- `requested_version = <version or null>`
-- `runtime_action = reload/restart`
+Runtime reload continues only after conf update succeeds.
 
 ## Directory Model
 
 This design does not switch Git state directly inside the live working directory. Instead, it uses a three-directory model:
 
-- `remote`: cached project directory used for `clone` / `pull` / version checkout
+- `remote`: cached project directory used for clone, fetch, and version checkout
 - `current`: the live working directory actually used by `wparse`
 - `backup`: backup copy of `current`, used for rollback
 
 Rules:
 
-- operators interact only through `wproj init --remote`, `wproj conf update`, or runtime update/reload instructions
 - Git operations happen only in `remote`
 - `current` must always represent a runnable project snapshot
 - if validation or reload fails, the system must restore `current` from `backup`
 - directory switching uses a managed-directory whitelist instead of overwriting the entire work tree
 
-Suggested managed-directory whitelist:
+Managed-directory whitelist:
 
 - `conf/`
 - `models/`
@@ -257,42 +243,29 @@ Rules:
 
 ## Unified Update Flow
 
-No matter whether the entry comes from `wproj init --remote`, `wproj conf update`, or runtime update/reload, the system should follow this flow:
+No matter whether the entry comes from `wproj init --repo`, `wproj conf update`, or `reload + update`, the system should follow this flow:
 
 1. resolve the remote directory from configuration
 2. update the remote directory and switch it to the target version
 3. back up the managed-directory whitelist from current into backup
 4. copy the managed-directory whitelist from remote into current
 5. run post-update validation
-6. if validation succeeds and the caller requested reload/restart, continue with that runtime action
+6. if the caller requested reload, continue with `LoadModel`
 7. if validation fails or reload fails, restore the managed-directory whitelist from backup
 
-For `wproj init --remote`, two extra steps happen before entering the flow above:
+For `wproj init --repo`, two extra steps happen before entering the flow above:
 
 1. generate the local project skeleton
-2. pass `--remote` / `--version` into the core flow as bootstrap parameters
-
-This keeps the update source separate from the live working directory and makes rollback a directory-level restore instead of a repository-state restore.
+2. pass `--repo` / `--version` into the core flow as bootstrap parameters
 
 ## Release-Version Sync Semantics
 
 Once repository implementation details are hidden from the user, the system should expose stable version-sync semantics:
 
-- first initialization syncs to `init_version` or an explicitly requested version
-- later updates sync to the version selected for the current action
-- when no explicit version is provided, the default rule may resolve the latest released version
+- first initialization syncs to `init_version`, an explicitly requested version, or an auto-resolved default target
+- later updates sync to the version selected for the current action or the auto-resolved default target
+- auto mode prefers release tags; if no release tag exists, it falls back to default-branch `HEAD`
 - when local state violates safety rules, the action fails directly
-
-## Sync Strategy
-
-The first version should support only the safest predictable path:
-
-- the remote update target is a concrete release version, not a moving branch head
-- the target version for the current action must resolve to one unique release tag
-- backup must complete before whitelist-managed content in current is overwritten
-- backup must be restored if validation or reload fails
-
-That makes "update rules" point to a stable and auditable released version while preserving rollback to the last runnable snapshot.
 
 ## Why `init_version`, Action Version, And `current_version` Must Be Separate
 
@@ -302,75 +275,40 @@ If releases are published through version tags, operators care about:
 - which version should be activated for this specific action
 - which version is currently active now
 
-Those are different concerns and should not be collapsed into one field.
-
 Recommended separation:
 
 - `init_version`: fixed config for first initialization only
-- `version`: action parameter for the current `conf update` or `restart`
+- `version`: action parameter for the current `conf update` or `reload --update`
 - `current_version`: state field for the current result
 
-This supports:
-
-- first deployment
-- normal upgrade
-- explicit rollback
-
-without forcing the config file to carry a permanently changing target version.
-
-## Restart Semantics
-
-When `wparse` receives a restart instruction, its meaning changes from "restart immediately from the local tree" to:
-
-1. synchronize the remote directory to the configured target version
-2. back up the managed-directory whitelist in current
-3. overwrite current with the managed-directory whitelist from remote
-4. run post-update validation
-5. restart from the updated current directory
-6. if restart fails, restore the managed-directory whitelist from backup
-
-If `project_remote.enabled = false`:
-
-- `wparse` may still perform a local restart
-- but the result must explicitly state that no remote sync was attempted
+This supports first deployment, normal upgrade, explicit rollback, and the non-tag state where the current target is default-branch `HEAD`.
 
 ## Manual Update Semantics
 
 The meaning of `wproj conf update` is:
 
-1. synchronize the remote directory to the release version selected for the current action
+1. synchronize the remote directory to the target selected for the current action
 2. back up the managed-directory whitelist in the current working directory
 3. overwrite the current working directory with the managed-directory whitelist from remote
 4. run post-update validation
 5. return success on completion
 6. restore backup on failure
 
-`wproj conf update` does not imply automatic reload or restart.
+`wproj conf update` does not imply automatic reload.
 
-Whether the next runtime action is:
+## Reload Semantics
 
-- `wproj engine reload`
-- `wparse restart`
+The meaning of `wproj engine reload --update` or HTTP admin API `update = true` is:
 
-should be decided explicitly by runtime control, not by extra config switches.
+1. perform conf update
+2. if conf update fails, fail the whole request and do not continue reload
+3. if conf update succeeds, execute `LoadModel` against the updated `current` tree
+4. if reload fails, roll back the managed-directory whitelist
 
-Version selection rules:
+If `update = false`:
 
-- if the command explicitly passes `--version`, use that version
-- if this is first initialization and no version is passed, use `init_version`
-- if this is not first initialization and no version is passed, update to the latest released version
-
-HTTP admin API follows the same version-selection rules:
-
-- if `update = false`, ignore `version`
-- if `update = true` and `version` is non-empty, use that version
-- if `update = true` and `version` is empty:
-- use `init_version` for first initialization
-- use the latest released version for later updates
-
-To avoid ambiguity, invalid combinations should be rejected directly:
-
-- `update = false` with a non-empty `version` -> invalid request
+- only `LoadModel` is executed against the current tree
+- no remote synchronization is attempted
 
 ## Minimum Validation Gate
 
@@ -379,17 +317,13 @@ No matter which entry triggers the sync, a minimum validation gate is required a
 First version recommendation:
 
 - always perform WPL-related validation
+- runtime update entry must pass this gate before reload
 
 Equivalent target behavior:
 
 ```bash
 wproj check --what wpl --fail-fast
 ```
-
-If validation fails:
-
-- `wproj conf update` returns failure
-- `wparse restart` must not continue into restart
 
 ## Result Model
 
@@ -410,35 +344,31 @@ Suggested structured output:
   "from_revision": "abc1234",
   "to_revision": "def5678",
   "validation_result": "passed",
-  "runtime_action": "restart",
+  "runtime_action": "reload",
   "runtime_result": "success"
 }
 ```
 
-Suggested `sync_result` values:
+HEAD fallback example:
 
-- `disabled`
-- `cloned`
-- `up_to_date`
-- `updated`
-- `init_version_missing`
-- `version_not_found`
-- `dirty_worktree`
-- `remote_mismatch`
-- `invalid_worktree`
-- `validation_failed`
+```json
+{
+  "requested_version": null,
+  "current_version": "main",
+  "resolved_tag": "HEAD@main"
+}
+```
 
 Suggested `trigger` values:
 
 - `manual`
-- `wparse_restart`
+- `engine_reload`
 - `admin_api`
 
 Suggested `runtime_action` values:
 
 - `none`
 - `reload`
-- `restart`
 
 ## Failure Semantics
 
@@ -446,44 +376,49 @@ Three failure classes must stay distinct:
 
 1. sync failure
 2. sync success but validation failure
-3. sync and validation success but runtime action failure
+3. sync and validation success but reload failure
 
 Required behavior:
 
-- if conf update fails, `wparse restart` must not continue
-- if runtime action fails, the whole operation must not be reported as success
-- if sync already succeeded, the state must still retain the new revision and current version information
+- if conf update fails, reload must not continue
+- if reload fails, the whole operation must not be reported as success
+- if sync already succeeded, the state must still retain the new revision, `current_version`, and `resolved_tag`
 
 ## Lock And State Files
 
-Suggested project-local files:
+Project-local files:
 
 ```text
-.run/conf_update.lock
-.run/conf_update_state.json
+.run/project_remote.lock
+.run/project_remote_state.json
 ```
 
 Purpose:
 
 - prevent concurrent updates
-- prevent update/restart overlap
-- store the latest successful revision, latest current version, latest trigger, and latest failure reason
+- prevent update/reload overlap
+- store the latest successful revision, latest `current_version`, and latest `resolved_tag`
+
+Definition of "first initialization":
+
+- it is determined by whether `.run/project_remote_state.json` exists
+- it is not determined by whether the project directory already has content
 
 ## Security Constraints
 
-- `repo` must come from local config, not interactive input
+- `repo` must come from local config or `wproj init --repo` bootstrap parameters, not runtime request bodies
 - low-level repository commands must not be exposed to users
 - external callers must not depend on repository implementation details
-- dirty local worktrees must be rejected by rule, not bypassed through config
-- remote authentication should reuse standard SSH key / token mechanisms rather than inventing a new CLI auth layer
+- dirty local worktrees must be rejected by rule
+- remote authentication should reuse standard SSH key / token mechanisms
 
 ## Relationship To Existing Capabilities
 
 - `wproj self update`: upgrades Warp Parse binaries
-- `wproj init --remote`: creates the project skeleton and triggers first remote sync
+- `wproj init --repo`: creates the project skeleton and triggers the first remote sync
 - `wproj conf update`: manually triggers project config synchronization
-- `wparse restart`: runtime-triggered "sync first, restart second"
-- `wproj engine reload`: an independent runtime activation action
+- `wproj engine reload`: runtime activation action; with `--update`, it syncs first and reloads second
+- HTTP admin API reload: remote control surface for `wproj engine reload`
 
 These capabilities are layered and should not replace each other.
 
@@ -492,14 +427,15 @@ These capabilities are layered and should not replace each other.
 First version should include:
 
 - optional `[project_remote]` in `conf/wparse.toml`
-- `wproj init --remote`
+- `wproj init --repo`
 - `wproj conf update`
-- conf update before `wparse restart`
+- `wproj engine reload --update`
 - HTTP admin API `update` / `version` parameters
 - `init_version` config semantics
 - `--version` action parameter semantics
-- `current_version` state semantics
+- `current_version` and `resolved_tag` state semantics
 - version/tag resolution and version-based synchronization
+- automatic fallback to remote default-branch `HEAD` when no release tag exists
 - fixed dirty-worktree protection
 - minimum WPL validation
 - lock file and state file
@@ -515,16 +451,17 @@ Future work:
 ## Acceptance Criteria
 
 - operators only need repo config and a switch; they do not use Git directly
-- `wproj init --remote` can complete first-time remote initialization directly
+- `wproj init --repo` can complete first-time remote initialization directly
 - `wproj conf update` handles later updates
-- `wparse` performs conf update before restart
-- manual update and runtime restart share one sync core
-- HTTP admin API can explicitly specify whether to update and which version to use
+- `wproj engine reload --update` and the HTTP admin API reload perform conf update first
+- manual update and runtime reload share one sync core
+- the HTTP admin API can explicitly specify whether to update and which version to use
 - `init_version` is used only for first initialization
 - upgrades and rollbacks are driven by the action parameter `version`
-- `current_version` is state only and is not written back into fixed config
-- restart does not continue after conf update failure
-- reload/restart does not continue after validation failure
+- `current_version` / `resolved_tag` are state only and are not written back into fixed config
+- when the remote has no release tag, the system falls back to default-branch `HEAD`
+- reload does not continue after conf update failure
+- reload does not continue after validation failure
 - results are traceable in structured form
 
 ## Logging And Troubleshooting
@@ -574,7 +511,7 @@ grep -E "project remote sync apply failed|validate failed|rollback" data/logs/wp
 Use these logs to answer:
 
 - which version was requested
-- which tag / commit was finally resolved
+- which tag / branch / commit was finally resolved
 - whether managed directories were actually switched
 - whether the failure happened in sync, validation, or reload
 - whether rollback ran and whether rollback itself failed

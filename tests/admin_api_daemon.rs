@@ -16,6 +16,7 @@ use tempfile::tempdir;
 #[derive(Clone, Copy, Default)]
 struct FixtureOptions {
     blackhole_sleep_ms: Option<u64>,
+    reload_timeout_ms: Option<u64>,
     broken_runtime_release: bool,
     invalid_conf_release: bool,
 }
@@ -239,6 +240,7 @@ sinks = "./topology/sinks"
 [performance]
 rate_limit_rps = 10000
 parse_workers = 2
+reload_timeout_ms = {reload_timeout_ms}
 
 [rescue]
 path = "./data/rescue"
@@ -270,6 +272,7 @@ key_file = ""
 mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#,
+        reload_timeout_ms = options.reload_timeout_ms.unwrap_or(10_000),
     );
     write_file(work_root, "conf/wparse.toml", &conf);
 
@@ -576,6 +579,7 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
         Duration::from_secs(20),
     )
     .await;
+    assert!(ready["project_version"].is_null());
     assert_eq!(ready["reloading"], false);
 
     let client = reqwest::Client::new();
@@ -606,6 +610,7 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
         .expect("send status after reload");
     assert_eq!(after.status(), StatusCode::OK);
     let after_body: Value = after.json().await.expect("decode status after reload");
+    assert!(after_body["project_version"].is_null());
     assert_eq!(after_body["last_reload_request_id"], "integration-reload-1");
     assert_eq!(after_body["last_reload_result"], "reload_done");
     let log_dump = read_wparse_log(work_root);
@@ -736,7 +741,8 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
         bind,
         source_bind,
         FixtureOptions {
-            blackhole_sleep_ms: Some(3_000),
+            blackhole_sleep_ms: Some(1_000),
+            reload_timeout_ms: Some(2_000),
             ..FixtureOptions::default()
         },
     );
@@ -765,7 +771,7 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
             .header("X-Request-Id", "integration-reload-busy-1")
             .json(&serde_json::json!({
                 "wait": true,
-                "timeout_ms": 15000,
+                "timeout_ms": 10000,
                 "reason": "busy reload integration test"
             }))
             .send()
@@ -781,7 +787,7 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
         .header("X-Request-Id", "integration-reload-busy-2")
         .json(&serde_json::json!({
             "wait": false,
-            "timeout_ms": 15000,
+            "timeout_ms": 5000,
             "reason": "parallel reload integration test"
         }))
         .send()
@@ -814,7 +820,8 @@ async fn daemon_admin_api_reports_force_replace_when_drain_times_out() {
         bind,
         source_bind,
         FixtureOptions {
-            blackhole_sleep_ms: Some(15_000),
+            blackhole_sleep_ms: Some(1_000),
+            reload_timeout_ms: Some(300),
             ..FixtureOptions::default()
         },
     );
@@ -840,7 +847,7 @@ async fn daemon_admin_api_reports_force_replace_when_drain_times_out() {
         .header("X-Request-Id", "integration-reload-force")
         .json(&serde_json::json!({
             "wait": true,
-            "timeout_ms": 20000,
+            "timeout_ms": 5000,
             "reason": "force replace integration test"
         }))
         .send()
@@ -998,6 +1005,15 @@ async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
     assert_eq!(body["requested_version"], "1.4.3");
     assert_eq!(body["current_version"], "1.4.3");
     assert_eq!(body["resolved_tag"], "v1.4.3");
+    let status_after = client
+        .get(format!("{}/admin/v1/runtime/status", base_url))
+        .bearer_auth("test-token")
+        .send()
+        .await
+        .expect("send status after update reload");
+    assert_eq!(status_after.status(), StatusCode::OK);
+    let status_body: Value = status_after.json().await.expect("decode status after update");
+    assert_eq!(status_body["project_version"], "1.4.3");
     assert_eq!(
         fs::read_to_string(clone.path().join("models/version.txt"))
             .expect("read updated version marker"),
@@ -1101,7 +1117,8 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
         bind,
         source_bind,
         FixtureOptions {
-            blackhole_sleep_ms: Some(3_000),
+            blackhole_sleep_ms: Some(1_000),
+            reload_timeout_ms: Some(2_000),
             ..FixtureOptions::default()
         },
     );
@@ -1133,7 +1150,7 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
             .header("X-Request-Id", "integration-reload-busy-update-1")
             .json(&serde_json::json!({
                 "wait": true,
-                "timeout_ms": 15000,
+                "timeout_ms": 10000,
                 "reason": "busy update first reload"
             }))
             .send()
@@ -1151,7 +1168,7 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
             "wait": false,
             "update": true,
             "version": "1.4.3",
-            "timeout_ms": 15000,
+            "timeout_ms": 5000,
             "reason": "busy update second reload"
         }))
         .send()
@@ -1188,7 +1205,8 @@ async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock
         bind,
         source_bind,
         FixtureOptions {
-            blackhole_sleep_ms: Some(3_000),
+            blackhole_sleep_ms: Some(1_000),
+            reload_timeout_ms: Some(2_000),
             ..FixtureOptions::default()
         },
     );
@@ -1220,7 +1238,7 @@ async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock
             .header("X-Request-Id", "integration-reload-lock-1")
             .json(&serde_json::json!({
                 "wait": true,
-                "timeout_ms": 15000,
+                "timeout_ms": 10000,
                 "reason": "hold project remote lock during reload"
             }))
             .send()
@@ -1266,7 +1284,6 @@ async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_rolls_back_when_project_check_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1311,7 +1328,6 @@ async fn wproj_conf_update_rolls_back_when_project_check_fails() {
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1351,7 +1367,6 @@ async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1391,7 +1406,6 @@ async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1435,7 +1449,6 @@ async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1474,7 +1487,6 @@ async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
 }
 
 #[tokio::test]
-#[serial]
 async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_remote() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1569,7 +1581,6 @@ async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_rem
 }
 
 #[tokio::test]
-#[serial]
 async fn batch_mode_does_not_expose_admin_http_service() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();

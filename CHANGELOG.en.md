@@ -12,14 +12,22 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Added
 - **wproj self update**: Added an install-capable `wproj self update` flow with artifact download, `sha256` verification, binary replacement, rollback-on-health-check-failure, and control flags such as `--yes`, `--dry-run`, and `--force`.
 - **Self Update Core**: Added a dedicated `warp-self-update` crate to centralize manifest resolution, version comparison, asset download, installation, and rollback logic.
+- **Admin API Dev Docs**: Added a standalone Admin API development guide covering `GET /admin/v1/runtime/status`, `POST /admin/v1/reloads/model`, request/response schemas, status codes, conflict handling, and `update/version` semantics.
 
 ### Changed
-- **wp-motor**: Upgraded core engine dependency from `v1.18.1` to `v1.19.3`, pulling in the upstream runtime command bus, structured reload outcomes, and the dependency-track shift around externalized `wp-knowledge` / `wp-lang`.
-- **Self Update Architecture**: Removed the duplicate `wp-self-update` crate and consolidated self-check and self-update behavior into `warp-self-update` to avoid maintaining two manifest/version resolution implementations.
+- **wp-motor**: Upgraded the core engine dependency from `v1.18.1` to `v1.19.6`, pulling in the upstream runtime command bus, structured reload outcomes, event-driven drain, and the `reload_timeout_ms` configuration model.
+- **wproj init**: Standardized remote bootstrap on `wproj init --repo <REPO> [--version <VERSION>]`, removed `--remote`, and updated help plus design/usage docs to reflect the "local skeleton first, first remote sync second" behavior.
+- **Self Update Architecture**: Consolidated self-check and self-update behavior into `warp-self-update`, removing the need to maintain two manifest/version resolution paths.
 - **Self Update Refactor**: Split `warp-self-update` from a single-file implementation into `types`, `versioning`, `manifest`, `platform`, `fetch`, `install`, and `lock` modules while preserving the public API.
+- **Admin API Tests**: Updated timeout-sensitive admin/project-remote integration tests to use explicit small `reload_timeout_ms` values and removed a set of unnecessary `#[serial]` markers so the suite is less likely to be stretched by the serial queue.
+- **Project Remote Default Target**: For `wproj init --repo` and other auto-resolved project-remote flows without an explicit `--version`, the default target now prefers the latest release tag and falls back to the remote default branch `HEAD` when no release tags exist. The resulting state is recorded as `current_version=<branch>` and `resolved_tag=HEAD@<branch>`.
+- **Runtime Status Output**: Added `project_version` to Admin API `GET /admin/v1/runtime/status` and `wproj engine status` so callers can see which project configuration version is currently active in the work tree.
 
 ### Fixed
+- **Project Remote Sync**: Fixed parameter alignment across `wproj init --repo`, `wproj conf update`, and admin reload/update flows, and aligned the remote-init test fixture plus first-time bootstrap help/docs behavior.
+- **Lint/Test Stability**: Resolved clippy regressions from this remote-sync/reload change set and shortened long-wait paths in admin API / project-remote related tests.
 - **Self Update Build/Test**: Fixed post-merge build failures caused by mixed self-update APIs in `wproj self`, and rewrote crate-level install/rollback coverage to avoid depending on local listener sockets.
+- **Project Init Admin Token Path**: Fixed `wproj init` so that when the generated skeleton already contains `[admin_api]`, it normalizes the token path to project-local `runtime/admin_api.token` instead of preserving legacy `${HOME}/.warp_parse/admin_api.token`.
 
 ## [0.20.0] - 2026-03-12
 

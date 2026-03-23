@@ -22,11 +22,17 @@ pub enum WProj {
     #[command(subcommand, name = "rule")]
     Rule(RuleCmd),
 
-    /// 一键初始化完整工程骨架 | Initialize complete project skeleton
+    /// 初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source
     ///
-    /// 创建 Warp Flow Engine 项目的完整目录结构和配置文件，包括配置目录、
-    /// 连接器配置、模型目录（WPL/OML/知识库）和默认项目配置
-    #[command(name = "init", visible_alias = "初始化")]
+    /// 创建 Warp Flow Engine 项目的基础目录结构和配置文件。
+    /// 未指定 `--repo` 时执行本地初始化；
+    /// 指定 `--repo` 时，在骨架创建后继续执行首次远端同步。
+    #[command(
+        name = "init",
+        visible_alias = "初始化",
+        about = "初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source",
+        long_about = "初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source\n\n创建 Warp Flow Engine 项目的基础目录结构和配置文件。\n未指定 --repo 时执行本地初始化；指定 --repo 时，在骨架创建后继续执行首次远端同步。\n\nCreates the base project layout and configuration for Warp Flow Engine.\nWithout --repo, this runs local initialization only.\nWith --repo, it creates the local skeleton first and then performs the first remote sync."
+    )]
     Init(ProjectInitArgs),
 
     /// 批量检查项目配置和文件完整性 | Batch check project configuration and file integrity
@@ -549,29 +555,30 @@ pub struct ProjectInitArgs {
     )]
     pub work_root: String,
 
-    /// 初始化模式：full/model/conf/data | Initialization mode: full/model/conf/data
+    /// 本地初始化模式：full/normal/model/conf/data | Local initialization mode: full/normal/model/conf/data
     #[clap(
         short,
         long = "mode",
-        default_value = "normal",
+        conflicts_with = "repo",
         visible_alias = "模式",
-        help = "初始化模式：full/normal/model/conf/data | Initialization mode: full/normal/model/conf/data"
+        help = "本地初始化模式：full/normal/model/conf/data；默认 normal，仅未指定 --repo 时可用 | Local initialization mode: full/normal/model/conf/data; default is normal, available only when --repo is not set"
     )]
-    pub mode: String,
+    pub mode: Option<String>,
 
-    /// 远程项目仓库地址；指定后将在本地骨架初始化后立即执行远程配置同步 | Remote project repo URL
+    /// 远程项目仓库地址；指定后执行首次远程引导初始化 | Remote project repo URL; enables first-time remote bootstrap
     #[clap(
-        long = "remote",
-        visible_alias = "远程",
-        help = "远程项目仓库地址；指定后将在本地骨架初始化后立即执行远程配置同步 | Remote project repo URL; when set, run remote config sync after local init"
+        long = "repo",
+        visible_alias = "仓库",
+        help = "远程项目仓库地址；指定后先创建本地骨架，再同步远端目标版本 | Remote project repo URL; when set, create the local skeleton first, then sync the target remote version"
     )]
-    pub remote: Option<String>,
+    pub repo: Option<String>,
 
     /// 首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization
     #[clap(
         long = "version",
+        requires = "repo",
         visible_alias = "版本",
-        help = "首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization; when omitted, resolve the latest released version from remote"
+        help = "首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization; when omitted, resolve the latest released version"
     )]
     pub version: Option<String>,
 }
@@ -880,4 +887,69 @@ pub struct AnalyseArgs {
     /// 知识库路径 | Knowledge path
     #[clap(short = 'k', long, visible_alias = "知识库路径")]
     pub knowledge_path: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ProjectInitArgs, WProj, WProjCli};
+    use clap::Parser;
+
+    fn parse_init(args: &[&str]) -> ProjectInitArgs {
+        let cli = WProjCli::try_parse_from(args).expect("parse cli");
+        match cli.cmd {
+            WProj::Init(args) => args,
+            _ => panic!("expected init command"),
+        }
+    }
+
+    #[test]
+    fn init_accepts_repo_as_primary_remote_arg() {
+        let args = parse_init(&["wproj", "init", "--repo", "https://example.com/repo.git"]);
+        assert_eq!(args.repo.as_deref(), Some("https://example.com/repo.git"));
+        assert_eq!(args.mode, None);
+    }
+
+    #[test]
+    fn init_rejects_repo_and_mode_together() {
+        let err = match WProjCli::try_parse_from([
+            "wproj",
+            "init",
+            "--repo",
+            "https://example.com/repo.git",
+            "--mode",
+            "full",
+        ]) {
+            Ok(_) => panic!("repo and mode should conflict"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--repo"));
+        assert!(text.contains("--mode"));
+    }
+
+    #[test]
+    fn init_rejects_removed_remote_arg() {
+        let err = match WProjCli::try_parse_from([
+            "wproj",
+            "init",
+            "--remote",
+            "https://example.com/repo.git",
+        ]) {
+            Ok(_) => panic!("--remote should be rejected"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--remote"));
+    }
+
+    #[test]
+    fn init_rejects_version_without_repo() {
+        let err = match WProjCli::try_parse_from(["wproj", "init", "--version", "1.4.2"]) {
+            Ok(_) => panic!("version should require repo"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--version"));
+        assert!(text.contains("--repo"));
+    }
 }

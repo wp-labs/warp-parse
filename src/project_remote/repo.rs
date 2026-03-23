@@ -55,7 +55,11 @@ pub(super) fn fetch_remote_tags(repo: &Repository, repo_url: &str) -> RunResult<
     fetch_options.prune(git2::FetchPrune::On);
     remote
         .fetch(
-            &["+refs/tags/*:refs/tags/*"],
+            &[
+                "+HEAD:refs/remotes/origin/HEAD",
+                "+refs/heads/*:refs/remotes/origin/*",
+                "+refs/tags/*:refs/tags/*",
+            ],
             Some(&mut fetch_options),
             None,
         )
@@ -64,10 +68,10 @@ pub(super) fn fetch_remote_tags(repo: &Repository, repo_url: &str) -> RunResult<
 }
 
 fn clear_local_release_tags(repo: &Repository) -> RunResult<()> {
-    let mut refs = repo
+    let refs = repo
         .references_glob("refs/tags/*")
         .map_err(|e| conf_err(format!("list local tags failed: {}", e)))?;
-    while let Some(reference) = refs.next() {
+    for reference in refs {
         let mut reference =
             reference.map_err(|e| conf_err(format!("read local tag failed: {}", e)))?;
         let Some(name) = reference.name() else {
@@ -102,31 +106,34 @@ fn ensure_remote<'a>(repo: &'a Repository, repo_url: &str) -> RunResult<Remote<'
     }
 }
 
-pub(super) fn resolve_default_version(
+pub(super) fn resolve_default_target(
     work_root: &Path,
     repo: &Repository,
-    init_version: &str,
-) -> RunResult<String> {
+    init_version: Option<&str>,
+) -> RunResult<ResolvedTag> {
     if is_first_initialization(work_root)? {
-        if init_version.trim().is_empty() {
-            return Err(conf_err(
-                "project_remote.init_version must be set for first-time initialization",
-            ));
+        if let Some(init_version) = init_version {
+            if !init_version.trim().is_empty() {
+                return resolve_tag_for_version(repo, init_version.trim())?.ok_or_else(|| {
+                    conf_err(format!(
+                        "requested version '{}' was not found",
+                        init_version.trim()
+                    ))
+                });
+            }
         }
-        return Ok(init_version.trim().to_string());
     }
-    latest_released_version(repo)
-}
-
-pub(super) fn resolve_latest_released_version(repo: &Repository) -> RunResult<String> {
-    latest_released_version(repo)
+    match resolve_latest_released_target(repo)? {
+        Some(resolved) => Ok(resolved),
+        None => resolve_remote_head_target(repo),
+    }
 }
 
 fn is_first_initialization(work_root: &Path) -> RunResult<bool> {
     Ok(!work_root.join(STATE_PATH).exists())
 }
 
-fn latest_released_version(repo: &Repository) -> RunResult<String> {
+fn resolve_latest_released_target(repo: &Repository) -> RunResult<Option<ResolvedTag>> {
     let names = repo
         .tag_names(None)
         .map_err(|e| conf_err(format!("list tags failed: {}", e)))?;
@@ -135,9 +142,38 @@ fn latest_released_version(repo: &Repository) -> RunResult<String> {
         .flatten()
         .filter_map(parse_tag_version)
         .max_by(|a, b| a.1.cmp(&b.1))
-        .map(|(version, _)| version)
-        .ok_or_else(|| conf_err("no released version tag was found"))?;
-    Ok(latest)
+        .map(|(version, _)| version);
+    match latest {
+        Some(version) => resolve_tag_for_version(repo, &version),
+        None => Ok(None),
+    }
+}
+
+fn resolve_remote_head_target(repo: &Repository) -> RunResult<ResolvedTag> {
+    let head = repo
+        .find_reference("refs/remotes/origin/HEAD")
+        .map_err(|e| conf_err(format!("resolve origin HEAD failed: {}", e)))?;
+    let target_name = head
+        .symbolic_target()
+        .ok_or_else(|| conf_err("origin HEAD is not a symbolic ref"))?;
+    let branch = target_name
+        .strip_prefix("refs/remotes/origin/")
+        .unwrap_or(target_name)
+        .to_string();
+    let commit = repo
+        .find_reference(target_name)
+        .and_then(|reference| reference.peel_to_commit())
+        .map_err(|e| {
+            conf_err(format!(
+                "resolve origin HEAD target {} failed: {}",
+                target_name, e
+            ))
+        })?;
+    Ok(ResolvedTag {
+        tag: format!("HEAD@{}", branch),
+        version: branch,
+        commit_id: commit.id(),
+    })
 }
 
 pub(super) fn resolve_tag_for_version(

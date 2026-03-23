@@ -36,6 +36,26 @@ pub(super) fn create_remote_fixture() -> RemoteFixture {
     }
 }
 
+pub(super) fn create_remote_fixture_without_tags() -> RemoteFixture {
+    let temp = tempdir().expect("tempdir");
+    let repo = Repository::init(temp.path()).expect("init remote repo");
+    write_engine_conf_with_init_version(
+        temp.path(),
+        temp.path().to_str().expect("repo path utf8"),
+        "",
+    );
+    fs::create_dir_all(temp.path().join("models")).expect("create models dir");
+    fs::create_dir_all(temp.path().join("topology")).expect("create topology dir");
+    fs::create_dir_all(temp.path().join("connectors")).expect("create connectors dir");
+    fs::write(temp.path().join("models/version.txt"), "head\n").expect("write head marker");
+    commit_all(&repo, "initial head");
+
+    RemoteFixture {
+        remote_path: temp.path().to_path_buf(),
+        _temp: temp,
+    }
+}
+
 pub(super) fn create_work_root(remote: &RemoteFixture) -> TempDir {
     let work_root = tempdir().expect("tempdir");
     write_engine_conf(work_root.path(), remote.repo_url());
@@ -43,6 +63,14 @@ pub(super) fn create_work_root(remote: &RemoteFixture) -> TempDir {
 }
 
 pub(super) fn write_engine_conf(work_root: &Path, repo_url: &str) {
+    write_engine_conf_with_init_version(work_root, repo_url, "1.4.2");
+}
+
+pub(super) fn write_engine_conf_with_init_version(
+    work_root: &Path,
+    repo_url: &str,
+    init_version: &str,
+) {
     let conf_dir = work_root.join("conf");
     fs::create_dir_all(&conf_dir).expect("create conf dir");
     fs::write(
@@ -53,7 +81,7 @@ pub(super) fn write_engine_conf(work_root: &Path, repo_url: &str) {
 [project_remote]
 enabled = true
 repo = "{repo_url}"
-init_version = "1.4.2"
+init_version = "{init_version}"
 "#
         ),
     )

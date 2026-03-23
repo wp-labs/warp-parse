@@ -31,6 +31,7 @@ Before rollout, confirm:
 
 - the runtime uses `wparse daemon`, not `batch`
 - paths in `conf/wparse.toml` are valid relative to the work root
+- the remote repository either publishes release tags or at least keeps a usable default branch
 - the machine has the SSH key or token required to access the repository
 
 ## Enable The Runtime Admin API
@@ -72,20 +73,37 @@ Constraints:
 
 ### 1. Initialize From Remote
 
+Initialize to an explicit released version:
+
 ```bash
 wproj init \
   --work-root /srv/wp/<project> \
-  --remote https://github.com/wp-labs/editor-monitor-conf.git \
+  --repo https://github.com/wp-labs/editor-monitor-conf.git \
   --version 1.4.2
+```
+
+Initialize to the default target:
+
+```bash
+wproj init \
+  --work-root /srv/wp/<project> \
+  --repo https://github.com/wp-labs/editor-monitor-conf.git
 ```
 
 Notes:
 
-- `wproj init --remote` creates the local project skeleton first
-- `--remote` / `--version` are used only as bootstrap parameters for first sync
+- `wproj init --repo` creates the local project skeleton first
+- `--repo` / `--version` are bootstrap parameters only for the first sync
 - then it reuses `wproj conf update` for first sync and validation
 - after first sync, configuration from the remote repository becomes authoritative
-- if `--version` is omitted, it resolves the latest released version from remote
+- explicit `--version` is for tag-based initialization and rollback-friendly bootstrap
+- if `--version` is omitted, it first resolves the latest release tag from remote
+- if the remote has no release tags, it falls back to the remote default branch `HEAD`
+
+Typical output semantics when the default falls back to remote `HEAD`:
+
+- `Version: main` or `master`
+- `Tag: HEAD@main` or `HEAD@master`
 
 ### 2. Validate The Project
 
@@ -128,17 +146,23 @@ Move into the target project:
 cd /srv/wp/<project>
 ```
 
-Update to the default or resolved target version:
+Update the project content first:
 
 ```bash
 wproj conf update --work-root /srv/wp/<project>
 ```
 
-To upgrade or roll back to a specific version:
+To upgrade or roll back to a specific released version:
 
 ```bash
 wproj conf update --work-root /srv/wp/<project> --version 1.4.3
 ```
+
+Default version-selection rules:
+
+- on first initialization, use `init_version` first when configured
+- on later updates, prefer the latest release tag
+- if the remote has no release tag, fall back to the remote default branch `HEAD`
 
 Run a minimal gate before reload:
 
@@ -152,13 +176,34 @@ Inspect current runtime status:
 cargo run --bin wproj -- engine status --work-root .
 ```
 
-Trigger a synchronous reload:
+Reload only the already-updated local content:
 
 ```bash
 cargo run --bin wproj -- engine reload \
   --work-root . \
   --request-id rule-$(date +%Y%m%d%H%M%S) \
-  --reason "rule update"
+  --reason "rule reload"
+```
+
+If you want a single runtime action that updates and reloads:
+
+```bash
+cargo run --bin wproj -- engine reload \
+  --work-root . \
+  --update \
+  --request-id update-$(date +%Y%m%d%H%M%S) \
+  --reason "rule update and reload"
+```
+
+To upgrade or roll back and reload in one step:
+
+```bash
+cargo run --bin wproj -- engine reload \
+  --work-root . \
+  --update \
+  --version 1.4.3 \
+  --request-id update-rollback-$(date +%Y%m%d%H%M%S) \
+  --reason "switch release and reload"
 ```
 
 Check status again after reload:
@@ -169,17 +214,35 @@ cargo run --bin wproj -- engine status --work-root .
 
 ### Result Interpretation
 
-Focus on:
+For `wproj conf update`, focus on:
 
-- `last_reload_request_id`
-- `last_reload_result`
-- `reloading`
+- `Request`
+- `Version`
+- `Tag`
+- `Changed`
+
+For `wproj engine reload`, focus on:
+
+- `Result`
+- `Updated`
+- `Request V`
+- `Current V`
+- `Tag`
 
 Common results:
 
 - `reload_done`: reload completed successfully
-- `running`: request accepted and still executing
+- `running`: the request was accepted and is still running
 - `reload_in_progress`: another reload is already active
+- `update_in_progress`: another project update is already active
+- `update_failed`: the update stage failed before reload
+
+Version-field semantics:
+
+- `Request V`: explicit requested version for this action; empty when auto-resolved
+- `Current V`: the version actually activated by this update
+- `Tag`: the resolved remote target; release tags look like `v1.4.3`
+- when the flow falls back to default-branch `HEAD`, `Tag` looks like `HEAD@main`
 
 If the response includes the following fields, graceful drain timed out and the runtime fell back to forced replacement:
 
@@ -199,6 +262,8 @@ Use this fixed sequence:
 5. `wproj engine status` again
 6. inspect `data/logs/`, parse statistics, and sink outputs
 
+If you trigger "update + reload" as one runtime action from the admin plane, move the validation gate earlier into the release repository workflow.
+
 If the release includes source, sink, or main config changes, run the full project check:
 
 ```bash
@@ -215,6 +280,17 @@ cargo run --bin wproj -- engine reload \
   --work-root /srv/wp/<project> \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback rule set"
+```
+
+You can also do the rollback in one runtime action:
+
+```bash
+cargo run --bin wproj -- engine reload \
+  --work-root /srv/wp/<project> \
+  --update \
+  --version 1.4.2 \
+  --request-id rollback-$(date +%Y%m%d%H%M%S) \
+  --reason "rollback and reload"
 ```
 
 After rollback, verify:
@@ -238,41 +314,4 @@ cargo run --bin wproj -- engine status \
   --work-root /srv/wp/<project> \
   --admin-url http://127.0.0.1:19090 \
   --token-file /srv/wp/<project>/runtime/admin_api.token
-```
-
-The same override pattern applies to `engine reload`.
-
-## Acceptance Checklist
-
-A remote rule update is complete only when all of the following are true:
-
-- the repository was cloned or pulled successfully
-- `wproj check --what wpl --fail-fast` passed
-- `wparse daemon` stayed online without restart
-- `wproj engine reload` returned an acceptable result
-- post-reload runtime status is queryable
-- the new rule behavior was verified through stats, logs, or sink output
-
-## Minimal Command Set
-
-First deployment:
-
-```bash
-git clone <repo> /srv/wp/<project>
-cd /srv/wp/<project>
-wproj check
-cargo run --bin wparse -- daemon --work-root .
-```
-
-Daily update:
-
-```bash
-cd /srv/wp/<project>
-git pull
-wproj check --what wpl --fail-fast
-cargo run --bin wproj -- engine reload \
-  --work-root . \
-  --request-id rule-$(date +%Y%m%d%H%M%S) \
-  --reason "rule update"
-cargo run --bin wproj -- engine status --work-root .
 ```

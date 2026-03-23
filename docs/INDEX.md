@@ -22,6 +22,7 @@
 
 ### Design Documents
 
+- Admin API development guide: [design/zh/admin_api_development.md](design/zh/admin_api_development.md) | [design/en/admin_api_development.md](design/en/admin_api_development.md)
 - Release management: [design/zh/release_management.md](design/zh/release_management.md) | [design/en/release_management.md](design/en/release_management.md)
 - Branch protection rules: [design/zh/branch_protection_rules.md](design/zh/branch_protection_rules.md) | [design/en/branch_protection_rules.md](design/en/branch_protection_rules.md)
 - Branch source and maturity control: [design/zh/branch_source_and_maturity_control.md](design/zh/branch_source_and_maturity_control.md) | [design/en/branch_source_and_maturity_control.md](design/en/branch_source_and_maturity_control.md)

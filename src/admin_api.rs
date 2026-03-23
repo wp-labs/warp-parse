@@ -512,6 +512,7 @@ struct ReloadResponse {
 struct RuntimeStatusResponse {
     instance_id: String,
     version: String,
+    project_version: Option<String>,
     accepting_commands: bool,
     reloading: bool,
     current_request_id: Option<String>,
@@ -584,6 +585,18 @@ fn status_response(
     state: &AppState,
 ) -> Response<Full<Bytes>> {
     let snapshot = state.control_handle.status_snapshot();
+    let project_version = match crate::project_remote::current_project_version(&state.work_root) {
+        Ok(version) => version,
+        Err(err) => {
+            warn_ctrl!(
+                "admin api status project version read failed request_id={} remote={} error={}",
+                request_id,
+                remote_addr,
+                err
+            );
+            None
+        }
+    };
     info_ctrl!(
         "admin api status request_id={} remote={} accepting={} reloading={}",
         request_id,
@@ -596,6 +609,7 @@ fn status_response(
         &RuntimeStatusResponse {
             instance_id: state.instance_id.clone(),
             version: state.version.clone(),
+            project_version,
             accepting_commands: snapshot.accepting_commands,
             reloading: snapshot.reloading,
             current_request_id: snapshot.current_request_id,
@@ -1075,15 +1089,9 @@ fn rollback_updated_project(
     stage: &str,
 ) -> Option<String> {
     let ctx = reload_ctx?;
-    let Some(snapshot) = ctx.snapshot.as_ref() else {
-        return None;
-    };
-    let Some(runtime_snapshot) = ctx.runtime_snapshot.as_ref() else {
-        return None;
-    };
-    let Some(update_result) = ctx.update_result.as_ref() else {
-        return None;
-    };
+    let snapshot = ctx.snapshot.as_ref()?;
+    let runtime_snapshot = ctx.runtime_snapshot.as_ref()?;
+    let update_result = ctx.update_result.as_ref()?;
     match rollback_project_and_runtime(work_root, snapshot, update_result.changed, runtime_snapshot)
     {
         Ok(()) => {
@@ -1448,6 +1456,7 @@ token_file = "{token_file}"
             .expect("send authorized request");
         assert_eq!(authorized.status(), StatusCode::OK);
         let body: serde_json::Value = authorized.json().await.expect("parse json");
+        assert!(body["project_version"].is_null());
         assert_eq!(body["accepting_commands"], false);
         assert_eq!(body["reloading"], false);
 
