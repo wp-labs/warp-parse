@@ -15,6 +15,7 @@ use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
 use orion_conf::{ToStructError, UvsConfFrom};
+use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use rustls::ServerConfig;
@@ -125,6 +126,13 @@ struct HostConfigFile {
     admin_api: AdminApiConfigFile,
 }
 
+impl EnvEvaluable<HostConfigFile> for HostConfigFile {
+    fn env_eval(mut self, dict: &EnvDict) -> HostConfigFile {
+        self.admin_api = self.admin_api.env_eval(dict);
+        self
+    }
+}
+
 #[derive(Debug, Deserialize, Clone)]
 struct AdminApiConfigFile {
     #[serde(default)]
@@ -154,6 +162,15 @@ impl Default for AdminApiConfigFile {
     }
 }
 
+impl EnvEvaluable<AdminApiConfigFile> for AdminApiConfigFile {
+    fn env_eval(mut self, dict: &EnvDict) -> AdminApiConfigFile {
+        self.bind = self.bind.env_eval(dict);
+        self.tls = self.tls.env_eval(dict);
+        self.auth = self.auth.env_eval(dict);
+        self
+    }
+}
+
 #[derive(Debug, Deserialize, Clone, Default)]
 struct AdminTlsConfigFile {
     #[serde(default)]
@@ -162,6 +179,14 @@ struct AdminTlsConfigFile {
     cert_file: String,
     #[serde(default)]
     key_file: String,
+}
+
+impl EnvEvaluable<AdminTlsConfigFile> for AdminTlsConfigFile {
+    fn env_eval(mut self, dict: &EnvDict) -> AdminTlsConfigFile {
+        self.cert_file = self.cert_file.env_eval(dict);
+        self.key_file = self.key_file.env_eval(dict);
+        self
+    }
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -178,6 +203,14 @@ impl Default for AdminAuthConfigFile {
             mode: default_auth_mode(),
             token_file: String::new(),
         }
+    }
+}
+
+impl EnvEvaluable<AdminAuthConfigFile> for AdminAuthConfigFile {
+    fn env_eval(mut self, dict: &EnvDict) -> AdminAuthConfigFile {
+        self.mode = self.mode.env_eval(dict);
+        self.token_file = self.token_file.env_eval(dict);
+        self
     }
 }
 
@@ -200,8 +233,10 @@ fn load_config(work_root: &Path) -> RunResult<Option<ResolvedAdminApiConfig>> {
     let conf_path = work_root.join(ADMIN_CONF_PATH);
     let raw = fs::read_to_string(&conf_path)
         .map_err(|e| conf_err(format!("read {} failed: {}", conf_path.display(), e)))?;
+    let dict = crate::load_sec_dict().unwrap_or_else(|_| EnvDict::new());
     let parsed: HostConfigFile = toml::from_str(&raw)
         .map_err(|e| conf_err(format!("parse {} failed: {}", conf_path.display(), e)))?;
+    let parsed = parsed.env_eval(&dict);
     if !parsed.admin_api.enabled {
         return Ok(None);
     }
@@ -273,8 +308,10 @@ pub fn resolve_client_profile(work_root: &Path) -> RunResult<Option<AdminApiClie
     let conf_path = work_root.join(ADMIN_CONF_PATH);
     let raw = fs::read_to_string(&conf_path)
         .map_err(|e| conf_err(format!("read {} failed: {}", conf_path.display(), e)))?;
+    let dict = crate::load_sec_dict().unwrap_or_else(|_| EnvDict::new());
     let parsed: HostConfigFile = toml::from_str(&raw)
         .map_err(|e| conf_err(format!("parse {} failed: {}", conf_path.display(), e)))?;
+    let parsed = parsed.env_eval(&dict);
     if !parsed.admin_api.enabled {
         return Ok(None);
     }
@@ -1351,7 +1388,7 @@ fn default_wait() -> bool {
 mod tests {
     use super::*;
     use std::os::unix::fs::PermissionsExt;
-    use std::sync::OnceLock;
+    use std::sync::{Mutex, OnceLock};
 
     use reqwest::Client;
     use tempfile::tempdir;
@@ -1436,12 +1473,23 @@ token_file = "{token_file}"
     }
 
     fn shared_control_handle() -> RuntimeControlHandle {
+        fn shared_control_work_root() -> &'static PathBuf {
+            static WORK_ROOT: OnceLock<PathBuf> = OnceLock::new();
+            WORK_ROOT.get_or_init(|| {
+                let root = std::env::temp_dir().join("warp-parse-admin-api-tests");
+                let conf_dir = root.join("conf");
+                fs::create_dir_all(&conf_dir).expect("create shared control conf dir");
+                fs::write(conf_dir.join("wparse.toml"), BASE_TEST_WPARSE_CONF)
+                    .expect("write shared control config");
+                root
+            })
+        }
+
         static HANDLE: OnceLock<RuntimeControlHandle> = OnceLock::new();
         HANDLE
             .get_or_init(|| {
-                let work_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
                 let args = ParseArgs {
-                    work_root: Some(work_root.to_string_lossy().to_string()),
+                    work_root: Some(shared_control_work_root().to_string_lossy().to_string()),
                     ..Default::default()
                 };
                 WpApp::try_from(args, orion_variate::EnvDict::default())
@@ -1449,6 +1497,38 @@ token_file = "{token_file}"
                     .control_handle()
             })
             .clone()
+    }
+
+    fn home_lock() -> &'static Mutex<()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+    }
+
+    struct HomeOverride {
+        original: Option<std::ffi::OsString>,
+    }
+
+    impl HomeOverride {
+        fn new(home: &Path) -> Self {
+            let original = std::env::var_os("HOME");
+            unsafe {
+                std::env::set_var("HOME", home);
+            }
+            Self { original }
+        }
+    }
+
+    impl Drop for HomeOverride {
+        fn drop(&mut self) {
+            match &self.original {
+                Some(home) => unsafe {
+                    std::env::set_var("HOME", home);
+                },
+                None => unsafe {
+                    std::env::remove_var("HOME");
+                },
+            }
+        }
     }
 
     #[tokio::test]
@@ -1465,6 +1545,31 @@ token_file = "{token_file}"
             "unexpected error: {}",
             err
         );
+    }
+
+    #[test]
+    fn admin_api_expands_token_file_env_in_daemon_path() {
+        let _guard = home_lock().lock().expect("lock HOME override");
+        let temp = tempdir().expect("tempdir");
+        let home = temp.path().join("fake-home");
+        fs::create_dir_all(&home).expect("create fake home");
+        let _home = HomeOverride::new(&home);
+
+        write_test_work_root(
+            temp.path(),
+            "127.0.0.1:0",
+            "${HOME}/.warp_parse/admin_api.token",
+        );
+        write_token(temp.path(), "fake-home/.warp_parse/admin_api.token", 0o600);
+
+        let loaded = load_config(temp.path())
+            .expect("load admin api config with env token path")
+            .expect("enabled");
+        assert_eq!(
+            loaded.bind,
+            "127.0.0.1:0".parse().expect("parse socket addr")
+        );
+        assert_eq!(loaded.bearer_token, "test-token");
     }
 
     #[tokio::test]

@@ -336,18 +336,71 @@ mod tests {
     use serial_test::serial;
     use std::fs;
     use std::os::unix::fs::PermissionsExt;
+    use std::path::PathBuf;
     use std::sync::OnceLock;
     use tempfile::tempdir;
     use wp_engine::facade::args::ParseArgs;
     use wp_engine::facade::WpApp;
 
     fn shared_control_handle() -> wp_engine::facade::RuntimeControlHandle {
+        fn shared_control_work_root() -> &'static PathBuf {
+            static WORK_ROOT: OnceLock<PathBuf> = OnceLock::new();
+            WORK_ROOT.get_or_init(|| {
+                let root = std::env::temp_dir().join("warp-parse-engine-handler-tests");
+                let conf_dir = root.join("conf");
+                fs::create_dir_all(&conf_dir).expect("create shared control conf dir");
+                fs::write(
+                    conf_dir.join("wparse.toml"),
+                    r#"version = "1.0"
+robust = "normal"
+skip_parse = false
+skip_sink = false
+
+[models]
+wpl = "./models/wpl"
+oml = "./models/oml"
+
+[topology]
+sources = "./topology/sources"
+sinks = "./topology/sinks"
+
+[performance]
+rate_limit_rps = 10000
+parse_workers = 2
+
+[rescue]
+path = "./data/rescue"
+
+[log_conf]
+level = "warn,ctrl=info,data=error,matrc=error,dfx=warn,kdb=warn"
+output = "File"
+
+[log_conf.file]
+path = "./data/logs/"
+
+[[stat.pick]]
+key = "pick_stat"
+target = "*"
+
+[[stat.parse]]
+key = "parse_stat"
+target = "*"
+
+[[stat.sink]]
+key = "sink_stat"
+target = "*"
+"#,
+                )
+                .expect("write shared control config");
+                root
+            })
+        }
+
         static HANDLE: OnceLock<wp_engine::facade::RuntimeControlHandle> = OnceLock::new();
         HANDLE
             .get_or_init(|| {
-                let work_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests");
                 let args = ParseArgs {
-                    work_root: Some(work_root.to_string_lossy().to_string()),
+                    work_root: Some(shared_control_work_root().to_string_lossy().to_string()),
                     ..Default::default()
                 };
                 WpApp::try_from(args, orion_variate::EnvDict::default())

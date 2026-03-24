@@ -1015,7 +1015,10 @@ async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
         .await
         .expect("send status after update reload");
     assert_eq!(status_after.status(), StatusCode::OK);
-    let status_body: Value = status_after.json().await.expect("decode status after update");
+    let status_body: Value = status_after
+        .json()
+        .await
+        .expect("decode status after update");
     assert_eq!(status_body["project_version"], "1.4.3");
     assert_eq!(
         fs::read_to_string(clone.path().join("models/version.txt"))
