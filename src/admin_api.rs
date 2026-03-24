@@ -1358,12 +1358,50 @@ mod tests {
     use wp_engine::facade::args::ParseArgs;
     use wp_engine::facade::WpApp;
 
+    const BASE_TEST_WPARSE_CONF: &str = r#"version = "1.0"
+robust = "normal"
+skip_parse = false
+skip_sink = false
+
+[models]
+wpl = "./models/wpl"
+oml = "./models/oml"
+
+[topology]
+sources = "./topology/sources"
+sinks = "./topology/sinks"
+
+[performance]
+rate_limit_rps = 10000
+parse_workers = 2
+
+[rescue]
+path = "./data/rescue"
+
+[log_conf]
+level = "warn,ctrl=info,data=error,matrc=error,dfx=warn,kdb=warn"
+output = "File"
+
+[log_conf.file]
+path = "./data/logs/"
+
+[[stat.pick]]
+key = "pick_stat"
+target = "*"
+
+[[stat.parse]]
+key = "parse_stat"
+target = "*"
+
+[[stat.sink]]
+key = "sink_stat"
+target = "*"
+"#;
+
     fn write_test_work_root(dir: &Path, bind: &str, token_file: &str) {
         let conf_dir = dir.join("conf");
         fs::create_dir_all(&conf_dir).expect("create conf dir");
-        let mut base =
-            include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/conf/wparse.toml"))
-                .to_string();
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
         base.push_str(&format!(
             r#"
 
