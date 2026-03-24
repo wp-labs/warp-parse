@@ -1361,7 +1361,9 @@ mod tests {
     fn write_test_work_root(dir: &Path, bind: &str, token_file: &str) {
         let conf_dir = dir.join("conf");
         fs::create_dir_all(&conf_dir).expect("create conf dir");
-        let mut base = include_str!("../tests/conf/wparse.toml").to_string();
+        let mut base =
+            include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/tests/conf/wparse.toml"))
+                .to_string();
         base.push_str(&format!(
             r#"
 

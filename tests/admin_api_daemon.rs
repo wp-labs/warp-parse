@@ -314,7 +314,10 @@ async fn wait_until_ready(
     token: &str,
     timeout: Duration,
 ) -> Value {
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .no_proxy()
+        .build()
+        .expect("build reqwest client without proxy");
     let deadline = Instant::now() + timeout;
     loop {
         if let Some(status) = child.try_wait().expect("query child status") {
@@ -1284,6 +1287,7 @@ async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_rolls_back_when_project_check_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1328,6 +1332,7 @@ async fn wproj_conf_update_rolls_back_when_project_check_fails() {
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1367,6 +1372,7 @@ async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1406,6 +1412,7 @@ async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1449,6 +1456,7 @@ async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1487,6 +1495,7 @@ async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
 }
 
 #[tokio::test]
+#[serial]
 async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_remote() {
     let bind = reserve_local_addr();
     let source_bind = reserve_local_addr();
@@ -1581,6 +1590,7 @@ async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_rem
 }
 
 #[tokio::test]
+#[serial]
 async fn batch_mode_does_not_expose_admin_http_service() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
@@ -1600,7 +1610,30 @@ async fn batch_mode_does_not_expose_admin_http_service() {
         .send()
         .await;
 
-    shutdown_child(&mut child);
+    let _ = child.kill();
+    let _ = child.wait();
+    let output = collect_output(&mut child);
+    let log_dump = read_wparse_log(work_root);
 
-    assert!(resp.is_err(), "batch mode should not expose admin HTTP");
+    assert!(
+        !log_dump.contains("admin api listening on http://")
+            && !log_dump.contains("admin api listening on https://"),
+        "batch mode unexpectedly initialized admin api; child output=\n{}\nlog=\n{}",
+        output,
+        log_dump
+    );
+
+    if let Ok(resp) = resp {
+        if resp.status().is_success() {
+            let status = resp.status();
+            let body = resp
+                .text()
+                .await
+                .unwrap_or_else(|err| format!("<read body failed: {}>", err));
+            panic!(
+                "batch mode should not expose a usable admin HTTP endpoint, but got status={} body={}\nchild output=\n{}\nlog=\n{}",
+                status, body, output, log_dump
+            );
+        }
+    }
 }
