@@ -100,7 +100,7 @@ jobs:
         with:
           subject-path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}
           path: ${{ github.event.repository.name }}-${{ github.ref_name }}-${{ matrix.target }}.tar.gz
