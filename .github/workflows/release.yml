@@ -52,9 +52,29 @@ jobs:
         if: matrix.can-run == true
         run: ./target/${{ matrix.target }}/release/wparse --version
 
+      - name: Determine wp-examples branch
+        if: matrix.can-run == true
+        id: examples-branch
+        run: |
+          VERSION="${{ github.ref_name }}"
+          if [[ "$VERSION" == *"-alpha"* ]]; then
+            BRANCH="alpha"
+          elif [[ "$VERSION" == *"-beta"* ]]; then
+            BRANCH="beta"
+          else
+            BRANCH="main"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Using wp-examples branch: $BRANCH"
+
       - name: Clone wp-examples
         if: matrix.can-run == true
-        run: git clone https://github.com/wp-labs/wp-examples /tmp/wp-examples
+        run: |
+          git clone \
+            --branch "${{ steps.examples-branch.outputs.branch }}" \
+            --single-branch \
+            https://github.com/wp-labs/wp-examples \
+            /tmp/wp-examples
 
       - name: Run integration tests
         if: matrix.can-run == true
