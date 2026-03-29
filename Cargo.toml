@@ -264,6 +264,3 @@ wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/w
 
 
 # wp-connectors = { path = "../wp-connectors"}
-
-[patch.crates-io]
-wp-knowledge = { path = "../wp-knowledge" }
