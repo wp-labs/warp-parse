@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.2] - 2026-03-29
+
+### Changed
+- **wp-motor**: 核心引擎依赖从 `v1.19.9` 升级到 `v1.19.11`，同步引入更早施加的 parser/sink 背压以及 realtime picker 的 pending-bytes 控制。
+- **Dependencies**: 升级 `wp-knowledge` 到 `0.11`，并升级 `wp-connectors` 到 `v0.10.2`。
+- **wproj/model**: `wproj model route` 改为走异步 OML 模型收集链路，和当前异步化后的模型加载方式保持一致。
+
+### Fixed
+- **wprescue/CLI**: `wprescue` 改为使用独立 CLI 定义并显式限制为 batch 模式，避免继续复用 `wparse` CLI 骨架带来的参数与入口语义混淆。
+
 ## [0.21.1] - 2026-03-24
 
 ### Added

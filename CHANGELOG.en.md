@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.2] - 2026-03-29
+
+### Changed
+- **wp-motor**: Upgraded the core engine dependency from `v1.19.9` to `v1.19.11`, bringing earlier parser/sink backpressure and realtime picker pending-byte controls.
+- **Dependencies**: Upgraded `wp-knowledge` to `0.11` and `wp-connectors` to `v0.10.2`.
+- **wproj/model**: Switched `wproj model route` to the async OML model collection path so it matches the now-async model loading flow.
+
+### Fixed
+- **wprescue/CLI**: Reworked `wprescue` to use a dedicated CLI definition and explicitly restrict it to batch mode, avoiding the argument and entrypoint ambiguity caused by reusing the `wparse` CLI skeleton.
+
 ## [0.21.1] - 2026-03-24
 
 ### Added

@@ -27,7 +27,7 @@ pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
                 WProj::Init(args) => project::init_project(args, &dict).await?,
                 WProj::Check(args) => project::check_project(args, &dict)?,
                 WProj::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
-                WProj::Model(sub) => dispatch_model_cmd(sub, &dict)?,
+                WProj::Model(sub) => dispatch_model_cmd(sub, &dict).await?,
                 WProj::Rescue(sub) => dispatch_rescue_cmd(sub)?,
                 WProj::SelfUpdate(_) => unreachable!("self command handled above"),
                 WProj::Engine(_) => unreachable!("engine command handled above"),
@@ -58,11 +58,11 @@ async fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
     }
 }
 
-fn dispatch_model_cmd(cmd: ModelCmd, dict: &EnvDict) -> RunResult<()> {
+async fn dispatch_model_cmd(cmd: ModelCmd, dict: &EnvDict) -> RunResult<()> {
     match cmd {
         ModelCmd::Sources(args) => list_sources_for_cli(&args, dict),
         ModelCmd::Sinks(args) => list_sinks(args, dict),
-        ModelCmd::Route(args) => show_sink_routes(args, dict),
+        ModelCmd::Route(args) => show_sink_routes(args, dict).await,
         ModelCmd::Knowdb(sub) => dispatch_knowdb_cmd(sub, dict),
     }
 }

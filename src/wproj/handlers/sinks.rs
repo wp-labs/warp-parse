@@ -22,10 +22,10 @@ pub fn list_sinks(args: SinksCommonArgs, dict: &EnvDict) -> RunResult<()> {
     Ok(())
 }
 
-pub fn show_sink_routes(args: SinksRouteArgs, dict: &EnvDict) -> RunResult<()> {
+pub async fn show_sink_routes(args: SinksRouteArgs, dict: &EnvDict) -> RunResult<()> {
     let sinks = load_sinks(&args.common.work_root, dict)?;
     let rows = sinks.route_rows(&args.common.group_names, &args.common.sink_names, dict)?;
-    let oml_map = collect_oml_models(&args.common.work_root, dict)?;
+    let oml_map = collect_oml_models(&args.common.work_root, dict).await?;
     let expanded = expand_route_rows(&rows, &oml_map);
     render_route_rows(&expanded, DisplayFormat::from_bool(args.common.json));
     Ok(())
