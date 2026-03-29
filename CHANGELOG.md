@@ -10,12 +10,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.21.2] - 2026-03-29
 
 ### Changed
-- **wp-motor**: 核心引擎依赖从 `v1.19.9` 升级到 `v1.19.11`，同步引入更早施加的 parser/sink 背压以及 realtime picker 的 pending-bytes 控制。
-- **Dependencies**: 升级 `wp-knowledge` 到 `0.11`，并升级 `wp-connectors` 到 `v0.10.2`。
-- **wproj/model**: `wproj model route` 改为走异步 OML 模型收集链路，和当前异步化后的模型加载方式保持一致。
+- **wp-motor**: 核心引擎依赖升级到 `v1.19.12`，主线为 OML 异步化落地，模型加载与知识库查询切到异步执行链路。
+- **Knowledge Runtime**: 升到 `0.11.2`，新增 PostgreSQL / MySQL 知识库支持、统一缓存与 telemetry，并将 OML 知识库查询切到异步执行链路。
+- **wproj/model**: `wproj model route` 改为走异步 OML 模型收集链路。
 
 ### Fixed
-- **wprescue/CLI**: `wprescue` 改为使用独立 CLI 定义并显式限制为 batch 模式，避免继续复用 `wparse` CLI 骨架带来的参数与入口语义混淆。
+- **CLI/Paths**: `wproj data validate`、sink/source 统计与 rescue 输出统一为更短的相对路径风格，提升终端可读性。
 
 ## [0.21.1] - 2026-03-24
 
