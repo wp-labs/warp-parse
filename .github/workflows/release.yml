@@ -269,7 +269,7 @@ jobs:
 
             ### Quick Install Script
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/${{ steps.branch.outputs.branch }}/scripts/install.sh | bash
+            curl -sSf https://get.warpparse.ai/inst-x.sh | bash -s -- wparse ${{ steps.branch.outputs.branch }}
             ```
 
             ### Docker Image

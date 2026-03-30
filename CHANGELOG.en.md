@@ -10,13 +10,11 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.21.2] - 2026-03-29
 
 ### Changed
-- **wp-motor**: Upgraded the core engine dependency from `v1.19.9` to `v1.19.12`. The main change is the OML async rollout: model loading and knowledge-backed queries now run on async execution paths, alongside earlier backpressure controls and clearer stat/recovery path display.
-- **Knowledge Runtime**: Upgraded `wp-knowledge` to `0.11.2`, adding PostgreSQL/MySQL knowledge providers, unified cache behavior with telemetry, and the async knowledge-query path used by OML.
-- **Dependencies**: Upgraded `wp-connectors` to `v0.10.2`.
+- **wp-motor**: Upgraded the core engine dependency to `v1.19.12`, with the main change being the OML async rollout: model loading and knowledge-backed queries now run on async execution paths.
+- **Knowledge Runtime**: Upgraded `wp-knowledge` to `0.11.2`, adding PostgreSQL/MySQL knowledge support, unified cache behavior with telemetry, and the async knowledge-query path used by OML.
 - **wproj/model**: Switched `wproj model route` to the async OML model collection path.
 
 ### Fixed
-- **wprescue/CLI**: Reworked `wprescue` to use a dedicated CLI definition and explicitly restrict it to batch mode, avoiding the argument and entrypoint ambiguity caused by reusing the `wparse` CLI skeleton.
 - **CLI/Paths**: Shortened source/sink/rescue-related table output to a consistent relative-path style for better terminal readability.
 
 ## [0.21.1] - 2026-03-24
