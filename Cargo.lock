@@ -3291,7 +3291,7 @@ dependencies = [
 [[package]]
 name = "orion_exp"
 version = "0.1.1"
-source = "git+https://github.com/galaxy-sec/orion-exp.git?tag=v0.1.1#8302bc3732a9c42683fa3c679681df604c3730b4"
+source = "git+https://github.com/galaxio-labs/orion-exp.git?tag=v0.1.1#8302bc3732a9c42683fa3c679681df604c3730b4"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -6579,7 +6579,7 @@ dependencies = [
 [[package]]
 name = "wp-connectors"
 version = "0.7.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.10.1#bb089435d1d6c8bc9ac53f913d71334985cfc481"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.10.2#b9e8a5b8e8538850dc51c118aed0bcb69594152e"
 dependencies = [
  "actix-web",
  "anyhow",
