@@ -82,10 +82,7 @@ shadow-rs = "1.6"
 
 [dev-dependencies]
 serial_test = "3.2"
-httpmock = "0.8"
-collection_literals = "1.0"
 tempfile = "3.23"
-criterion = "0.8"
 
 # ===========================================================================
 # Features
@@ -105,6 +102,7 @@ community = [
     "mysql",
     "postgres",
     "clickhouse",
+    "http",
     "elasticsearch",
     "prometheus",
     "victorialogs",
@@ -117,6 +115,7 @@ mysql = ["wp-connectors/mysql"]
 postgres = ["wp-connectors/postgres"]
 doris = ["wp-connectors/doris"]
 clickhouse = ["wp-connectors/clickhouse"]
+http = ["wp-connectors/http"]
 elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus = ["wp-connectors/prometheus"]
 victorialogs = ["wp-connectors/victorialogs"]
@@ -149,20 +148,11 @@ plugin-suite = []
 
 [dependencies]
 # --- System and Platform ---
-sysinfo = "0.38"
-async-signal = "0.2"
 libc = "0.2"
-signal-hook-registry = "1.4"
 tikv-jemallocator = "0.6"
 
 # --- Async Runtime ---
 tokio = { version = "1.48", features = ["full"] }
-tokio-util = { version = "0.7", features = ["full"] }
-tokio-async-drop = "0.1"
-futures-util = "0.3"
-futures-lite = "2.6"
-async-trait = "0.1"
-async-broadcast = "0.7"
 
 # --- Serialization ---
 serde = { version = "1.0", features = ["derive"] }
@@ -171,67 +161,41 @@ toml = "1.0"
 semver = "1.0"
 
 # --- Logging and Errors ---
-log = "0.4"
 anyhow = "1.0"
-thiserror = "2.0"
 orion-error = "0.6"
 orion-sec = "0.4"
 orion-variate = "0.11"
 orion_conf = { version = "0.5", features = ["yaml", "toml"] }
 
 # --- Time ---
-chrono = "0.4"
 time = "0.3"
 
 # --- CLI ---
 clap = { version = "4.5", features = ["derive"] }
-comfy-table = "7.2"
 
 # --- Parsing ---
-winnow = "0.7"
 #regex = "~1.11"
-wildmatch = "2.6"
-strfmt = "0.2"
-syslog = "7.0"
 
 # --- Derive Macros ---
-derive_more = { version = "2.1", features = ["full"] }
-derive_builder = "0.20"
-derive-getters = "0.5"
-enum_dispatch = "0.3"
-educe = { version = "0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
-uuid = { version = "1.19", features = ["v4"] }
 once_cell = "1.21"
-lazy_static = "1.5"
-contracts = "0.6"
-ctor = "0.6"
-hex = "0.4"
 shadow-rs = { version = "1.6.0", default-features = false }
 rand = "0.9"
 
 # --- Data Structures ---
-lru = "0.16"
-ipnet = "2.11"
 
 # --- File System ---
-walkdir = "2.5"
 glob = "0.3"
 
 # --- Internal: Open API ---
 
 wp-connector-api = "0.8"
-wp-parse-api = "0.8"
-wp-model-core = "0.8"
 
 # --- Internal: Infrastructure ---
 wp-log = "0.2"
 wp-error = "0.8"
-wp-specs = "0.8"
-wp-conf-base = "0.2"
-wp-data-fmt = "0.2"
 
 # --- Internal: Engine ---
 
