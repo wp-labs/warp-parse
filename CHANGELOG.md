@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.3] - 2026-03-31
+
+### Changed
+- **wp-motor**: 核心引擎依赖升级到 `v1.19.15`，补充 metrics 固定标签与统一 tag 命名支持，便于监控系统稳定消费运行时指标。
+- **wp-connectors**: 同步引入 VictoriaMetrics 相关更新。
+- **wp-lang**: 同步引入 `json_like` 支持。
+
+### Fixed
+- **Build/Dependencies**: 修复通过 git 依赖 `wp-motor` 时的 `wp-knowledge` 解析问题，恢复 `cargo build` 可用性。
+
 ## [0.21.2] - 2026-03-29
 
 ### Changed

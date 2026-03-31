@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.21.3] - 2026-03-31
+
+### Changed
+- **wp-motor**: Upgraded the core engine dependency to `v1.19.15`, adding fixed-label propagation and unified metric tag naming so monitoring systems can consume runtime metrics more consistently.
+- **wp-connectors**: Pulled in the latest VictoriaMetrics-related updates.
+- **wp-lang**: Pulled in `json_like` support.
+
+### Fixed
+- **Build/Dependencies**: Fixed `wp-knowledge` resolution when consuming `wp-motor` through git dependencies, restoring `cargo build` usability.
+
 ## [0.21.2] - 2026-03-29
 
 ### Changed
