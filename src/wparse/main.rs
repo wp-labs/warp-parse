@@ -1,4 +1,5 @@
 use std::env;
+use std::path::Path;
 // 全局分配器：在非 Windows 平台启用 jemalloc，提升多线程分配性能
 
 //use tikv_jemallocator::Jemalloc;
@@ -42,11 +43,21 @@ async fn do_main() -> RunResult<()> {
     let env_dict = load_sec_dict()?;
     match cmd {
         WParseCLI::Daemon(args) => {
+            let work_root = wp_engine::facade::args::resolve_run_work_root(&args.work_root)?;
             let engine_args: wp_engine::facade::args::ParseArgs = args.into();
 
             let mut app = WpApp::try_from(engine_args, env_dict)?;
+            let admin_api = warp_parse::admin_api::start_if_enabled(
+                Path::new(&work_root),
+                app.control_handle(),
+            )
+            .await?;
             log_build_info_once();
-            app.run_daemon().await?;
+            let run_result = app.run_daemon().await;
+            if let Some(admin_api) = admin_api {
+                admin_api.shutdown().await;
+            }
+            run_result?;
         }
         WParseCLI::Batch(args) => {
             let engine_args: wp_engine::facade::args::ParseArgs = args.into();

@@ -52,6 +52,7 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
             mode: value.mode,
             max_line: value.max_line,
             parse_workers: value.parse_workers,
+            reload_timeout_ms: None,
             check_stop: value.check_stop,
             check_continue: value.check_continue,
             stat_sec: value.stat_sec,

@@ -1,107 +1,34 @@
-# WarpParse Documentation Index
+# Documentation Index
 
-## 📚 Official Documentation
+## By Category
 
-### Release and Development Process
+### Usage
 
-1. **[Release Management](RELEASE_MANAGEMENT.md)** ⭐ **PRIMARY DOCUMENT**
-   - Complete release strategy and workflow
-   - Daily development workflow
-   - Alpha/Beta/Stable release process
-   - Hotfix procedures
-   - Best practices and troubleshooting
+- Chinese: [use/zh/README.md](use/zh/README.md)
+- English: [use/en/README.md](use/en/README.md)
 
-2. **[Branch Source and Maturity Control](BRANCH_SOURCE_AND_MATURITY_CONTROL.md)** 🔒 **CRITICAL POLICY**
-   - Branch source control rules
-   - Dependency maturity requirements
-   - Decision matrix for automated handling
-   - Example scenarios and troubleshooting
+### Design
 
-3. **[Branch Protection Rules](BRANCH_PROTECTION_RULES.md)** ⚙️ **SETUP GUIDE**
-   - GitHub branch protection configuration
-   - Immediate actions for setup
-   - Long-term automation solutions
+- Chinese: [design/zh/README.md](design/zh/README.md)
+- English: [design/en/README.md](design/en/README.md)
 
-4. **[Self Update Design](SELF_UPDATE_DESIGN.md)** 🆕 **FEATURE DESIGN**
-   - `wproj self update` capability design
-   - Channel strategy (`stable/main`, `beta/beta`, `alpha/alpha`)
-   - Security, rollback, and compatibility constraints
+## By Document
 
----
+### Usage Documents
 
-## 🗂️ Document Categories
+- Product overview: [use/zh/product_overview.md](use/zh/product_overview.md) | [use/en/product_overview.md](use/en/product_overview.md)
+- Runtime admin usage: [use/zh/engine_admin_usage.md](use/zh/engine_admin_usage.md) | [use/en/engine_admin_usage.md](use/en/engine_admin_usage.md)
+- Remote project sync and rule reload SOP: [use/zh/remote_project_sync_and_rule_reload.md](use/zh/remote_project_sync_and_rule_reload.md) | [use/en/remote_project_sync_and_rule_reload.md](use/en/remote_project_sync_and_rule_reload.md)
 
-### For Release Managers
+### Design Documents
 
-- Primary: `RELEASE_MANAGEMENT.md`
-- Supporting: `BRANCH_SOURCE_AND_MATURITY_CONTROL.md`
-- Setup: `BRANCH_PROTECTION_RULES.md`
+- Admin API development guide: [design/zh/admin_api_development.md](design/zh/admin_api_development.md) | [design/en/admin_api_development.md](design/en/admin_api_development.md)
+- Release management: [design/zh/release_management.md](design/zh/release_management.md) | [design/en/release_management.md](design/en/release_management.md)
+- Branch protection rules: [design/zh/branch_protection_rules.md](design/zh/branch_protection_rules.md) | [design/en/branch_protection_rules.md](design/en/branch_protection_rules.md)
+- Branch source and maturity control: [design/zh/branch_source_and_maturity_control.md](design/zh/branch_source_and_maturity_control.md) | [design/en/branch_source_and_maturity_control.md](design/en/branch_source_and_maturity_control.md)
+- Self-update design: [design/zh/self_update_design.md](design/zh/self_update_design.md) | [design/en/self_update_design.md](design/en/self_update_design.md)
+- Remote rule version update design: [design/zh/project_remote_sync_design.md](design/zh/project_remote_sync_design.md) | [design/en/project_remote_sync_design.md](design/en/project_remote_sync_design.md)
 
-### For Developers
+## Editing Rule
 
-- Workflow: `RELEASE_MANAGEMENT.md` → "Daily Workflow" section
-- Contributing: Follow alpha → beta → main flow
-
-### For DevOps/SRE
-
-- Setup: `BRANCH_PROTECTION_RULES.md`
-- Automation: Check `.github/workflows/dependabot-branch-filter.yml`
-- Config: Check `.github/dependabot.yml`
-
----
-
-## 🔗 Quick Links
-
-| Need | Document | Section |
-|------|----------|---------|
-| How to release alpha? | RELEASE_MANAGEMENT.md | 5.1 Alpha Release |
-| How to release beta? | RELEASE_MANAGEMENT.md | 5.2 Beta Release |
-| How to release stable? | RELEASE_MANAGEMENT.md | 5.3 Stable Release |
-| How to design update channels? | SELF_UPDATE_DESIGN.md | 14. CI/CD 发布侧对齐规范 |
-| Why is Dependabot PR closed? | BRANCH_SOURCE_AND_MATURITY_CONTROL.md | Enforcement Mechanisms |
-| How to configure GitHub? | BRANCH_PROTECTION_RULES.md | Required Settings |
-| Daily development workflow? | RELEASE_MANAGEMENT.md | 6.1 For Developers |
-| Emergency hotfix? | RELEASE_MANAGEMENT.md | 5.4 Hotfix Release |
-
----
-
-## 📖 Related Files
-
-- **Workflows**: `.github/workflows/`
-  - `build-and-test.yml` - CI for all branches
-  - `release.yml` - Release on tag push
-  - `dependabot-branch-filter.yml` - Dependency version filtering
-
-- **Configuration**: `.github/`
-  - `dependabot.yml` - Automated dependency updates
-
-- **Scripts**: `scripts/`
-  - `prepare-release.sh` - Release preparation helper
-
----
-
-## 📝 Maintenance
-
-- **Document Owner**: WarpParse Release Team
-- **Review Cycle**: Quarterly or as needed
-- **Last Updated**: 2026-01-15
-- **Version**: 1.0
-
----
-
-## 🚀 Getting Started
-
-**New to the project?**
-1. Read `RELEASE_MANAGEMENT.md` for overall strategy
-2. Set up your environment following "Daily Workflow" section
-3. Configure GitHub using `BRANCH_PROTECTION_RULES.md`
-
-**Need to make a release?**
-1. Follow appropriate release section in `RELEASE_MANAGEMENT.md`
-2. Verify dependencies meet maturity requirements
-3. Complete the release checklist
-
-**Encountered an issue?**
-1. Check "Troubleshooting" section in `RELEASE_MANAGEMENT.md`
-2. Review `BRANCH_SOURCE_AND_MATURITY_CONTROL.md` for policy details
-3. Check workflow logs in GitHub Actions
+New documentation should be added under the categorized language directories instead of the `docs/` root.
