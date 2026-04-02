@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.21.4" # @gxl:set(version)
+version = "0.21.5" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -212,10 +212,10 @@ wp-error = "0.8"
 
 wp-knowledge  =  "0.11"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.15" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.15" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.15" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.15" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.16" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.16" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.16" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.19.16" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.1"
