@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.21.5" # @gxl:set(version)
+version = "0.21.6" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
