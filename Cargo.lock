@@ -65,7 +65,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e01ed3140b2f8d422c68afa1ed2e85d996ea619c988ac834d255db32138655cb"
 dependencies = [
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -182,7 +182,7 @@ dependencies = [
  "actix-router",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -451,7 +451,7 @@ checksum = "c7c24de15d275a1ecfd47a380fb4d5ec9bfe0933f309ed5e705b775596a3574d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -462,7 +462,7 @@ checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -763,7 +763,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -806,7 +806,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -904,7 +904,7 @@ checksum = "008eb94d541da40512913ef5e0707c3fb0e7280ba1af13f062461e46dd96ef7e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1170,7 +1170,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "strsim",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1181,7 +1181,7 @@ checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
 dependencies = [
  "darling_core",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1218,7 +1218,7 @@ checksum = "74ef43543e701c01ad77d3a5922755c6a1d71b22d942cb8042be4994b380caff"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1239,7 +1239,7 @@ dependencies = [
  "darling",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1249,7 +1249,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ab63b0e2bf4d5928aff72e83a7dace85d7bba5fe12dcc3c5a572d78caffd3f3c"
 dependencies = [
  "derive_builder_core",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1271,7 +1271,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustc_version",
- "syn 2.0.117",
+ "syn",
  "unicode-xid",
 ]
 
@@ -1311,7 +1311,7 @@ checksum = "97369cbbc041bc366949bc74d34658d6cda5621039731c6310521892a3a20ae0"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1364,26 +1364,14 @@ checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
 
 [[package]]
 name = "educe"
-version = "0.4.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f0042ff8246a363dbe77d2ceedb073339e85a804b9a47636c6e016a9a32c05f"
-dependencies = [
- "enum-ordinalize 3.1.15",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "educe"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1d7bc049e1bd8cdeb31b68bbd586a9464ecf9f3944af3958a7a9d0f8b9799417"
 dependencies = [
- "enum-ordinalize 4.3.2",
+ "enum-ordinalize",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1406,19 +1394,6 @@ dependencies = [
 
 [[package]]
 name = "enum-ordinalize"
-version = "3.1.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1bf1fa3f06bbff1ea5b1a9c7b14aa992a39657db60a2759457328d7e058f49ee"
-dependencies = [
- "num-bigint",
- "num-traits",
- "proc-macro2",
- "quote",
- "syn 2.0.117",
-]
-
-[[package]]
-name = "enum-ordinalize"
 version = "4.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4a1091a7bb1f8f2c4b28f1fe2cef4980ca2d410a3d727d67ecc3178c9b0800f0"
@@ -1434,7 +1409,7 @@ checksum = "8ca9601fb2d62598ee17836250842873a413586e5d7ed88b356e38ddbb0ec631"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1446,7 +1421,7 @@ dependencies = [
  "once_cell",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1650,7 +1625,7 @@ checksum = "e835b70203e41293343137df5c0664546da5745f82ec9b84d40be8336958447b"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -1747,7 +1722,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -2320,7 +2295,7 @@ dependencies = [
  "proc-macro-error2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -2353,7 +2328,7 @@ checksum = "c727f80bfa4a6c6e2508d2f05b6f4bfce242030bd88ed15ae5331c5b5d30fba7"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -2786,7 +2761,7 @@ dependencies = [
  "cfg-if",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -2814,16 +2789,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3b335231dfd352ffb0f8017f3b6027a4917f7df785ea2143d8af2adc66980ae"
 dependencies = [
  "winapi",
-]
-
-[[package]]
-name = "num-bigint"
-version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5e44f723f1133c9deac646763579fdb3ac745e418f2a7af9cd0c431da1f20b9"
-dependencies = [
- "num-integer",
- "num-traits",
 ]
 
 [[package]]
@@ -2897,7 +2862,7 @@ dependencies = [
  "proc-macro-crate",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -3131,19 +3096,6 @@ dependencies = [
 
 [[package]]
 name = "orion-error"
-version = "0.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2379b42b93905be7ea54689820d863c1663a77e6950e758ddab0f402007ccfee"
-dependencies = [
- "derive-getters",
- "derive_more",
- "log",
- "serde",
- "thiserror 2.0.18",
-]
-
-[[package]]
-name = "orion-error"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5b28c5a8d3f14a81aa499b81d0c90d6581d975475cd1b8d04b657cec85ddf31"
@@ -3152,31 +3104,6 @@ dependencies = [
  "log",
  "serde",
  "thiserror 2.0.18",
-]
-
-[[package]]
-name = "orion-sec"
-version = "0.3.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e88a28470d2e175401fa011faf440c9dab3b9dd61ca088e422f0f0ddb5f0d0a2"
-dependencies = [
- "chrono",
- "contracts",
- "derive_more",
- "fs_extra",
- "getset",
- "indexmap",
- "log",
- "once_cell",
- "orion-error 0.5.6",
- "orion-variate 0.10.8",
- "orion_conf 0.4.2",
- "serde",
- "serde_derive",
- "serde_yaml",
- "thiserror 2.0.18",
- "unicase",
- "url",
 ]
 
 [[package]]
@@ -3193,39 +3120,15 @@ dependencies = [
  "indexmap",
  "log",
  "once_cell",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.18",
  "unicase",
  "url",
-]
-
-[[package]]
-name = "orion-variate"
-version = "0.10.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e58ed46b74ea517bf302b236b0f9d4b18c5ad0b655695dd15a2c8b0f51508e71"
-dependencies = [
- "contracts",
- "derive-getters",
- "derive_more",
- "getset",
- "indexmap",
- "log",
- "orion-error 0.5.6",
- "os_info",
- "serde",
- "serde_derive",
- "serde_ini",
- "serde_json",
- "serde_yaml",
- "thiserror 2.0.18",
- "toml 0.9.12+spec-1.1.0",
- "winnow 0.7.15",
 ]
 
 [[package]]
@@ -3240,7 +3143,7 @@ dependencies = [
  "getset",
  "indexmap",
  "log",
- "orion-error 0.6.0",
+ "orion-error",
  "os_info",
  "serde",
  "serde_derive",
@@ -3248,26 +3151,8 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "winnow 0.7.15",
-]
-
-[[package]]
-name = "orion_conf"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d577af921038370732906724bbda4b88d9bf50fb607cc6ba34dc9b73089df94"
-dependencies = [
- "derive-getters",
- "derive_more",
- "log",
- "orion-error 0.5.6",
- "orion-variate 0.10.8",
- "serde",
- "serde_derive",
- "serde_yaml",
- "thiserror 2.0.18",
- "toml 0.9.12+spec-1.1.0",
 ]
 
 [[package]]
@@ -3279,19 +3164,20 @@ dependencies = [
  "derive-getters",
  "derive_more",
  "log",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
+ "orion-error",
+ "orion-variate",
  "serde",
  "serde_derive",
  "serde_yaml",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
 ]
 
 [[package]]
 name = "orion_exp"
-version = "0.1.1"
-source = "git+https://github.com/galaxy-sec/orion-exp.git?tag=v0.1.1#8302bc3732a9c42683fa3c679681df604c3730b4"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad05116085a2a72fc8c2a34051b5b8ca71101ce0a02cb0f6bf7d57e8c766c4f2"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -3321,7 +3207,7 @@ dependencies = [
  "derive-getters",
  "serde",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
 ]
 
 [[package]]
@@ -3361,7 +3247,7 @@ dependencies = [
  "proc-macro2",
  "proc-macro2-diagnostics",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -3425,7 +3311,7 @@ dependencies = [
  "regex",
  "regex-syntax",
  "structmeta",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -3657,7 +3543,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -3688,7 +3574,7 @@ dependencies = [
  "proc-macro-error-attr2",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -3708,7 +3594,7 @@ checksum = "af066a9c399a26e020ada66a034357a868728e72cd426f3adcd35f80d88d88c8"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "version_check",
  "yansi",
 ]
@@ -4314,7 +4200,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "serde_derive_internals",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4361,7 +4247,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "unicode-ident",
 ]
 
@@ -4451,7 +4337,7 @@ checksum = "d540f220d3187173da220f885ab66608367b6574e925011a9353e4badda91d79"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4462,7 +4348,7 @@ checksum = "18d26a20a969b9e3fdf2fc2d9f21eda6c40e2de84c9408bb5d3b05d499aae711"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4556,7 +4442,7 @@ checksum = "0a7d91949b85b0d2fb687445e448b40d322b6b3e4af6b44a29b21d9a5f33e6d9"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4757,7 +4643,7 @@ dependencies = [
  "quote",
  "sqlx-core",
  "sqlx-macros-core",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4779,7 +4665,7 @@ dependencies = [
  "sqlx-core",
  "sqlx-mysql",
  "sqlx-postgres",
- "syn 2.0.117",
+ "syn",
  "tokio",
  "url",
 ]
@@ -4913,7 +4799,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "structmeta-derive",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4924,7 +4810,7 @@ checksum = "152a0b65a590ff6c3da95cabe2353ee04e6167c896b28e3b14478c2636c922fc"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4948,7 +4834,7 @@ dependencies = [
  "heck 0.5.0",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -4956,17 +4842,6 @@ name = "subtle"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
-
-[[package]]
-name = "syn"
-version = "1.0.109"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
-dependencies = [
- "proc-macro2",
- "quote",
- "unicode-ident",
-]
 
 [[package]]
 name = "syn"
@@ -4996,7 +4871,7 @@ checksum = "728a70f3dbaf5bab7f0c4b1ac8d7ae5ea60a4b5549c8a5914361c99147a709d2"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5100,7 +4975,7 @@ checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5111,7 +4986,7 @@ checksum = "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5243,7 +5118,7 @@ checksum = "5c55a2eff8b69ce66c84f85e1da1c233edc36ceb85a2058d11b0d6a3c7e7569c"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5286,21 +5161,6 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.9.12+spec-1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf92845e79fc2e2def6a5d828f0801e29a2f8acc037becc5ab08595c7d5e9863"
-dependencies = [
- "indexmap",
- "serde_core",
- "serde_spanned",
- "toml_datetime 0.7.5+spec-1.1.0",
- "toml_parser",
- "toml_writer",
- "winnow 0.7.15",
-]
-
-[[package]]
-name = "toml"
 version = "1.0.7+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd28d57d8a6f6e458bc0b8784f8fdcc4b99a437936056fa122cb234f18656a96"
@@ -5308,19 +5168,10 @@ dependencies = [
  "indexmap",
  "serde_core",
  "serde_spanned",
- "toml_datetime 1.0.1+spec-1.1.0",
+ "toml_datetime",
  "toml_parser",
  "toml_writer",
  "winnow 1.0.0",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.7.5+spec-1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92e1cfed4a3038bc5a127e35a2d360f145e1f4b971b551a2ba5fd7aedf7e1347"
-dependencies = [
- "serde_core",
 ]
 
 [[package]]
@@ -5339,7 +5190,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ca1a40644a28bce036923f6a431df0b34236949d111cc07cb6dca830c9ef2e1"
 dependencies = [
  "indexmap",
- "toml_datetime 1.0.1+spec-1.1.0",
+ "toml_datetime",
  "toml_parser",
  "winnow 1.0.0",
 ]
@@ -5424,7 +5275,7 @@ checksum = "7490cfa5ec963746568740651ac6781f701c9c5ea257c58e057f3ba8cf69e8da"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5568,12 +5419,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "urlencoding"
-version = "2.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daf8dba3b7eb870caf1ddeed7bc9d2a049f3cfdfae7cb521b087cc33ae4c49da"
-
-[[package]]
 name = "utf8-width"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5658,7 +5503,7 @@ dependencies = [
  "derive-getters",
  "derive_builder",
  "derive_more",
- "educe 0.6.0",
+ "educe",
  "enum_dispatch",
  "futures-lite",
  "futures-util",
@@ -5671,10 +5516,10 @@ dependencies = [
  "log",
  "lru",
  "once_cell",
- "orion-error 0.6.0",
- "orion-sec 0.4.1",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-sec",
+ "orion-variate",
+ "orion_conf",
  "rand 0.9.2",
  "reqwest",
  "semver",
@@ -5693,7 +5538,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -5701,16 +5546,16 @@ dependencies = [
  "wp-cli-core",
  "wp-conf-base",
  "wp-config",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-connectors",
  "wp-data-fmt",
  "wp-engine",
- "wp-error 0.8.2",
+ "wp-error",
  "wp-knowledge",
  "wp-lang",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-model-core",
- "wp-parse-api 0.8.1",
+ "wp-parse-api",
  "wp-proj",
  "wp-specs",
 ]
@@ -5791,7 +5636,7 @@ dependencies = [
  "bumpalo",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "wasm-bindgen-shared",
 ]
 
@@ -5988,7 +5833,7 @@ checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -5999,7 +5844,7 @@ checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -6392,7 +6237,7 @@ dependencies = [
  "heck 0.5.0",
  "indexmap",
  "prettyplease",
- "syn 2.0.117",
+ "syn",
  "wasm-metadata",
  "wit-bindgen-core",
  "wit-component",
@@ -6408,7 +6253,7 @@ dependencies = [
  "prettyplease",
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "wit-bindgen-core",
  "wit-bindgen-rust",
 ]
@@ -6458,12 +6303,12 @@ dependencies = [
  "anyhow",
  "chrono",
  "comfy-table",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_json",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "walkdir",
  "wp-config",
  "wp-knowledge",
@@ -6480,15 +6325,15 @@ dependencies = [
  "derive_more",
  "getset",
  "log",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "winnow 0.7.15",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-model-core",
 ]
 
@@ -6502,56 +6347,33 @@ dependencies = [
  "chrono",
  "derive-getters",
  "derive_more",
- "educe 0.6.0",
+ "educe",
  "getset",
  "glob",
  "log",
  "once_cell",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "orion_exp 1.18.3",
  "orion_overload",
  "serde",
  "serde_derive",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wildmatch",
  "winnow 0.7.15",
  "wp-conf-base",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-data-utils",
- "wp-error 0.8.2",
+ "wp-error",
  "wp-knowledge",
  "wp-lang",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-model-core",
  "wp-parser",
  "wp-specs",
-]
-
-[[package]]
-name = "wp-connector-api"
-version = "0.7.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cdf637d54e32cb7d86299b1b9719438d2af7439619b206f29940b2a4edb546ca"
-dependencies = [
- "anyhow",
- "async-broadcast",
- "async-trait",
- "derive_more",
- "once_cell",
- "orion-error 0.5.6",
- "serde",
- "serde_derive",
- "serde_json",
- "smallvec",
- "smol_str",
- "thiserror 2.0.18",
- "toml 0.9.12+spec-1.1.0",
- "wp-model-core",
- "wp-parse-api 0.7.1",
 ]
 
 [[package]]
@@ -6565,21 +6387,21 @@ dependencies = [
  "async-trait",
  "derive_more",
  "once_cell",
- "orion-error 0.6.0",
+ "orion-error",
  "serde",
  "serde_derive",
  "serde_json",
  "smallvec",
  "smol_str",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wp-model-core",
 ]
 
 [[package]]
 name = "wp-connectors"
 version = "0.7.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.10.1#bb089435d1d6c8bc9ac53f913d71334985cfc481"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.11.1#7e0e30a45343638b08e95f6eda8f4e6187d28c5a"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -6588,34 +6410,32 @@ dependencies = [
  "bytes",
  "chrono",
  "clickhouse",
- "educe 0.6.0",
+ "educe",
  "flate2",
  "lazy_static",
  "log",
- "orion-error 0.6.0",
- "orion_conf 0.5.1",
- "orion_exp 0.1.1",
+ "orion-error",
+ "orion_conf",
+ "orion_exp 0.1.2",
  "prometheus",
- "rand 0.10.0",
  "rdkafka-wrap",
  "regex",
  "reqwest",
  "sea-orm",
  "serde",
  "serde_json",
+ "sysinfo",
  "tokio",
- "toml 1.0.7+spec-1.1.0",
- "urlencoding",
+ "toml",
  "uuid",
  "winnow 0.7.15",
  "wp-conf-base",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-data-fmt",
- "wp-error 0.8.2",
- "wp-log 0.2.0",
+ "wp-error",
+ "wp-log",
  "wp-model-core",
- "wp-parse-api 0.8.1",
- "wp-schema",
+ "wp-parse-api",
  "wp-specs",
 ]
 
@@ -6649,7 +6469,7 @@ dependencies = [
  "chrono",
  "derive_builder",
  "lru",
- "orion-error 0.6.0",
+ "orion-error",
  "orion_exp 1.18.3",
  "serde",
  "serde_derive",
@@ -6677,7 +6497,7 @@ dependencies = [
  "derive-getters",
  "derive_builder",
  "derive_more",
- "educe 0.6.0",
+ "educe",
  "enum_dispatch",
  "futures-lite",
  "futures-util",
@@ -6693,10 +6513,10 @@ dependencies = [
  "memchr",
  "mockall",
  "once_cell",
- "orion-error 0.6.0",
- "orion-sec 0.4.1",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-sec",
+ "orion-variate",
+ "orion_conf",
  "orion_exp 1.18.3",
  "orion_overload",
  "rand 0.10.0",
@@ -6715,7 +6535,7 @@ dependencies = [
  "tokio",
  "tokio-async-drop",
  "tokio-util",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "uuid",
  "walkdir",
  "wildmatch",
@@ -6723,18 +6543,18 @@ dependencies = [
  "wp-cli-core",
  "wp-conf-base",
  "wp-config",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-ctrl-api",
  "wp-data-fmt",
  "wp-data-utils",
  "wp-enrich-api",
- "wp-error 0.8.2",
+ "wp-error",
  "wp-knowledge",
  "wp-lang",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-model-core",
  "wp-oml",
- "wp-parse-api 0.8.1",
+ "wp-parse-api",
  "wp-parser",
  "wp-specs",
  "wp-stats",
@@ -6750,34 +6570,6 @@ dependencies = [
 
 [[package]]
 name = "wp-error"
-version = "0.7.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0f9533cf8bdfe40cfd65918a7f69b7221179bf3df8ab037ab46addccf418948"
-dependencies = [
- "anyhow",
- "chrono",
- "derive_more",
- "getset",
- "log",
- "log4rs",
- "orion-error 0.5.6",
- "orion-sec 0.3.4",
- "orion-variate 0.10.8",
- "orion_conf 0.4.2",
- "serde",
- "serde_json",
- "strum_macros",
- "thiserror 2.0.18",
- "toml 0.9.12+spec-1.1.0",
- "unicode-segmentation",
- "winnow 0.7.15",
- "wp-connector-api 0.7.2",
- "wp-log 0.1.3",
- "wp-model-core",
-]
-
-[[package]]
-name = "wp-error"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dba3a0dddbd2c75bcddd5ac5674e4923bc63baf8be83e7aee080537fe9304abf"
@@ -6788,19 +6580,19 @@ dependencies = [
  "getset",
  "log",
  "log4rs",
- "orion-error 0.6.0",
- "orion-sec 0.4.1",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-sec",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "unicode-segmentation",
  "winnow 0.7.15",
- "wp-connector-api 0.8.1",
- "wp-log 0.2.0",
+ "wp-connector-api",
+ "wp-log",
  "wp-model-core",
 ]
 
@@ -6818,9 +6610,9 @@ dependencies = [
  "lazy_static",
  "log",
  "once_cell",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "orion_overload",
  "r2d2",
  "r2d2_sqlite",
@@ -6832,12 +6624,12 @@ dependencies = [
  "strfmt",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wildmatch",
  "wp-data-fmt",
  "wp-data-utils",
- "wp-error 0.8.2",
- "wp-log 0.2.0",
+ "wp-error",
+ "wp-log",
  "wp-model-core",
  "wp-specs",
 ]
@@ -6858,7 +6650,7 @@ dependencies = [
  "derive-getters",
  "derive_builder",
  "derive_more",
- "educe 0.6.0",
+ "educe",
  "getrandom 0.4.2",
  "glob",
  "hex",
@@ -6869,7 +6661,7 @@ dependencies = [
  "memchr",
  "once_cell",
  "ordered-float 5.1.0",
- "orion-error 0.6.0",
+ "orion-error",
  "orion_overload",
  "phone",
  "rand 0.10.0",
@@ -6882,43 +6674,19 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "unicode-segmentation",
  "url",
  "wildmatch",
  "winnow 0.7.15",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-data-fmt",
- "wp-error 0.8.2",
- "wp-log 0.2.0",
+ "wp-error",
+ "wp-log",
  "wp-model-core",
- "wp-parse-api 0.8.1",
+ "wp-parse-api",
  "wp-parser",
  "wp-specs",
-]
-
-[[package]]
-name = "wp-log"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c6f00e5b04e4c43792ba744373f946fcd3a93affae62b16735a6e0e907449a40"
-dependencies = [
- "anyhow",
- "chrono",
- "derive_more",
- "getset",
- "log",
- "log4rs",
- "orion-error 0.5.6",
- "orion-variate 0.10.8",
- "orion_conf 0.4.2",
- "serde",
- "serde_json",
- "strum_macros",
- "thiserror 2.0.18",
- "toml 0.9.12+spec-1.1.0",
- "unicode-segmentation",
- "winnow 0.7.15",
 ]
 
 [[package]]
@@ -6933,14 +6701,14 @@ dependencies = [
  "getset",
  "log",
  "log4rs",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_json",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "unicode-segmentation",
  "winnow 0.7.15",
 ]
@@ -6987,8 +6755,8 @@ dependencies = [
  "log",
  "md5",
  "once_cell",
- "orion-error 0.6.0",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion_conf",
  "orion_exp 1.18.3",
  "parse-display",
  "parse-display-derive",
@@ -7001,34 +6769,19 @@ dependencies = [
  "strum 0.27.2",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "url",
  "wildmatch",
  "winnow 0.7.15",
  "wp-data-fmt",
  "wp-data-utils",
- "wp-error 0.8.2",
+ "wp-error",
  "wp-knowledge",
  "wp-lang",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-model-core",
  "wp-parser",
  "wp-specs",
-]
-
-[[package]]
-name = "wp-parse-api"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "168ecd84c478cdb2ca41efad437cb47fb49a7566bc385b95b2c082c5528927ec"
-dependencies = [
- "bytes",
- "derive_more",
- "orion-error 0.5.6",
- "serde",
- "serde_derive",
- "thiserror 2.0.18",
- "wp-model-core",
 ]
 
 [[package]]
@@ -7039,7 +6792,7 @@ checksum = "9108cdcb3f90e5b4f986ec7a1403f85e967916a21e660089b12690e5ecf72c32"
 dependencies = [
  "bytes",
  "derive_more",
- "orion-error 0.6.0",
+ "orion-error",
  "serde",
  "serde_derive",
  "thiserror 2.0.18",
@@ -7063,41 +6816,23 @@ dependencies = [
  "anyhow",
  "comfy-table",
  "glob",
- "orion-error 0.6.0",
- "orion-variate 0.11.1",
- "orion_conf 0.5.1",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
  "serde",
  "serde_json",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wildmatch",
  "wp-cli-core",
  "wp-config",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-data-utils",
  "wp-engine",
- "wp-error 0.8.2",
+ "wp-error",
  "wp-knowledge",
  "wp-lang",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-oml",
-]
-
-[[package]]
-name = "wp-schema"
-version = "0.1.6"
-source = "git+https://github.com/wp-labs/wp-schema.git?tag=v0.1.6-beta#cc89b6cbc4842f8fecedc01efa7c0934a1c3b372"
-dependencies = [
- "anyhow",
- "chrono",
- "educe 0.4.23",
- "log",
- "orion-error 0.5.6",
- "orion_conf 0.4.2",
- "serde",
- "serde_json",
- "winnow 0.7.15",
- "wp-error 0.7.7",
- "wp-log 0.1.3",
 ]
 
 [[package]]
@@ -7110,14 +6845,14 @@ dependencies = [
  "chrono",
  "derive_more",
  "log",
- "orion-error 0.6.0",
+ "orion-error",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wildmatch",
  "winnow 0.7.15",
- "wp-connector-api 0.8.1",
+ "wp-connector-api",
  "wp-model-core",
 ]
 
@@ -7143,9 +6878,9 @@ dependencies = [
  "smol_str",
  "strum_macros",
  "thiserror 2.0.18",
- "toml 1.0.7+spec-1.1.0",
+ "toml",
  "wildmatch",
- "wp-log 0.2.0",
+ "wp-log",
  "wp-model-core",
 ]
 
@@ -7180,7 +6915,7 @@ checksum = "b659052874eb698efe5b9e8cf382204678a0086ebf46982b79d6ca3182927e5d"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "synstructure",
 ]
 
@@ -7201,7 +6936,7 @@ checksum = "7e6cc098ea4d3bd6246687de65af3f920c430e236bee1e3bf2e441463f08a02f"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
@@ -7221,7 +6956,7 @@ checksum = "d71e5d6e06ab090c67b5e44993ec16b72dcbaabc526db883a360057678b48502"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
  "synstructure",
 ]
 
@@ -7261,7 +6996,7 @@ checksum = "eadce39539ca5cb3985590102671f2567e659fca9666581ad3411d59207951f3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.117",
+ "syn",
 ]
 
 [[package]]
