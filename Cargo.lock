@@ -4008,8 +4008,9 @@ dependencies = [
 
 [[package]]
 name = "orion_exp"
-version = "0.1.1"
-source = "git+https://github.com/galaxio-labs/orion-exp.git?tag=v0.1.1#8302bc3732a9c42683fa3c679681df604c3730b4"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad05116085a2a72fc8c2a34051b5b8ca71101ce0a02cb0f6bf7d57e8c766c4f2"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -7412,7 +7413,7 @@ dependencies = [
 [[package]]
 name = "wp-connectors"
 version = "0.7.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.11.0#46550e0de71fdd876551c8e24d458640646be7cd"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.11.1#7e0e30a45343638b08e95f6eda8f4e6187d28c5a"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -7427,7 +7428,7 @@ dependencies = [
  "log",
  "orion-error",
  "orion_conf",
- "orion_exp 0.1.1",
+ "orion_exp 0.1.2",
  "prometheus",
  "rdkafka-wrap",
  "regex",
