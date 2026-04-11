@@ -7,46 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.21.3] - 2026-03-31
-
-### Changed
-- **wp-motor**: 核心引擎依赖升级到 `v1.19.15`，补充 metrics 固定标签与统一 tag 命名支持，便于监控系统稳定消费运行时指标。
-- **wp-connectors**: 同步引入 VictoriaMetrics 相关更新。
-- **wp-lang**: 同步引入 `json_like` 支持。
-
-### Fixed
-- **Build/Dependencies**: 修复通过 git 依赖 `wp-motor` 时的 `wp-knowledge` 解析问题，恢复 `cargo build` 可用性。
-
-## [0.21.2] - 2026-03-29
-
-### Changed
-- **wp-motor**: 核心引擎依赖升级到 `v1.19.12`，主线为 OML 异步化落地，模型加载与知识库查询切到异步执行链路。
-- **Knowledge Runtime**: 升到 `0.11.2`，新增 PostgreSQL / MySQL 知识库支持、统一缓存与 telemetry，并将 OML 知识库查询切到异步执行链路。
-- **wproj/model**: `wproj model route` 改为走异步 OML 模型收集链路。
-
-### Fixed
-- **CLI/Paths**: `wproj data validate`、sink/source 统计与 rescue 输出统一为更短的相对路径风格，提升终端可读性。
-
-## [0.21.1] - 2026-03-24
+## [0.22.0] - 2026-03-31
 
 ### Added
 - **Self Update**: 新增可执行安装的 `wproj self update`，并引入独立 `warp-self-update` crate，统一承载 manifest 解析、版本比较、资产下载、安装与回滚逻辑；支持 `sha256` 校验、健康检查失败回滚，以及 `--yes`、`--dry-run`、`--force` 等控制参数。
 - **Admin API Dev Docs**: 新增独立的 Admin API 接口开发文档，单独说明 `GET /admin/v1/runtime/status`、`POST /admin/v1/reloads/model` 的请求/响应、状态码、并发冲突和 `update/version` 语义。
+- **Runtime Status**: Admin API `GET /admin/v1/runtime/status` 与 `wproj engine status` 新增 `project_version`，用于返回当前工作目录实际使用的工程配置版本。
+- **Reload Runtime**: 随核心引擎升级引入 reload 结果结构化输出、事件驱动 drain，以及 `reload_timeout_ms` 配置能力。
+- **OML Async Runtime**: 随核心引擎与知识库运行时升级，将模型加载与知识库查询切到异步执行链路。
+- **Knowledge Runtime**: 新增 PostgreSQL / MySQL 知识库支持，并补充统一缓存与 telemetry。
+- **wproj/model**: `wproj model route` 新增异步 OML 模型收集链路。
+- **Observability**: 随核心引擎升级补充 metrics 固定标签与统一 tag 命名支持，便于监控系统稳定消费运行时指标。
+- **wp-connectors**: 同步引入 VictoriaMetrics 相关能力更新。
+- **wp-lang**: 同步引入 `json_like` 支持。
 
 ### Changed
-- **wp-motor**: 核心引擎依赖从 `v1.18.1` 升级到 `v1.19.9`，同步引入上游运行时命令总线、reload 结果结构化输出、事件驱动 drain，以及 `reload_timeout_ms` 配置能力。
-- **Remote Project Sync**: 远端初始化入口统一为 `wproj init --repo <REPO> [--version <VERSION>]`，移除 `--remote`；自动版本解析在未显式指定 `--version` 时优先选择最新 release tag，若远端没有 release tag，则自动回退到默认分支 `HEAD`，并以 `current_version=<branch>`、`resolved_tag=HEAD@<branch>` 记录状态。
-- **Runtime Status**: Admin API `GET /admin/v1/runtime/status` 与 `wproj engine status` 新增 `project_version`，用于返回当前工作目录实际使用的工程配置版本。
-- **Self Update Internal Layout**: self check / self update 能力统一收敛到 `warp-self-update`，不再维护两套 manifest / 版本解析实现；同时将内部实现拆分为 `types`、`versioning`、`manifest`、`platform`、`fetch`、`install`、`lock` 等模块。
-- **Test Stability**: 管理面与 project remote 集成测试为超时敏感场景显式设置较小 `reload_timeout_ms`，并移除一批不必要的 `#[serial]`，降低整组测试被串行队列放大的概率。
-- **wpgen Cleanup**: 删除未接入主入口、仍使用旧配置加载路径的历史文件 `src/wpgen/wpcli.rs`，避免后续误恢复后重新引入 `${HOME}` / 密文字典 / 相对路径解析不一致问题。
+- **Remote Project Sync**: 远端初始化入口统一为 `wproj init --repo <REPO> [--version <VERSION>]`，移除 `--remote`；未显式指定 `--version` 时优先选择最新 release tag，若远端没有 release tag，则自动回退到默认分支 `HEAD`，并统一 `wproj conf update` 与 admin reload/update 链路的参数、帮助与状态输出行为。
+- **CLI/Paths**: `wproj data validate`、sink/source 统计与 rescue 输出统一为更短的相对路径风格，提升终端可读性。
 
 ### Fixed
-- **Project Remote Sync**: 修复 `wproj init --repo`、`wproj conf update` 与 admin reload/update 链路的参数对齐问题，并补齐远端初始化测试夹具以及首次引导场景的帮助、状态输出与文档一致性。
 - **Project Init Admin Token Path**: 修复 `wproj init` 在骨架已包含 `[admin_api]` 时未规范 token 路径的问题；当前会统一收敛为项目内 `runtime/admin_api.token`，避免遗留 `${HOME}/.warp_parse/admin_api.token`。
-- **Self Update Build/Test**: 修复 `wproj self` 合并后混用新旧 self update API 导致的构建失败，并重写相关安装/回滚覆盖，避免依赖本地监听端口。
-- **Test Fixtures / CI**: 修复 `admin_api` 与 `wproj engine` 相关测试仍隐式依赖 `tests/conf/wparse.toml` 的问题；当前改为在测试内嵌最小配置并使用临时 work root，避免 CI 因 `.gitignore` 忽略文件而失败。
-- **Admin API Tests**: 修复 batch 模式管理面测试在代理/并发环境下的误报，并调整 `${HOME}` 展开测试，避免在 `await` 期间持有同步锁导致 `clippy::await_holding_lock` 失败。
 
 
 ## [0.20.2 ]

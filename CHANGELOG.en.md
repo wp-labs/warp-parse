@@ -7,46 +7,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.21.3] - 2026-03-31
-
-### Changed
-- **wp-motor**: Upgraded the core engine dependency to `v1.19.15`, adding fixed-label propagation and unified metric tag naming so monitoring systems can consume runtime metrics more consistently.
-- **wp-connectors**: Pulled in the latest VictoriaMetrics-related updates.
-- **wp-lang**: Pulled in `json_like` support.
-
-### Fixed
-- **Build/Dependencies**: Fixed `wp-knowledge` resolution when consuming `wp-motor` through git dependencies, restoring `cargo build` usability.
-
-## [0.21.2] - 2026-03-29
-
-### Changed
-- **wp-motor**: Upgraded the core engine dependency to `v1.19.12`, with the main change being the OML async rollout: model loading and knowledge-backed queries now run on async execution paths.
-- **Knowledge Runtime**: Upgraded `wp-knowledge` to `0.11.2`, adding PostgreSQL/MySQL knowledge support, unified cache behavior with telemetry, and the async knowledge-query path used by OML.
-- **wproj/model**: Switched `wproj model route` to the async OML model collection path.
-
-### Fixed
-- **CLI/Paths**: Shortened source/sink/rescue-related table output to a consistent relative-path style for better terminal readability.
-
-## [0.21.1] - 2026-03-24
+## [0.22.0] - 2026-03-31
 
 ### Added
 - **Self Update**: Added an install-capable `wproj self update` flow and a dedicated `warp-self-update` crate that centralizes manifest resolution, version comparison, asset download, installation, and rollback logic; supports `sha256` verification, rollback on failed health checks, and control flags such as `--yes`, `--dry-run`, and `--force`.
 - **Admin API Dev Docs**: Added a standalone Admin API development guide covering `GET /admin/v1/runtime/status`, `POST /admin/v1/reloads/model`, request/response schemas, status codes, conflict handling, and `update/version` semantics.
+- **Runtime Status**: Added `project_version` to Admin API `GET /admin/v1/runtime/status` and `wproj engine status` so callers can see which project configuration version is currently active in the work tree.
+- **Reload Runtime**: Added structured reload results, event-driven drain, and the `reload_timeout_ms` configuration capability through the core engine upgrade.
+- **OML Async Runtime**: Moved model loading and knowledge-backed queries onto async execution paths through the core engine and knowledge runtime upgrades.
+- **Knowledge Runtime**: Added PostgreSQL and MySQL knowledge support, plus unified cache behavior and telemetry.
+- **wproj/model**: Added the async OML model collection path to `wproj model route`.
+- **Observability**: Added fixed metric labels and unified tag naming so monitoring systems can consume runtime metrics more consistently.
+- **wp-connectors**: Pulled in VictoriaMetrics-related capability updates.
+- **wp-lang**: Added `json_like` support.
 
 ### Changed
-- **wp-motor**: Upgraded the core engine dependency from `v1.18.1` to `v1.19.9`, pulling in the upstream runtime command bus, structured reload outcomes, event-driven drain, and the `reload_timeout_ms` configuration model.
-- **Remote Project Sync**: Standardized remote bootstrap on `wproj init --repo <REPO> [--version <VERSION>]`, removed `--remote`, and changed auto target resolution so flows without an explicit `--version` prefer the latest release tag and fall back to the remote default branch `HEAD` when no release tags exist. The resulting state is recorded as `current_version=<branch>` and `resolved_tag=HEAD@<branch>`.
-- **Runtime Status**: Added `project_version` to Admin API `GET /admin/v1/runtime/status` and `wproj engine status` so callers can see which project configuration version is currently active in the work tree.
-- **Self Update Internal Layout**: Consolidated self-check and self-update behavior into `warp-self-update`, removing the need to maintain two manifest/version resolution paths, and split the internal implementation into `types`, `versioning`, `manifest`, `platform`, `fetch`, `install`, and `lock` modules.
-- **Test Stability**: Updated timeout-sensitive admin/project-remote integration tests to use explicit small `reload_timeout_ms` values and removed a set of unnecessary `#[serial]` markers so the suite is less likely to be stretched by the serial queue.
-- **wpgen Cleanup**: Removed the dormant `src/wpgen/wpcli.rs` implementation, which still used the old config-loading path, to avoid future regressions around `${HOME}` expansion, secret-dict evaluation, and relative-path resolution if it were accidentally reconnected.
+- **Remote Project Sync**: Standardized remote bootstrap on `wproj init --repo <REPO> [--version <VERSION>]`, removed `--remote`, and changed version resolution so flows without an explicit `--version` prefer the latest release tag and fall back to the remote default branch `HEAD` when no release tags exist. It also aligns parameter handling plus help and status output across `wproj conf update` and admin reload/update flows.
+- **CLI/Paths**: Shortened source, sink, and rescue-related table output to a consistent relative-path style for better terminal readability.
 
 ### Fixed
-- **Project Remote Sync**: Fixed parameter alignment across `wproj init --repo`, `wproj conf update`, and admin reload/update flows, and aligned the remote-init test fixture plus first-time bootstrap help, status output, and documentation behavior.
 - **Project Init Admin Token Path**: Fixed `wproj init` so that when the generated skeleton already contains `[admin_api]`, it normalizes the token path to project-local `runtime/admin_api.token` instead of preserving legacy `${HOME}/.warp_parse/admin_api.token`.
-- **Self Update Build/Test**: Fixed post-merge build failures caused by mixed self-update APIs in `wproj self`, and rewrote crate-level install/rollback coverage to avoid depending on local listener sockets.
-- **Test Fixtures / CI**: Fixed `admin_api` and `wproj engine` tests that still implicitly depended on `tests/conf/wparse.toml`; they now use embedded minimal configs plus temporary work roots so CI no longer depends on ignored fixture files.
-- **Admin API Tests**: Fixed false positives in the batch-mode admin endpoint test under proxy/concurrent environments, and rewrote the `${HOME}` expansion test so it no longer holds a synchronous lock across `await`, satisfying `clippy::await_holding_lock`.
 
 ## [0.20.2]
 
