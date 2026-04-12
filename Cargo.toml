@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.20.3" # @gxl:set(version)
+version = "0.22.0" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -79,10 +79,7 @@ shadow-rs = "1.6"
 
 [dev-dependencies]
 serial_test = "3.2"
-httpmock = "0.8"
-collection_literals = "1.0"
 tempfile = "3.23"
-criterion = "0.8"
 
 # ===========================================================================
 # Features
@@ -149,31 +146,25 @@ plugin-suite = []
 [dependencies]
 # --- System and Platform ---
 sysinfo = "0.38"
-async-signal = "0.2"
 libc = "0.2"
-signal-hook-registry = "1.4"
 tikv-jemallocator = "0.6"
 
 # --- Async Runtime ---
 tokio = { version = "1.48", features = ["full"] }
-tokio-util = { version = "0.7", features = ["full"] }
-tokio-async-drop = "0.1"
-futures-util = "0.3"
-futures-lite = "2.6"
-async-trait = "0.1"
-async-broadcast = "0.7"
 
 # --- Serialization ---
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 toml = "1.0"
 semver = "1.0"
+git2 = "0.20"
 reqwest = "0.13.2"
+http-body-util = "0.1"
+hyper = { version = "1.8", features = ["server", "http1"] }
+hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service", "tokio", "http1"] }
 
 # --- Logging and Errors ---
-log = "0.4"
 anyhow = "1.0"
-thiserror = "2.0"
 orion-error = "0.6"
 orion-sec = "0.4"
 orion-variate = "0.11"
@@ -185,36 +176,22 @@ time = "0.3"
 
 # --- CLI ---
 clap = { version = "4.5", features = ["derive"] }
-comfy-table = "7.2"
 
 # --- Parsing ---
-winnow = "0.7"
 #regex = "~1.11"
-wildmatch = "2.6"
-strfmt = "0.2"
-syslog = "7.0"
 
 # --- Derive Macros ---
-derive_more = { version = "2.1", features = ["full"] }
-derive_builder = "0.20"
-derive-getters = "0.5"
-enum_dispatch = "0.3"
-educe = { version = "0.6", features = ["Debug", "Default"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
 uuid = { version = "1.19", features = ["v4"] }
 once_cell = "1.21"
-lazy_static = "1.5"
-contracts = "0.6"
-ctor = "0.6"
-hex = "0.4"
 shadow-rs = { version = "1.6.0", default-features = false }
 rand = "0.9"
+rustls = "0.23"
+tokio-rustls = "0.26"
 
 # --- Data Structures ---
-lru = "0.16"
-ipnet = "2.11"
 
 # --- File System ---
 walkdir = "2.5"
@@ -223,37 +200,33 @@ glob = "0.3"
 # --- Internal: Open API ---
 
 wp-connector-api = "0.8"
-wp-parse-api = "0.8"
-wp-model-core = "0.8"
 
 # --- Internal: Infrastructure ---
 wp-log = "0.2"
 wp-error = "0.8"
-wp-specs = "0.8"
-wp-conf-base = "0.2"
-wp-data-fmt = "0.2"
 
 # --- Internal: Engine ---
 
 # feats/oml_static.1
 
 
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
-wp-lang       = { package = "wp-lang",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
-wp_knowledge  = { package = "wp-knowledge",  git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.18.3" }
+wp-knowledge  =  "0.11"
+# @gxl:block(remote_motor)
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.20.0" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.20.0" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.20.0" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.20.0" }
+# @gxl:end(remote_motor)
 
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.10.1" }
+wp-self-update =  "0.1"
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.12.0" }
 
-
+# @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
 #wp-config = { path = "../wp-motor/crates/wp-config" }
-#wp-lang   = { path = "../wp-motor/crates/wp-lang" }
-#wp-knowledge  = { path = "../wp-motor/crates/wp-knowledge" }
 #wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
 #wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+# @gxl:end(local_motor)
 
 # wp-enterprise = { path = "../wp-enterprise" }
 

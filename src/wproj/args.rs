@@ -22,11 +22,17 @@ pub enum WProj {
     #[command(subcommand, name = "rule")]
     Rule(RuleCmd),
 
-    /// 一键初始化完整工程骨架 | Initialize complete project skeleton
+    /// 初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source
     ///
-    /// 创建 Warp Flow Engine 项目的完整目录结构和配置文件，包括配置目录、
-    /// 连接器配置、模型目录（WPL/OML/知识库）和默认项目配置
-    #[command(name = "init", visible_alias = "初始化")]
+    /// 创建 Warp Flow Engine 项目的基础目录结构和配置文件。
+    /// 未指定 `--repo` 时执行本地初始化；
+    /// 指定 `--repo` 时，在骨架创建后继续执行首次远端同步。
+    #[command(
+        name = "init",
+        visible_alias = "初始化",
+        about = "初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source",
+        long_about = "初始化工程；可选从远端版本源完成首次同步 | Initialize a project, optionally bootstrapping from a remote version source\n\n创建 Warp Flow Engine 项目的基础目录结构和配置文件。\n未指定 --repo 时执行本地初始化；指定 --repo 时，在骨架创建后继续执行首次远端同步。\n\nCreates the base project layout and configuration for Warp Flow Engine.\nWithout --repo, this runs local initialization only.\nWith --repo, it creates the local skeleton first and then performs the first remote sync."
+    )]
     Init(ProjectInitArgs),
 
     /// 批量检查项目配置和文件完整性 | Batch check project configuration and file integrity
@@ -57,6 +63,14 @@ pub enum WProj {
     /// Warp Parse 自更新工具 | Warp Parse self-update tools
     #[command(subcommand, name = "self")]
     SelfUpdate(SelfCmd),
+
+    /// Warp Parse 引擎管理面工具 | Warp Parse engine admin tools
+    #[command(subcommand, name = "engine")]
+    Engine(EngineCmd),
+
+    /// 远程规则版本更新工具 | Remote rule version update tools
+    #[command(subcommand, name = "conf")]
+    Conf(ConfCmd),
 }
 
 #[derive(Subcommand, Debug)]
@@ -72,33 +86,216 @@ pub enum SelfCmd {
         about = "检查是否有新版本（仅检查，不安装）| Check for updates (check only, no install)"
     )]
     Check(SelfCheckArgs),
+
+    /// 下载并安装新版本 | Download and install the latest release
+    #[command(
+        name = "update",
+        visible_alias = "更新",
+        about = "下载并安装新版本 | Download and install the latest release"
+    )]
+    Update(SelfUpdateArgs),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "engine",
+    about = "Warp Parse 引擎管理面工具 | Warp Parse engine admin tools"
+)]
+pub enum EngineCmd {
+    /// 查询运行时状态 | Query runtime status
+    #[command(name = "status", visible_alias = "状态")]
+    Status(EngineStatusArgs),
+
+    /// 触发运行时 reload | Trigger runtime reload
+    #[command(name = "reload", visible_alias = "重载")]
+    Reload(EngineReloadArgs),
+}
+
+#[derive(Subcommand, Debug)]
+#[command(
+    name = "conf",
+    about = "远程规则版本更新工具 | Remote rule version update tools"
+)]
+pub enum ConfCmd {
+    /// 执行远程规则版本更新 | Run remote rule version update
+    #[command(name = "update", visible_alias = "更新")]
+    Update(ConfUpdateArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct EngineTargetArgs {
+    /// 工作目录（用于解析 conf/wparse.toml）| Work directory (used to resolve conf/wparse.toml)
+    #[clap(
+        short,
+        long,
+        default_value = ".",
+        visible_alias = "工作目录",
+        help = "工作目录（用于解析 conf/wparse.toml）| Work directory (used to resolve conf/wparse.toml)"
+    )]
+    pub work_root: String,
+
+    /// 管理面基础地址覆盖，例如 http://127.0.0.1:19090 | Override admin API base URL
+    #[clap(
+        long = "admin-url",
+        visible_alias = "管理地址",
+        help = "管理面基础地址覆盖，例如 http://127.0.0.1:19090 | Override admin API base URL"
+    )]
+    pub admin_url: Option<String>,
+
+    /// Bearer token 文件覆盖 | Override bearer token file
+    #[clap(
+        long = "token-file",
+        visible_alias = "令牌文件",
+        help = "Bearer token 文件覆盖 | Override bearer token file"
+    )]
+    pub token_file: Option<String>,
+
+    /// 跳过 TLS 证书校验（仅调试）| Skip TLS certificate verification (debug only)
+    #[clap(
+        long = "insecure",
+        default_value_t = false,
+        visible_alias = "跳过TLS校验",
+        help = "跳过 TLS 证书校验（仅调试）| Skip TLS certificate verification (debug only)"
+    )]
+    pub insecure: bool,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct EngineStatusArgs {
+    #[clap(flatten)]
+    pub target: EngineTargetArgs,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
 }
 
 #[derive(Args, Debug, Clone)]
-pub struct SelfCheckArgs {
+pub struct EngineReloadArgs {
+    #[clap(flatten)]
+    pub target: EngineTargetArgs,
+
+    /// 是否等待 reload 结果 | Whether to wait for reload result
+    #[clap(
+        long = "wait",
+        default_value_t = true,
+        visible_alias = "等待",
+        help = "是否等待 reload 结果 | Whether to wait for reload result"
+    )]
+    pub wait: bool,
+
+    /// HTTP 等待超时（毫秒）| HTTP wait timeout in milliseconds
+    #[clap(
+        long = "timeout-ms",
+        default_value_t = 15000,
+        visible_alias = "超时毫秒",
+        help = "HTTP 等待超时（毫秒）| HTTP wait timeout in milliseconds"
+    )]
+    pub timeout_ms: u64,
+
+    /// 触发原因（审计用途）| Trigger reason for audit
+    #[clap(
+        long = "reason",
+        visible_alias = "原因",
+        help = "触发原因（审计用途）| Trigger reason for audit"
+    )]
+    pub reason: Option<String>,
+
+    /// 重载前先执行远程规则版本更新 | Run remote rule version update before reload
+    #[clap(
+        long = "update",
+        default_value_t = false,
+        visible_alias = "先更新",
+        help = "重载前先执行远程规则版本更新 | Run remote rule version update before reload"
+    )]
+    pub update: bool,
+
+    /// 本次更新目标版本 | Target version for this update
+    #[clap(
+        long = "version",
+        visible_alias = "版本",
+        help = "本次更新目标版本 | Target version for this update"
+    )]
+    pub version: Option<String>,
+
+    /// 自定义请求 ID | Override request ID
+    #[clap(
+        long = "request-id",
+        visible_alias = "请求ID",
+        help = "自定义请求 ID | Override request ID"
+    )]
+    pub request_id: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct ConfUpdateArgs {
+    /// 工作目录 | Work directory
+    #[clap(
+        short,
+        long,
+        default_value = ".",
+        visible_alias = "工作目录",
+        help = "工作目录 | Work directory"
+    )]
+    pub work_root: String,
+
+    /// 本次更新目标版本 | Target version for this update
+    #[clap(
+        long = "version",
+        visible_alias = "版本",
+        help = "本次更新目标版本 | Target version for this update"
+    )]
+    pub version: Option<String>,
+
+    /// JSON 输出 | JSON output
+    #[clap(
+        long = "json",
+        default_value_t = false,
+        visible_alias = "输出JSON",
+        help = "JSON 输出 | JSON output"
+    )]
+    pub json: bool,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfSourceArgs {
     /// 更新通道 | Update channel
     #[clap(
         long = "channel",
         value_enum,
+        default_value_t = UpdateChannel::Stable,
         visible_alias = "通道",
-        help = "更新通道：stable|beta|alpha | Update channel: stable|beta|alpha"
+        help = "更新通道：stable|beta|alpha（默认 stable）| Update channel: stable|beta|alpha (default: stable)"
     )]
-    pub channel: Option<UpdateChannel>,
+    pub channel: UpdateChannel,
 
-    /// 远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)
+    /// 远端 manifest 基础地址（默认 wp-install updates 根；最终拼成 {channel}/manifest.json）| Remote manifest base URL (defaults to wp-install updates root; resolved as {channel}/manifest.json)
     #[clap(
         long = "updates-base-url",
-        default_value = "https://raw.githubusercontent.com/wp-labs/wp-install/main",
         visible_alias = "updates基地址",
-        help = "远端 updates 基础地址（默认 wp-install）| Remote updates base URL (wp-install by default)"
+        help = "远端 manifest 基础地址（默认 wp-install updates 根；最终拼成 {channel}/manifest.json）| Remote manifest base URL (defaults to wp-install updates root; resolved as {channel}/manifest.json)"
     )]
-    pub updates_base_url: String,
+    pub updates_base_url: Option<String>,
 
-    /// 本地 updates 根目录覆盖（调试用；设置后优先本地）| Local updates root override (debug only; takes precedence)
+    /// 本地 manifest 根目录覆盖（调试用；设置后优先本地）| Local manifest root override (debug only; takes precedence)
     #[clap(
         long = "updates-root",
         visible_alias = "updates目录",
-        help = "本地 updates 根目录覆盖（调试用）| Local updates root override (debug only)"
+        help = "本地 manifest 根目录覆盖（最终拼成 {channel}/manifest.json）| Local manifest root override (resolved as {channel}/manifest.json)"
     )]
     pub updates_root: Option<String>,
 
@@ -112,22 +309,54 @@ pub struct SelfCheckArgs {
     pub json: bool,
 }
 
+#[derive(Args, Debug, Clone)]
+pub struct SelfCheckArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct SelfUpdateArgs {
+    #[command(flatten)]
+    pub source: SelfSourceArgs,
+
+    /// 自动确认安装 | Skip confirmation prompt
+    #[clap(
+        long = "yes",
+        default_value_t = false,
+        visible_alias = "确认",
+        help = "自动确认安装 | Skip confirmation prompt"
+    )]
+    pub yes: bool,
+
+    /// 仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes
+    #[clap(
+        long = "dry-run",
+        default_value_t = false,
+        visible_alias = "演练",
+        help = "仅输出将执行的动作，不真正下载/替换 | Print planned actions without applying changes"
+    )]
+    pub dry_run: bool,
+
+    /// 强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it
+    #[clap(
+        long = "force",
+        default_value_t = false,
+        visible_alias = "强制",
+        help = "强制继续（例如版本未前进或疑似包管理器安装）| Force update even when safeguards would stop it"
+    )]
+    pub force: bool,
+
+    #[clap(long = "install-dir", hide = true)]
+    pub install_dir: Option<String>,
+}
+
 #[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UpdateChannel {
     Stable,
     Beta,
     Alpha,
-}
-
-impl UpdateChannel {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Stable => "stable",
-            Self::Beta => "beta",
-            Self::Alpha => "alpha",
-        }
-    }
 }
 
 #[derive(Parser)]
@@ -326,15 +555,32 @@ pub struct ProjectInitArgs {
     )]
     pub work_root: String,
 
-    /// 初始化模式：full/model/conf/data | Initialization mode: full/model/conf/data
+    /// 本地初始化模式：full/normal/model/conf/data | Local initialization mode: full/normal/model/conf/data
     #[clap(
         short,
         long = "mode",
-        default_value = "normal",
+        conflicts_with = "repo",
         visible_alias = "模式",
-        help = "初始化模式：full/normal/model/conf/data | Initialization mode: full/normal/model/conf/data"
+        help = "本地初始化模式：full/normal/model/conf/data；默认 normal，仅未指定 --repo 时可用 | Local initialization mode: full/normal/model/conf/data; default is normal, available only when --repo is not set"
     )]
-    pub mode: String,
+    pub mode: Option<String>,
+
+    /// 远程项目仓库地址；指定后执行首次远程引导初始化 | Remote project repo URL; enables first-time remote bootstrap
+    #[clap(
+        long = "repo",
+        visible_alias = "仓库",
+        help = "远程项目仓库地址；指定后先创建本地骨架，再同步远端目标版本 | Remote project repo URL; when set, create the local skeleton first, then sync the target remote version"
+    )]
+    pub repo: Option<String>,
+
+    /// 首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization
+    #[clap(
+        long = "version",
+        requires = "repo",
+        visible_alias = "版本",
+        help = "首次远程初始化的目标版本；未指定时自动解析远端最新发布版本 | Target version for first remote initialization; when omitted, resolve the latest released version"
+    )]
+    pub version: Option<String>,
 }
 
 // 旧 Sink 工具组（Kafka/DB/Syslog）已迁移至 wpsink，这里不再暴露。
@@ -641,4 +887,69 @@ pub struct AnalyseArgs {
     /// 知识库路径 | Knowledge path
     #[clap(short = 'k', long, visible_alias = "知识库路径")]
     pub knowledge_path: Option<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ProjectInitArgs, WProj, WProjCli};
+    use clap::Parser;
+
+    fn parse_init(args: &[&str]) -> ProjectInitArgs {
+        let cli = WProjCli::try_parse_from(args).expect("parse cli");
+        match cli.cmd {
+            WProj::Init(args) => args,
+            _ => panic!("expected init command"),
+        }
+    }
+
+    #[test]
+    fn init_accepts_repo_as_primary_remote_arg() {
+        let args = parse_init(&["wproj", "init", "--repo", "https://example.com/repo.git"]);
+        assert_eq!(args.repo.as_deref(), Some("https://example.com/repo.git"));
+        assert_eq!(args.mode, None);
+    }
+
+    #[test]
+    fn init_rejects_repo_and_mode_together() {
+        let err = match WProjCli::try_parse_from([
+            "wproj",
+            "init",
+            "--repo",
+            "https://example.com/repo.git",
+            "--mode",
+            "full",
+        ]) {
+            Ok(_) => panic!("repo and mode should conflict"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--repo"));
+        assert!(text.contains("--mode"));
+    }
+
+    #[test]
+    fn init_rejects_removed_remote_arg() {
+        let err = match WProjCli::try_parse_from([
+            "wproj",
+            "init",
+            "--remote",
+            "https://example.com/repo.git",
+        ]) {
+            Ok(_) => panic!("--remote should be rejected"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--remote"));
+    }
+
+    #[test]
+    fn init_rejects_version_without_repo() {
+        let err = match WProjCli::try_parse_from(["wproj", "init", "--version", "1.4.2"]) {
+            Ok(_) => panic!("version should require repo"),
+            Err(err) => err,
+        };
+        let text = err.to_string();
+        assert!(text.contains("--version"));
+        assert!(text.contains("--repo"));
+    }
 }

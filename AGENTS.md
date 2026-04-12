@@ -35,3 +35,13 @@
 - Do not commit secrets or env-specific files; prefer local TOML/env.
 - Initialize and validate generator config: `cargo run --bin wpgen -- conf init` then `cargo run --bin wpgen -- conf check`.
 - For minimal/debug builds, use `--no-default-features` and enable only what you need.
+
+## Skill Requirements
+- Any change that touches formal config files, config-loading paths, or TOML parsing entrypoints must use the `config-loading-contract` skill.
+- Do not skip that skill when any of the following is involved:
+  - `wparse.toml`, `wpgen.toml`, `wpsrc.toml`, engine config, or similar runtime config files
+  - config fields such as `path`, `token_file`, `cert_file`, `key_file`, `repo`, or `url`
+  - daemon, batch, client profile, admin API, or project-remote config entrypoints
+  - review of any `read_to_string + toml::from_str`, `env_load_toml`, `load_or_init`, or `resolve_path` implementation
+- Config-related code must preserve the full pipeline: `parse -> env_eval -> path resolve/conf_absolutize -> validate`.
+- Do not introduce parallel handwritten loaders for formal runtime config. If reuse of the unified loader is impossible, the code must explain why and add equivalent env/path/validation tests.

@@ -43,8 +43,25 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Determine wp-examples branch
+        id: examples-branch
+        run: |
+          BRANCH="${{ github.head_ref || github.ref_name }}"
+          if git ls-remote --exit-code --heads https://github.com/wp-labs/wp-examples "$BRANCH" >/dev/null 2>&1; then
+            TARGET_BRANCH="$BRANCH"
+          else
+            TARGET_BRANCH="main"
+          fi
+          echo "branch=$TARGET_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "Using wp-examples branch: $TARGET_BRANCH"
+
       - name: Clone wp-examples
-        run: git clone https://github.com/wp-labs/wp-examples /tmp/wp-examples
+        run: |
+          git clone \
+            --branch "${{ steps.examples-branch.outputs.branch }}" \
+            --single-branch \
+            https://github.com/wp-labs/wp-examples \
+            /tmp/wp-examples
 
       - name: Run integration tests
         run: |

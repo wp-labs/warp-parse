@@ -7,6 +7,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.0] - 2026-03-31
+
+### Added
+- **Self Update**: Added an install-capable `wproj self update` flow and a dedicated `warp-self-update` crate that centralizes manifest resolution, version comparison, asset download, installation, and rollback logic; supports `sha256` verification, rollback on failed health checks, and control flags such as `--yes`, `--dry-run`, and `--force`.
+- **Admin API Dev Docs**: Added a standalone Admin API development guide covering `GET /admin/v1/runtime/status`, `POST /admin/v1/reloads/model`, request/response schemas, status codes, conflict handling, and `update/version` semantics.
+- **Runtime Status**: Added `project_version` to Admin API `GET /admin/v1/runtime/status` and `wproj engine status` so callers can see which project configuration version is currently active in the work tree.
+- **Reload Runtime**: Added structured reload results, event-driven drain, and the `reload_timeout_ms` configuration capability through the core engine upgrade.
+- **OML Async Runtime**: Moved model loading and knowledge-backed queries onto async execution paths through the core engine and knowledge runtime upgrades.
+- **Knowledge Runtime**: Added PostgreSQL and MySQL knowledge support, plus unified cache behavior and telemetry.
+- **wproj/model**: Added the async OML model collection path to `wproj model route`.
+- **Observability**: Added fixed metric labels and unified tag naming so monitoring systems can consume runtime metrics more consistently.
+- **wp-connectors**: Pulled in VictoriaMetrics-related capability updates.
+- **wp-lang**: Added `json_like` support.
+
+### Changed
+- **Remote Project Sync**: Standardized remote bootstrap on `wproj init --repo <REPO> [--version <VERSION>]`, removed `--remote`, and changed version resolution so flows without an explicit `--version` prefer the latest release tag and fall back to the remote default branch `HEAD` when no release tags exist. It also aligns parameter handling plus help and status output across `wproj conf update` and admin reload/update flows.
+- **CLI/Paths**: Shortened source, sink, and rescue-related table output to a consistent relative-path style for better terminal readability.
+
+### Fixed
+- **Project Init Admin Token Path**: Fixed `wproj init` so that when the generated skeleton already contains `[admin_api]`, it normalizes the token path to project-local `runtime/admin_api.token` instead of preserving legacy `${HOME}/.warp_parse/admin_api.token`.
+
 ## [0.20.2]
 
 ### Fixed
