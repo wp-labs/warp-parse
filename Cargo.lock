@@ -908,9 +908,9 @@ checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
 name = "clickhouse"
-version = "0.14.3"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0bfb36e41b644dcd5be4ef54a3b7d2abc9bb07eda777ab3f90d1b0dbb97c940a"
+checksum = "35330181022b5f972325aa41fd3465f636be6527499c383cacd3fb2e51c5a8bc"
 dependencies = [
  "bnum",
  "bstr",
@@ -926,8 +926,10 @@ dependencies = [
  "lz4_flex",
  "polonius-the-crab",
  "serde",
+ "serde_json",
  "thiserror 2.0.18",
  "tokio",
+ "tracing",
  "url",
 ]
 
@@ -2227,15 +2229,14 @@ dependencies = [
 
 [[package]]
 name = "hyper-rustls"
-version = "0.27.7"
+version = "0.27.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3c93eb611681b207e1fe55d5a71ecf91572ec8a6705cdb6857f7d8d5242cf58"
+checksum = "c2b52f86d1d4bc0d6b4e6826d960b1b333217e07d36b882dca570a5e1c48895b"
 dependencies = [
  "http 1.4.0",
  "hyper",
  "hyper-util",
  "rustls",
- "rustls-pki-types",
  "tokio",
  "tokio-rustls",
  "tower-service",
@@ -2502,9 +2503,9 @@ dependencies = [
 
 [[package]]
 name = "ipnet"
-version = "2.11.0"
+version = "2.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "469fb0b9cefa57e3ef31275ee7cacb78f2fdca44e4765491884a2b119d4eb130"
+checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
 dependencies = [
  "schemars",
  "serde",
@@ -3530,9 +3531,9 @@ checksum = "7c87def4c32ab89d880effc9e097653c8da5d6ef28e6b539d313baaacfbafcbe"
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.112"
+version = "0.9.113"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57d55af3b3e226502be1526dfdba67ab0e9c96fc293004e79576b2b9edb0dbdb"
+checksum = "ad2f2c0eba47118757e4c6d2bff2838f3e0523380021356e7875e858372ce644"
 dependencies = [
  "cc",
  "libc",
@@ -3616,7 +3617,7 @@ dependencies = [
  "serde_yaml",
  "thiserror 2.0.18",
  "toml",
- "winnow 1.0.1",
+ "winnow",
 ]
 
 [[package]]
@@ -3639,8 +3640,9 @@ dependencies = [
 
 [[package]]
 name = "orion_exp"
-version = "0.1.1"
-source = "git+https://github.com/galaxio-labs/orion-exp.git?tag=v0.1.1#8302bc3732a9c42683fa3c679681df604c3730b4"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad05116085a2a72fc8c2a34051b5b8ca71101ce0a02cb0f6bf7d57e8c766c4f2"
 dependencies = [
  "chrono",
  "derive-getters",
@@ -3872,9 +3874,9 @@ dependencies = [
 
 [[package]]
 name = "pkg-config"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
 
 [[package]]
 name = "plain"
@@ -4495,9 +4497,9 @@ dependencies = [
 
 [[package]]
 name = "rustls"
-version = "0.23.37"
+version = "0.23.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "758025cb5fccfd3bc2fd74708fd4682be41d99e5dff73c377c0646c6012c73a4"
+checksum = "69f9466fb2c14ea04357e91413efb882e2a6d4a406e625449bc0a5d360d53a21"
 dependencies = [
  "aws-lc-rs",
  "log",
@@ -4631,21 +4633,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fbf2ae1b8bc8e02df939598064d22402220cd5bbcca1c76f7d6a310974d5615"
 dependencies = [
  "dyn-clone",
- "schemars_derive",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "schemars_derive"
-version = "0.8.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32e265784ad618884abaea0600a9adf15393368d840e0222d101a072f3f7534d"
-dependencies = [
- "proc-macro2",
- "quote",
- "serde_derive_internals",
- "syn",
 ]
 
 [[package]]
@@ -5625,7 +5614,7 @@ dependencies = [
  "toml_datetime",
  "toml_parser",
  "toml_writer",
- "winnow 1.0.1",
+ "winnow",
 ]
 
 [[package]]
@@ -5646,7 +5635,7 @@ dependencies = [
  "indexmap",
  "toml_datetime",
  "toml_parser",
- "winnow 1.0.1",
+ "winnow",
 ]
 
 [[package]]
@@ -5655,7 +5644,7 @@ version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2abe9b86193656635d2411dc43050282ca48aa31c2451210f4202550afb7526"
 dependencies = [
- "winnow 1.0.1",
+ "winnow",
 ]
 
 [[package]]
@@ -5953,7 +5942,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.22.0"
+version = "0.22.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6656,15 +6645,6 @@ checksum = "d6bbff5f0aada427a1e5a6da5f1f98158182f26556f345ac9e04d36d0ebed650"
 
 [[package]]
 name = "winnow"
-version = "0.7.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "df79d97927682d2fd8adb29682d1140b343be4ac0f08fd68b7765d9c059d3945"
-dependencies = [
- "memchr",
-]
-
-[[package]]
-name = "winnow"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09dac053f1cd375980747450bfc7250c264eaae0583872e845c0c7cd578872b5"
@@ -6797,7 +6777,7 @@ version = "1.20.0"
 source = "git+https://github.com/wp-labs/wp-motor?tag=v1.20.0#10b97f4f26fce23199eb0108546ccd6458b31910"
 dependencies = [
  "orion_exp 1.20.0",
- "winnow 1.0.1",
+ "winnow",
  "wp-primitives",
 ]
 
@@ -6842,7 +6822,7 @@ dependencies = [
  "thiserror 2.0.18",
  "toml",
  "wildmatch",
- "winnow 1.0.1",
+ "winnow",
  "wp-condition",
  "wp-conf-base",
  "wp-connector-api",
@@ -6880,8 +6860,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.12.0"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.12.0#2812d8eff5967b8109678e0b6595ed9e650d8a9b"
+version = "0.12.1"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.12.1#270817525ffd187e0e176e41fd809121afad4846"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -6896,7 +6876,7 @@ dependencies = [
  "log",
  "orion-error",
  "orion_conf",
- "orion_exp 0.1.1",
+ "orion_exp 0.1.2",
  "prometheus",
  "rdkafka-wrap",
  "regex",
@@ -6908,7 +6888,7 @@ dependencies = [
  "tokio",
  "toml",
  "uuid",
- "winnow 0.7.15",
+ "winnow",
  "wp-conf-base",
  "wp-connector-api",
  "wp-data-fmt",
@@ -7050,7 +7030,7 @@ dependencies = [
  "uuid",
  "walkdir",
  "wildmatch",
- "winnow 1.0.1",
+ "winnow",
  "wp-arrow",
  "wp-cli-core",
  "wp-conf-base",
@@ -7163,7 +7143,7 @@ dependencies = [
  "unicode-segmentation",
  "url",
  "wildmatch",
- "winnow 1.0.1",
+ "winnow",
  "wp-connector-api",
  "wp-data-fmt",
  "wp-error",
@@ -7257,7 +7237,7 @@ dependencies = [
  "toml",
  "url",
  "wildmatch",
- "winnow 1.0.1",
+ "winnow",
  "wp-condition",
  "wp-data-fmt",
  "wp-data-utils",
@@ -7291,7 +7271,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1baa39359b6c063ff60bf4d3c866636b890e0077aedc6fd14963b3bd7673fab9"
 dependencies = [
- "winnow 1.0.1",
+ "winnow",
 ]
 
 [[package]]
