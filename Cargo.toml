@@ -104,6 +104,7 @@ community = [
     "prometheus",
     "victorialogs",
     "victoriametrics"
+    # "count"
 ]
 
 # --- Connectors (via wp_connectors) ---
@@ -117,6 +118,7 @@ elasticsearch = ["wp-connectors/elasticsearch"]
 prometheus = ["wp-connectors/prometheus"]
 victorialogs = ["wp-connectors/victorialogs"]
 victoriametrics = ["wp-connectors/victoriametrics"]
+# count = ["wp-connectors/count"]
 
 # --- Enterprise ---
 
@@ -219,13 +221,13 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.1"
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.12.0" }
+wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.13.0" }
 
 # @gxl:block(local_motor)
-#wp-engine = { path = "../wp-motor" }
-#wp-config = { path = "../wp-motor/crates/wp-config" }
-#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+# wp-engine = { path = "../wp-motor" }
+# wp-config = { path = "../wp-motor/crates/wp-config" }
+# wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+# wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 # @gxl:end(local_motor)
 
 # wp-enterprise = { path = "../wp-enterprise" }
