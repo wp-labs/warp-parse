@@ -43,22 +43,18 @@ Warp Parse 是面向日志、事件和安全数据接入场景的高性能 Rust 
 
 ## 快速开始
 
-构建：
-
-```bash
-cargo build
-```
-
 查看命令帮助：
 
 ```bash
-cargo run --bin wparse -- --help
-cargo run --bin wpgen -- --help
-cargo run --bin wproj -- --help
-cargo run --bin wprescue -- --help
+wparse --help
+wpgen --help
+wproj --help
+wprescue --help
 ```
 
 ## 相关文档
 
-- 运行时管理面使用说明: [engine_admin_usage.md](engine_admin_usage.md)
-- 对应英文版: [../en/product_overview.md](../en/product_overview.md)
+- 运行时管理面使用说明: [../operations/admin.md](../operations/admin.md)
+- 远程工程拉取与规则热更新 SOP: [../operations/project-sync.md](../operations/project-sync.md)
+- 使用文档索引: [../README.md](../README.md)
+- 对应英文版: [../../en/overview/product.md](../../en/overview/product.md)

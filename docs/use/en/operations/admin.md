@@ -51,7 +51,7 @@ Constraints:
 ## Start The Daemon
 
 ```bash
-cargo run --bin wparse -- daemon --work-root .
+wparse daemon --work-root .
 ```
 
 The daemon exposes:
@@ -64,13 +64,13 @@ The daemon exposes:
 Text output:
 
 ```bash
-cargo run --bin wproj -- engine status --work-root .
+wproj engine status --work-root .
 ```
 
 JSON output:
 
 ```bash
-cargo run --bin wproj -- engine status --work-root . --json
+wproj engine status --work-root . --json
 ```
 
 Important fields:
@@ -91,7 +91,7 @@ Important fields:
 Wait for completion:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --request-id manual-reload-001 \
   --reason "manual model refresh"
@@ -100,7 +100,7 @@ cargo run --bin wproj -- engine reload \
 Return immediately:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --wait false \
   --request-id manual-reload-async-001 \
@@ -110,7 +110,7 @@ cargo run --bin wproj -- engine reload \
 Update the remote project first, then reload:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --update \
   --request-id update-reload-001 \
@@ -120,7 +120,7 @@ cargo run --bin wproj -- engine reload \
 Switch to a specific release version and reload:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --update \
   --version 1.4.3 \
@@ -131,7 +131,7 @@ cargo run --bin wproj -- engine reload \
 JSON output:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --update \
   --request-id manual-reload-json-001 \
@@ -240,7 +240,7 @@ If graceful drain times out, the response can still succeed with:
 If `wproj` is not executed inside the target work directory, override the target explicitly:
 
 ```bash
-cargo run --bin wproj -- engine status \
+wproj engine status \
   --work-root /path/to/project \
   --admin-url https://127.0.0.1:19090 \
   --token-file /path/to/admin_api.token \
@@ -271,4 +271,4 @@ Current automated coverage verifies:
 
 ## Chinese Counterpart
 
-- [../zh/engine_admin_usage.md](../zh/engine_admin_usage.md)
+- [../../zh/operations/admin.md](../../zh/operations/admin.md)
