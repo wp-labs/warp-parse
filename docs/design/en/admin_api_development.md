@@ -15,7 +15,7 @@ This is a developer-facing standalone API document focused on:
 
 Operator-facing usage is documented in:
 
-- [../../use/en/engine_admin_usage.md](../../use/en/engine_admin_usage.md)
+- [../../use/en/operations/admin.md](../../use/en/operations/admin.md)
 
 Overall remote-sync design is documented in:
 

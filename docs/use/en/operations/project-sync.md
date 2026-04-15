@@ -23,7 +23,7 @@ That separation keeps repository sync independent from process lifecycle control
 
 The remote machine should have:
 
-- working `wproj` and `wparse` binaries, or the ability to run them with `cargo run --bin ...`
+- working `wproj` and `wparse` binaries
 - a fixed work root such as `/srv/wp/<project>`
 - a remote repository that already contains a valid WP project layout
 
@@ -36,7 +36,7 @@ Before rollout, confirm:
 
 ## Enable The Runtime Admin API
 
-Hot reload depends on the runtime admin API. Configure `conf/wparse.toml` as described in [engine_admin_usage.md](engine_admin_usage.md):
+Hot reload depends on the runtime admin API. Configure `conf/wparse.toml` as described in [admin.md](admin.md):
 
 ```toml
 [admin_api]
@@ -113,23 +113,16 @@ wproj check
 wproj data stat
 ```
 
-If binaries are not on `PATH`, use:
-
-```bash
-cargo run --bin wproj -- check
-cargo run --bin wproj -- data stat
-```
-
 ### 3. Start The Daemon
 
 ```bash
-cargo run --bin wparse -- daemon --work-root .
+wparse daemon --work-root .
 ```
 
 Then verify runtime status:
 
 ```bash
-cargo run --bin wproj -- engine status --work-root .
+wproj engine status --work-root .
 ```
 
 Important fields:
@@ -174,13 +167,13 @@ wproj check --what wpl --fail-fast
 Inspect current runtime status:
 
 ```bash
-cargo run --bin wproj -- engine status --work-root .
+wproj engine status --work-root .
 ```
 
 Reload only the already-updated local content:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --request-id rule-$(date +%Y%m%d%H%M%S) \
   --reason "rule reload"
@@ -189,7 +182,7 @@ cargo run --bin wproj -- engine reload \
 If you want a single runtime action that updates and reloads:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --update \
   --request-id update-$(date +%Y%m%d%H%M%S) \
@@ -199,7 +192,7 @@ cargo run --bin wproj -- engine reload \
 To upgrade or roll back and reload in one step:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root . \
   --update \
   --version 1.4.3 \
@@ -210,7 +203,7 @@ cargo run --bin wproj -- engine reload \
 Check status again after reload:
 
 ```bash
-cargo run --bin wproj -- engine status --work-root .
+wproj engine status --work-root .
 ```
 
 ### Result Interpretation
@@ -277,7 +270,7 @@ If a reload introduces parse failures, field regressions, or downstream alarms, 
 
 ```bash
 wproj conf update --work-root /srv/wp/<project> --version 1.4.2
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root /srv/wp/<project> \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback rule set"
@@ -286,7 +279,7 @@ cargo run --bin wproj -- engine reload \
 You can also do the rollback in one runtime action:
 
 ```bash
-cargo run --bin wproj -- engine reload \
+wproj engine reload \
   --work-root /srv/wp/<project> \
   --update \
   --version 1.4.2 \
@@ -311,7 +304,7 @@ wproj conf update --work-root /srv/wp/<project>
 If `wproj` is executed outside the target project, override the target explicitly:
 
 ```bash
-cargo run --bin wproj -- engine status \
+wproj engine status \
   --work-root /srv/wp/<project> \
   --admin-url http://127.0.0.1:19090 \
   --token-file "${HOME}/.warp_parse/admin_api.token"

@@ -43,22 +43,16 @@ Those scenarios are usually better combined with systems such as Flink, Spark, o
 
 ## Quick Start
 
-Build:
-
-```bash
-cargo build
-```
-
 Show CLI help:
 
 ```bash
-cargo run --bin wparse -- --help
-cargo run --bin wpgen -- --help
-cargo run --bin wproj -- --help
-cargo run --bin wprescue -- --help
+wparse --help
+wpgen --help
+wproj --help
+wprescue --help
 ```
 
 ## Related Docs
 
-- Runtime admin usage: [engine_admin_usage.md](engine_admin_usage.md)
-- Chinese counterpart: [../zh-CN/product_overview.md](../zh-CN/product_overview.md)
+- Runtime admin usage: [../operations/admin.md](../operations/admin.md)
+- Chinese counterpart: [../zh/overview/product.md](../zh/overview/product.md)

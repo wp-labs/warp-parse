@@ -16,9 +16,14 @@
 
 ### Usage Documents
 
-- Product overview: [use/zh/product_overview.md](use/zh/product_overview.md) | [use/en/product_overview.md](use/en/product_overview.md)
-- Runtime admin usage: [use/zh/engine_admin_usage.md](use/zh/engine_admin_usage.md) | [use/en/engine_admin_usage.md](use/en/engine_admin_usage.md)
-- Remote project sync and rule reload SOP: [use/zh/remote_project_sync_and_rule_reload.md](use/zh/remote_project_sync_and_rule_reload.md) | [use/en/remote_project_sync_and_rule_reload.md](use/en/remote_project_sync_and_rule_reload.md)
+- Product overview: [use/zh/overview/product.md](use/zh/overview/product.md) | [use/en/overview/product.md](use/en/overview/product.md)
+- CLI usage guide: [use/zh/cli/index.md](use/zh/cli/index.md) | [use/en/cli/index.md](use/en/cli/index.md)
+- Runtime usage guide: [use/zh/cli/runtime.md](use/zh/cli/runtime.md) | [use/en/cli/runtime.md](use/en/cli/runtime.md)
+- Generator usage guide: [use/zh/cli/generator.md](use/zh/cli/generator.md) | [use/en/cli/generator.md](use/en/cli/generator.md)
+- Project tool usage guide: [use/zh/cli/project.md](use/zh/cli/project.md) | [use/en/cli/project.md](use/en/cli/project.md)
+- Rescue usage guide: [use/zh/cli/rescue.md](use/zh/cli/rescue.md) | [use/en/cli/rescue.md](use/en/cli/rescue.md)
+- Runtime admin usage: [use/zh/operations/admin.md](use/zh/operations/admin.md) | [use/en/operations/admin.md](use/en/operations/admin.md)
+- Remote project sync and rule reload SOP: [use/zh/operations/project-sync.md](use/zh/operations/project-sync.md) | [use/en/operations/project-sync.md](use/en/operations/project-sync.md)
 
 ### Design Documents
 

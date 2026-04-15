@@ -15,7 +15,7 @@
 
 使用者/运维操作说明见：
 
-- [../../use/zh/engine_admin_usage.md](../../use/zh/engine_admin_usage.md)
+- [../../use/zh/operations/admin.md](../../use/zh/operations/admin.md)
 
 远端规则同步的整体设计见：
 
