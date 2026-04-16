@@ -156,9 +156,7 @@ instances = 1
     write_file(
         work_root,
         "topology/sinks/defaults.toml",
-        r#"version = "2.0"
-
-[defaults]
+        r#"[defaults]
 tags = ["env:test"]
 
 [defaults.expect]

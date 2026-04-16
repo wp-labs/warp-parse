@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: 新增按工具拆分的 CLI 使用文档，包括 `wparse`、`wpgen`、`wproj`、`wprescue` 的专题页。
+- **Operations/Overview Docs**: 新增 `overview/` 与 `operations/` 目录结构，补充产品概览、运行时管理面使用说明、远端工程同步与热更新 SOP 的重组版本。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 远端依赖从 `v1.20.0` 到 `v1.20.1`，并同步升级 `wp-connectors` 从 `v0.12.1` 到 `v0.12.2`。
+- **Docs Layout**: 使用类文档重组为 `overview/`、`cli/`、`operations/` 分层目录；
+
 ## [0.22.0] - 2026-03-31
 
 ### Added

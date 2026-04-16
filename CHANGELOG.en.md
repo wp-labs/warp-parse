@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: Added tool-specific CLI documentation for `wparse`, `wpgen`, `wproj`, and `wprescue`, plus a shared index that maps common local-development, operations, and rescue workflows.
+- **Operations/Overview Docs**: Added the new `overview/` and `operations/` documentation structure, including reorganized product overview, runtime admin usage, and remote project sync / hot reload SOP pages.
+
+### Changed
+- **Dependencies**: Upgraded remote `wp-motor` dependencies from `v1.20.0` to `v1.20.1`, and upgraded `wp-connectors` from `v0.12.1` to `v0.12.2`.
+- **Victoria Templates**: Updated the Docker default sink connector templates for `victorialogs` and `victoriametrics` so their IDs, parameter names, and default endpoints match the latest connector definitions and use host-reachable `127.0.0.1` addresses.
+- **Docs Layout**: Reorganized user-facing docs into `overview/`, `cli/`, and `operations/` sections; moved the runtime admin and remote project sync guides to the new paths and added fresh Chinese/English navigation pages.
+
 ## [0.22.0] - 2026-03-31
 
 ### Added
