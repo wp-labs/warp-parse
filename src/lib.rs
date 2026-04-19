@@ -1,8 +1,8 @@
-use orion_conf::{ToStructError, UvsConfFrom};
+use orion_error::ErrorOweSource;
 use orion_sec::load_sec_dict_by;
 use orion_variate::EnvDict;
 use std::sync::Once;
-use wp_error::{RunReason, RunResult};
+use wp_error::RunResult;
 
 shadow_rs::shadow!(build);
 
@@ -14,10 +14,12 @@ pub const SEK_KEY_FILE: &str = "sec_key.toml";
 pub const WP_DOT_DIR: &str = ".warp_parse";
 
 pub fn load_sec_dict() -> RunResult<EnvDict> {
-    load_sec_dict_by(WP_DOT_DIR, SEK_KEY_FILE, orion_sec::SecFileFmt::Toml).map_err(|e| {
-        wp_log::warn_ctrl!("load sec dict failed: {}", e);
-        RunReason::from_conf().to_err()
-    })
+    load_sec_dict_by(WP_DOT_DIR, SEK_KEY_FILE, orion_sec::SecFileFmt::Toml)
+        .map_err(|e| {
+            wp_log::warn_ctrl!("load sec dict failed: {}", e);
+            e
+        })
+        .owe_conf_source()
 }
 
 pub fn log_build_info_once() {
