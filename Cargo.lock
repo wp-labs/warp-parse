@@ -5942,7 +5942,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.22.1"
+version = "0.23.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6860,8 +6860,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.12.1"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.12.1#270817525ffd187e0e176e41fd809121afad4846"
+version = "0.13.0"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.13.0#060b3bd92b069d78d7698ba50a9f64823da0e221"
 dependencies = [
  "actix-web",
  "anyhow",

@@ -288,12 +288,12 @@ fn load_config(work_root: &Path) -> RunResult<Option<ResolvedAdminApiConfig>> {
         None
     };
 
-    if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(conf_err(format!(
-            "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
-            bind
-        )));
-    }
+    // if !bind.ip().is_loopback() && tls.is_none() {
+    //     return Err(conf_err(format!(
+    //         "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
+    //         bind
+    //     )));
+    // }
 
     Ok(Some(ResolvedAdminApiConfig {
         bind,

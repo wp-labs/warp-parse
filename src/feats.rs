@@ -92,6 +92,9 @@ pub fn register_optional_connectors() {
 
     #[cfg(any(feature = "community", feature = "http"))]
     {
+        wp_engine::connectors::registry::register_source_factory(
+            wp_connectors::http::HttpSourceFactory,
+        );
         wp_engine::connectors::registry::register_sink_factory(
             wp_connectors::http::HttpSinkFactory,
         );
