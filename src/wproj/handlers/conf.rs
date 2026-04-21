@@ -15,8 +15,8 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
         work_root,
         args.version.as_deref(),
         args.json,
-        |work_root, requested_version| {
-            project_remote::sync_project_remote(work_root, requested_version)
+        |work_root, requested_version, dict| {
+            project_remote::sync_project_remote_with_dict(work_root, requested_version, dict)
         },
     )
     .await
@@ -38,7 +38,7 @@ pub async fn run_conf_update_from_repo(
         work_root,
         requested_version,
         false,
-        |work_root, requested_version| {
+        |work_root, requested_version, _dict| {
             project_remote::sync_project_remote_from_repo(work_root, repo_url, requested_version)
         },
     )
@@ -52,7 +52,11 @@ async fn run_conf_update_with_sync<F>(
     sync_fn: F,
 ) -> RunResult<()>
 where
-    F: Fn(&std::path::Path, Option<&str>) -> RunResult<project_remote::ProjectRemoteUpdateResult>,
+    F: Fn(
+        &std::path::Path,
+        Option<&str>,
+        &orion_variate::EnvDict,
+    ) -> RunResult<project_remote::ProjectRemoteUpdateResult>,
 {
     info_ctrl!(
         "wproj conf update start work_root={} requested_version={} json={}",
@@ -62,7 +66,8 @@ where
     );
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
     let rollback_snapshot = project_remote::capture_project_remote_snapshot(&work_root)?;
-    let result = sync_fn(&work_root, requested_version)?;
+    let dict = warp_parse::load_sec_dict()?;
+    let result = sync_fn(&work_root, requested_version, &dict)?;
     info_ctrl!(
         "wproj conf update synced work_root={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
         work_root.display(),
@@ -81,7 +86,6 @@ where
             result.current_version
         );
         let _cwd_guard = WorkRootGuard::enter(&work_root)?;
-        let dict = warp_parse::load_sec_dict()?;
         validate_load_model(&work_root, &dict).await
     }
     .await;
@@ -121,9 +125,10 @@ where
             result.resolved_tag,
             result.changed
         );
-        return Err(RunReason::from_conf()
-            .to_err()
-            .with_detail(format!("project check failed after update: {}", check_err)));
+        return Err(RunReason::from_conf().to_err().with_detail(format!(
+            "project check failed after update: {}",
+            check_err.display_chain()
+        )));
     }
     info_ctrl!(
         "wproj conf update validate passed work_root={} requested_version={} current_version={} resolved_tag={}",
@@ -184,7 +189,8 @@ fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
     std::fs::canonicalize(raw).map_err(|e| {
         RunReason::from_conf()
             .to_err()
-            .with_detail(format!("resolve work root '{}' failed: {}", raw, e))
+            .with_detail(format!("resolve work root '{}' failed", raw))
+            .with_std_source(e)
     })
 }
 
@@ -197,14 +203,14 @@ impl WorkRootGuard {
         let original = std::env::current_dir().map_err(|e| {
             RunReason::from_conf()
                 .to_err()
-                .with_detail(format!("read current dir failed: {}", e))
+                .with_detail("read current dir failed")
+                .with_std_source(e)
         })?;
         std::env::set_current_dir(path).map_err(|e| {
-            RunReason::from_conf().to_err().with_detail(format!(
-                "set current dir to '{}' failed: {}",
-                path.display(),
-                e
-            ))
+            RunReason::from_conf()
+                .to_err()
+                .with_detail(format!("set current dir to '{}' failed", path.display()))
+                .with_std_source(e)
         })?;
         Ok(Self { original })
     }

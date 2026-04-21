@@ -1,21 +1,28 @@
-use orion_error::ErrorConv;
+use orion_error::{ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use std::sync::Arc;
-use wp_config::engine::EngineConfig;
-use wp_error::run_error::RunResult;
+use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::sinks::{
     collect_oml_models, expand_route_rows, render_route_rows, render_sink_list, DisplayFormat,
     Sinks,
 };
 
 use crate::args::{SinksCommonArgs, SinksRouteArgs};
+use crate::handlers::engine_config::load_resolved_engine_config;
 
 fn load_sinks(work_root: &str, dict: &EnvDict) -> RunResult<Sinks> {
-    let eng_conf = Arc::new(EngineConfig::load_or_init(work_root, dict).err_conv()?);
+    let eng_conf = Arc::new(load_resolved_engine_config(work_root, dict)?);
     Ok(Sinks::new(work_root, eng_conf))
 }
 
 pub fn list_sinks(args: SinksCommonArgs, dict: &EnvDict) -> RunResult<()> {
+    let eng_conf = load_resolved_engine_config(&args.work_root, dict)?;
+    let sink_root = std::path::PathBuf::from(eng_conf.sink_root());
+    if !sink_root.exists() {
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("sink root not found: {}", sink_root.display())));
+    }
     let sinks = load_sinks(&args.work_root, dict)?;
     let rows = sinks.route_rows(&[], &[], dict)?;
     render_sink_list(&rows, DisplayFormat::from_bool(args.json));
@@ -23,6 +30,13 @@ pub fn list_sinks(args: SinksCommonArgs, dict: &EnvDict) -> RunResult<()> {
 }
 
 pub async fn show_sink_routes(args: SinksRouteArgs, dict: &EnvDict) -> RunResult<()> {
+    let eng_conf = load_resolved_engine_config(&args.common.work_root, dict)?;
+    let sink_root = std::path::PathBuf::from(eng_conf.sink_root());
+    if !sink_root.exists() {
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("sink root not found: {}", sink_root.display())));
+    }
     let sinks = load_sinks(&args.common.work_root, dict)?;
     let rows = sinks.route_rows(&args.common.group_names, &args.common.sink_names, dict)?;
     let oml_map = collect_oml_models(&args.common.work_root, dict).await?;

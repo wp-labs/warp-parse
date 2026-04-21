@@ -9,6 +9,7 @@ use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use warp_parse::admin_api;
+use warp_parse::load_sec_dict;
 use wp_error::run_error::{RunReason, RunResult};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -68,16 +69,16 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
 
     let response = client
         .get(&url)
-        .headers(auth_headers(&profile.token))
+        .headers(auth_headers(&profile.token)?)
         .send()
         .await
-        .map_err(|e| conf_err(format!("request {} failed: {}", url, e)))?;
+        .map_err(|e| conf_err_source(format!("request {} failed", url), e))?;
 
     if response.status().is_success() {
         let status: EngineStatusResponse = response
             .json()
             .await
-            .map_err(|e| conf_err(format!("decode status response failed: {}", e)))?;
+            .map_err(|e| conf_err_source("decode status response failed", e))?;
         if args.json {
             return print_json(&status);
         }
@@ -116,15 +117,12 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
     }
 
     let err = decode_error_response(response).await?;
-    Err(conf_err(format!(
-        "status request rejected: {} ({})",
-        err.error, err.result
-    )))
+    Err(status_request_rejected(&err))
 }
 
 pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
     if !args.update && args.version.is_some() {
-        return Err(conf_err("--version requires --update"));
+        return Err(reload_args_err("--version requires --update"));
     }
 
     let profile = resolve_target(&args.target)?;
@@ -140,7 +138,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
 
     let response = client
         .post(&url)
-        .headers(auth_headers(&profile.token))
+        .headers(auth_headers(&profile.token)?)
         .header("X-Request-Id", &request_id)
         .json(&EngineReloadRequest {
             wait: args.wait,
@@ -151,7 +149,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
         })
         .send()
         .await
-        .map_err(|e| conf_err(format!("request {} failed: {}", url, e)))?;
+        .map_err(|e| conf_err_source(format!("request {} failed", url), e))?;
 
     match response.status() {
         status
@@ -162,7 +160,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
             let body: EngineReloadResponse = response
                 .json()
                 .await
-                .map_err(|e| conf_err(format!("decode reload response failed: {}", e)))?;
+                .map_err(|e| conf_err_source("decode reload response failed", e))?;
             if args.json {
                 return print_json(&body);
             }
@@ -195,13 +193,13 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
             }
 
             if status == StatusCode::CONFLICT {
-                return Err(conf_err("reload already in progress"));
+                return Err(reload_in_progress_err());
             }
             if status == StatusCode::ACCEPTED {
                 return Ok(());
             }
             if body.result == "reload_failed" {
-                return Err(conf_err(body.error.unwrap_or_else(|| {
+                return Err(reload_failed_err(body.error.unwrap_or_else(|| {
                     "reload failed without error detail".to_string()
                 })));
             }
@@ -209,10 +207,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
         }
         _ => {
             let err = decode_error_response(response).await?;
-            Err(conf_err(format!(
-                "reload request rejected: {} ({})",
-                err.error, err.result
-            )))
+            Err(reload_request_rejected(&err))
         }
     }
 }
@@ -225,9 +220,10 @@ struct ResolvedTarget {
 
 fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
     let work_root = resolve_work_root(&args.work_root)?;
+    let dict = load_sec_dict()?;
     let need_local_profile = args.admin_url.is_none() || args.token_file.is_none();
     let local_profile = if need_local_profile {
-        admin_api::resolve_client_profile(&work_root)?
+        admin_api::resolve_client_profile(&work_root, &dict)?
     } else {
         None
     };
@@ -235,7 +231,7 @@ fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
         (Some(url), _) => url.trim_end_matches('/').to_string(),
         (None, Some(profile)) => profile.base_url.trim_end_matches('/').to_string(),
         (None, None) => {
-            return Err(conf_err(format!(
+            return Err(engine_target_err(format!(
                 "admin API is not enabled in {} and --admin-url was not provided",
                 work_root.join("conf/wparse.toml").display()
             )));
@@ -246,23 +242,22 @@ fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
         (Some(path), _) => resolve_override_path(&work_root, path),
         (None, Some(profile)) => profile.token_file.clone(),
         (None, None) => {
-            return Err(conf_err(
+            return Err(engine_target_err(
                 "token file is not configured locally and --token-file was not provided",
             ));
         }
     };
     let token = std::fs::read_to_string(&token_path)
         .map_err(|e| {
-            conf_err(format!(
-                "read token file {} failed: {}",
-                token_path.display(),
-                e
-            ))
+            conf_err_source(
+                format!("read token file {} failed", token_path.display()),
+                e,
+            )
         })?
         .trim()
         .to_string();
     if token.is_empty() {
-        return Err(conf_err(format!(
+        return Err(engine_target_err(format!(
             "token file {} is empty",
             token_path.display()
         )));
@@ -286,25 +281,23 @@ fn build_client(target: &ResolvedTarget, insecure: bool) -> RunResult<reqwest::C
         .timeout(target.request_timeout)
         .danger_accept_invalid_certs(insecure)
         .build()
-        .map_err(|e| conf_err(format!("build HTTP client failed: {}", e)))
+        .map_err(|e| conf_err_source("build HTTP client failed", e))
 }
 
-fn auth_headers(token: &str) -> HeaderMap {
+fn auth_headers(token: &str) -> RunResult<HeaderMap> {
     let mut headers = HeaderMap::new();
     let value = HeaderValue::from_str(&format!("Bearer {}", token))
-        .expect("token should be valid header value");
+        .map_err(|e| conf_err_source("build Authorization header failed", e))?;
     headers.insert(AUTHORIZATION, value);
-    headers
+    Ok(headers)
 }
 
 async fn decode_error_response(response: reqwest::Response) -> RunResult<EngineErrorResponse> {
     let status = response.status();
-    response.json::<EngineErrorResponse>().await.map_err(|e| {
-        conf_err(format!(
-            "decode error response failed (HTTP {}): {}",
-            status, e
-        ))
-    })
+    response
+        .json::<EngineErrorResponse>()
+        .await
+        .map_err(|e| conf_err_source(format!("decode error response failed (HTTP {})", status), e))
 }
 
 fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
@@ -314,7 +307,7 @@ fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
     }
     env::current_dir()
         .map(|cwd| cwd.join(path))
-        .map_err(|e| conf_err(format!("resolve current dir failed: {}", e)))
+        .map_err(|e| conf_err_source("resolve current dir failed", e))
 }
 
 fn resolve_override_path(work_root: &Path, raw: &str) -> PathBuf {
@@ -326,8 +319,46 @@ fn resolve_override_path(work_root: &Path, raw: &str) -> PathBuf {
     }
 }
 
-fn conf_err(detail: impl Into<String>) -> wp_error::RunError {
+fn reload_args_err(detail: impl Into<String>) -> wp_error::RunError {
     RunReason::from_conf().to_err().with_detail(detail.into())
+}
+
+fn reload_in_progress_err() -> wp_error::RunError {
+    RunReason::from_biz()
+        .to_err()
+        .with_detail("reload already in progress")
+}
+
+fn reload_failed_err(detail: impl Into<String>) -> wp_error::RunError {
+    RunReason::from_biz().to_err().with_detail(detail.into())
+}
+
+fn engine_target_err(detail: impl Into<String>) -> wp_error::RunError {
+    RunReason::from_logic().to_err().with_detail(detail.into())
+}
+
+fn status_request_rejected(err: &EngineErrorResponse) -> wp_error::RunError {
+    RunReason::from_biz().to_err().with_detail(format!(
+        "status request rejected: {} ({})",
+        err.error, err.result
+    ))
+}
+
+fn reload_request_rejected(err: &EngineErrorResponse) -> wp_error::RunError {
+    RunReason::from_biz().to_err().with_detail(format!(
+        "reload request rejected: {} ({})",
+        err.error, err.result
+    ))
+}
+
+fn conf_err_source<E>(detail: impl Into<String>, source: E) -> wp_error::RunError
+where
+    E: std::error::Error + Send + Sync + 'static,
+{
+    RunReason::from_conf()
+        .to_err()
+        .with_detail(detail.into())
+        .with_std_source(source)
 }
 
 #[cfg(test)]
@@ -457,10 +488,12 @@ token_file = "{token_file}"
         write_token(&token_path);
         write_conf(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
 
-        let runtime = warp_parse::admin_api::start_if_enabled(temp.path(), shared_control_handle())
-            .await
-            .expect("start admin api")
-            .expect("enabled");
+        let dict = orion_variate::EnvDict::default();
+        let runtime =
+            warp_parse::admin_api::start_if_enabled(temp.path(), &dict, shared_control_handle())
+                .await
+                .expect("start admin api")
+                .expect("enabled");
 
         write_conf(
             temp.path(),

@@ -15,6 +15,7 @@ use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
 use orion_conf::{ToStructError, UvsConfFrom};
+use orion_error::ErrorWrapAs;
 use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
@@ -33,10 +34,6 @@ use wp_engine::facade::{
 use wp_error::run_error::{RunReason, RunResult};
 use wp_log::{info_ctrl, warn_ctrl};
 
-const ADMIN_CONF_PATH: &str = "conf/wparse.toml";
-const DEFAULT_BIND: &str = "127.0.0.1:19090";
-const DEFAULT_REQUEST_TIMEOUT_MS: u64 = 15_000;
-const DEFAULT_MAX_BODY_BYTES: usize = 4096;
 const DEFAULT_AUTH_MODE: &str = "bearer_token";
 
 #[derive(Debug)]
@@ -61,23 +58,25 @@ impl AdminApiRuntime {
 
 pub async fn start_if_enabled(
     work_root: &Path,
+    dict: &EnvDict,
     control_handle: RuntimeControlHandle,
 ) -> RunResult<Option<AdminApiRuntime>> {
-    let config = load_config(work_root)?;
+    let config = load_config(work_root, dict)?;
     let Some(config) = config else {
         return Ok(None);
     };
 
     let listener = TcpListener::bind(config.bind)
         .await
-        .map_err(|e| conf_err(format!("bind admin api on {} failed: {}", config.bind, e)))?;
+        .map_err(|e| conf_err_source(format!("bind admin api on {} failed", config.bind), e))?;
     let local_addr = listener
         .local_addr()
-        .map_err(|e| conf_err(format!("read admin api local addr failed: {}", e)))?;
+        .map_err(|e| conf_err_source("read admin api local addr failed", e))?;
     let instance_id = format!("{}:{}", hostname_for_instance(), std::process::id());
     let state = Arc::new(AppState {
         control_handle,
         work_root: work_root.to_path_buf(),
+        dict: dict.clone(),
         reload_gate: Mutex::new(()),
         bearer_token: config.bearer_token,
         request_timeout: config.request_timeout,
@@ -120,100 +119,6 @@ pub async fn start_if_enabled(
     }))
 }
 
-#[derive(Debug, Deserialize, Default)]
-struct HostConfigFile {
-    #[serde(default)]
-    admin_api: AdminApiConfigFile,
-}
-
-impl EnvEvaluable<HostConfigFile> for HostConfigFile {
-    fn env_eval(mut self, dict: &EnvDict) -> HostConfigFile {
-        self.admin_api = self.admin_api.env_eval(dict);
-        self
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct AdminApiConfigFile {
-    #[serde(default)]
-    enabled: bool,
-    #[serde(default = "default_bind")]
-    bind: String,
-    #[serde(default = "default_request_timeout_ms")]
-    request_timeout_ms: u64,
-    #[serde(default = "default_max_body_bytes")]
-    max_body_bytes: usize,
-    #[serde(default)]
-    tls: AdminTlsConfigFile,
-    #[serde(default)]
-    auth: AdminAuthConfigFile,
-}
-
-impl Default for AdminApiConfigFile {
-    fn default() -> Self {
-        Self {
-            enabled: false,
-            bind: default_bind(),
-            request_timeout_ms: default_request_timeout_ms(),
-            max_body_bytes: default_max_body_bytes(),
-            tls: AdminTlsConfigFile::default(),
-            auth: AdminAuthConfigFile::default(),
-        }
-    }
-}
-
-impl EnvEvaluable<AdminApiConfigFile> for AdminApiConfigFile {
-    fn env_eval(mut self, dict: &EnvDict) -> AdminApiConfigFile {
-        self.bind = self.bind.env_eval(dict);
-        self.tls = self.tls.env_eval(dict);
-        self.auth = self.auth.env_eval(dict);
-        self
-    }
-}
-
-#[derive(Debug, Deserialize, Clone, Default)]
-struct AdminTlsConfigFile {
-    #[serde(default)]
-    enabled: bool,
-    #[serde(default)]
-    cert_file: String,
-    #[serde(default)]
-    key_file: String,
-}
-
-impl EnvEvaluable<AdminTlsConfigFile> for AdminTlsConfigFile {
-    fn env_eval(mut self, dict: &EnvDict) -> AdminTlsConfigFile {
-        self.cert_file = self.cert_file.env_eval(dict);
-        self.key_file = self.key_file.env_eval(dict);
-        self
-    }
-}
-
-#[derive(Debug, Deserialize, Clone)]
-struct AdminAuthConfigFile {
-    #[serde(default = "default_auth_mode")]
-    mode: String,
-    #[serde(default)]
-    token_file: String,
-}
-
-impl Default for AdminAuthConfigFile {
-    fn default() -> Self {
-        Self {
-            mode: default_auth_mode(),
-            token_file: String::new(),
-        }
-    }
-}
-
-impl EnvEvaluable<AdminAuthConfigFile> for AdminAuthConfigFile {
-    fn env_eval(mut self, dict: &EnvDict) -> AdminAuthConfigFile {
-        self.mode = self.mode.env_eval(dict);
-        self.token_file = self.token_file.env_eval(dict);
-        self
-    }
-}
-
 struct ResolvedAdminApiConfig {
     bind: SocketAddr,
     request_timeout: Duration,
@@ -229,67 +134,64 @@ pub struct AdminApiClientProfile {
     pub request_timeout: Duration,
 }
 
-fn load_config(work_root: &Path) -> RunResult<Option<ResolvedAdminApiConfig>> {
-    let conf_path = work_root.join(ADMIN_CONF_PATH);
-    let raw = fs::read_to_string(&conf_path)
-        .map_err(|e| conf_err(format!("read {} failed: {}", conf_path.display(), e)))?;
-    let dict = crate::load_sec_dict().unwrap_or_else(|_| EnvDict::new());
-    let parsed: HostConfigFile = toml::from_str(&raw)
-        .map_err(|e| conf_err(format!("parse {} failed: {}", conf_path.display(), e)))?;
-    let parsed = parsed.env_eval(&dict);
-    if !parsed.admin_api.enabled {
+fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdminApiConfig>> {
+    let parsed = load_engine_config(work_root, dict)?;
+    let admin_api = parsed.admin_api();
+    if !admin_api.enabled {
         return Ok(None);
     }
 
-    let bind: SocketAddr = parsed.admin_api.bind.parse().map_err(|e| {
-        conf_err(format!(
-            "invalid admin_api.bind '{}': {}",
-            parsed.admin_api.bind, e
-        ))
-    })?;
-    if parsed.admin_api.max_body_bytes == 0 {
-        return Err(conf_err("admin_api.max_body_bytes must be > 0"));
+    let bind: SocketAddr = admin_api
+        .bind
+        .parse()
+        .map_err(|e| conf_err_source(format!("invalid admin_api.bind '{}'", admin_api.bind), e))?;
+    if admin_api.max_body_bytes == 0 {
+        return Err(admin_api_validation_err(
+            "admin_api.max_body_bytes must be > 0",
+        ));
     }
 
-    let auth_mode = parsed.admin_api.auth.mode.trim().to_ascii_lowercase();
+    let auth_mode = admin_api.auth.mode.trim().to_ascii_lowercase();
     if auth_mode != DEFAULT_AUTH_MODE {
-        return Err(conf_err(format!(
+        return Err(admin_api_validation_err(format!(
             "unsupported admin_api.auth.mode '{}', expected '{}'",
-            parsed.admin_api.auth.mode, DEFAULT_AUTH_MODE
+            admin_api.auth.mode, DEFAULT_AUTH_MODE
         )));
     }
-    if parsed.admin_api.auth.token_file.trim().is_empty() {
-        return Err(conf_err(
+    if admin_api.auth.token_file.trim().is_empty() {
+        return Err(admin_api_validation_err(
             "admin_api.auth.token_file must be set when admin_api is enabled",
         ));
     }
-    let token_path = resolve_path(work_root, &parsed.admin_api.auth.token_file);
+    let token_path = PathBuf::from(&admin_api.auth.token_file);
     validate_token_file(&token_path)?;
     let bearer_token = fs::read_to_string(&token_path)
         .map_err(|e| {
-            conf_err(format!(
-                "read token file {} failed: {}",
-                token_path.display(),
-                e
-            ))
+            conf_err_source(
+                format!("read token file {} failed", token_path.display()),
+                e,
+            )
         })?
         .trim()
         .to_string();
     if bearer_token.is_empty() {
-        return Err(conf_err(format!(
+        return Err(token_file_validation_err(format!(
             "token file {} is empty",
             token_path.display()
         )));
     }
 
-    let tls = if parsed.admin_api.tls.enabled {
-        Some(load_tls_config(work_root, &parsed.admin_api.tls)?)
+    let tls = if admin_api.tls.enabled {
+        Some(load_tls_config(
+            Path::new(&admin_api.tls.cert_file),
+            Path::new(&admin_api.tls.key_file),
+        )?)
     } else {
         None
     };
 
     if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(conf_err(format!(
+        return Err(admin_api_validation_err(format!(
             "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
             bind
         )));
@@ -297,55 +199,60 @@ fn load_config(work_root: &Path) -> RunResult<Option<ResolvedAdminApiConfig>> {
 
     Ok(Some(ResolvedAdminApiConfig {
         bind,
-        request_timeout: Duration::from_millis(parsed.admin_api.request_timeout_ms),
-        max_body_bytes: parsed.admin_api.max_body_bytes,
+        request_timeout: Duration::from_millis(admin_api.request_timeout_ms),
+        max_body_bytes: admin_api.max_body_bytes,
         bearer_token,
         tls,
     }))
 }
 
-pub fn resolve_client_profile(work_root: &Path) -> RunResult<Option<AdminApiClientProfile>> {
-    let conf_path = work_root.join(ADMIN_CONF_PATH);
-    let raw = fs::read_to_string(&conf_path)
-        .map_err(|e| conf_err(format!("read {} failed: {}", conf_path.display(), e)))?;
-    let dict = crate::load_sec_dict().unwrap_or_else(|_| EnvDict::new());
-    let parsed: HostConfigFile = toml::from_str(&raw)
-        .map_err(|e| conf_err(format!("parse {} failed: {}", conf_path.display(), e)))?;
-    let parsed = parsed.env_eval(&dict);
-    if !parsed.admin_api.enabled {
+pub fn resolve_client_profile(
+    work_root: &Path,
+    dict: &EnvDict,
+) -> RunResult<Option<AdminApiClientProfile>> {
+    let parsed = load_engine_config(work_root, dict)?;
+    let admin_api = parsed.admin_api();
+    if !admin_api.enabled {
         return Ok(None);
     }
 
-    let bind: SocketAddr = parsed.admin_api.bind.parse().map_err(|e| {
-        conf_err(format!(
-            "invalid admin_api.bind '{}': {}",
-            parsed.admin_api.bind, e
-        ))
-    })?;
-    let token_file = parsed.admin_api.auth.token_file.trim();
+    let bind: SocketAddr = admin_api
+        .bind
+        .parse()
+        .map_err(|e| conf_err_source(format!("invalid admin_api.bind '{}'", admin_api.bind), e))?;
+    let token_file = admin_api.auth.token_file.trim();
     if token_file.is_empty() {
-        return Err(conf_err(
+        return Err(admin_api_validation_err(
             "admin_api.auth.token_file must be set when admin_api is enabled",
         ));
     }
 
-    let scheme = if parsed.admin_api.tls.enabled {
+    let scheme = if admin_api.tls.enabled {
         "https"
     } else {
         "http"
     };
     Ok(Some(AdminApiClientProfile {
         base_url: format!("{}://{}", scheme, bind),
-        token_file: resolve_path(work_root, token_file),
-        request_timeout: Duration::from_millis(parsed.admin_api.request_timeout_ms),
+        token_file: PathBuf::from(token_file),
+        request_timeout: Duration::from_millis(admin_api.request_timeout_ms),
     }))
+}
+
+fn load_engine_config(
+    work_root: &Path,
+    dict: &EnvDict,
+) -> RunResult<wp_config::engine::EngineConfig> {
+    wp_config::engine::EngineConfig::load(work_root, dict)
+        .wrap_as(RunReason::from_conf(), "load engine config failed")
+        .map(|conf| conf.env_eval(dict).conf_absolutize(work_root))
 }
 
 fn validate_token_file(path: &Path) -> RunResult<()> {
     let meta = fs::metadata(path)
-        .map_err(|e| conf_err(format!("stat token file {} failed: {}", path.display(), e)))?;
+        .map_err(|e| conf_err_source(format!("stat token file {} failed", path.display()), e))?;
     if !meta.is_file() {
-        return Err(conf_err(format!(
+        return Err(token_file_validation_err(format!(
             "token file {} is not a regular file",
             path.display()
         )));
@@ -356,7 +263,7 @@ fn validate_token_file(path: &Path) -> RunResult<()> {
 
         let mode = meta.permissions().mode() & 0o777;
         if mode & 0o077 != 0 {
-            return Err(conf_err(format!(
+            return Err(token_file_validation_err(format!(
                 "token file {} permissions {:o} are too permissive; require owner-only access",
                 path.display(),
                 mode
@@ -366,67 +273,45 @@ fn validate_token_file(path: &Path) -> RunResult<()> {
     Ok(())
 }
 
-fn load_tls_config(work_root: &Path, tls: &AdminTlsConfigFile) -> RunResult<ServerConfig> {
-    if tls.cert_file.trim().is_empty() || tls.key_file.trim().is_empty() {
-        return Err(conf_err(
+fn load_tls_config(cert_path: &Path, key_path: &Path) -> RunResult<ServerConfig> {
+    if cert_path.as_os_str().is_empty() || key_path.as_os_str().is_empty() {
+        return Err(tls_validation_err(
             "admin_api.tls.cert_file and admin_api.tls.key_file must be set when TLS is enabled",
         ));
     }
-    let cert_path = resolve_path(work_root, &tls.cert_file);
-    let key_path = resolve_path(work_root, &tls.key_file);
-    let cert_pem = fs::read(&cert_path).map_err(|e| {
-        conf_err(format!(
-            "read cert file {} failed: {}",
-            cert_path.display(),
-            e
-        ))
+    let cert_pem = fs::read(cert_path).map_err(|e| {
+        conf_err_source(format!("read cert file {} failed", cert_path.display()), e)
     })?;
-    let key_pem = fs::read(&key_path).map_err(|e| {
-        conf_err(format!(
-            "read key file {} failed: {}",
-            key_path.display(),
-            e
-        ))
-    })?;
+    let key_pem = fs::read(key_path)
+        .map_err(|e| conf_err_source(format!("read key file {} failed", key_path.display()), e))?;
 
     let certs = CertificateDer::pem_slice_iter(&cert_pem)
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| {
-            conf_err(format!(
-                "parse PEM certs from {} failed: {}",
-                cert_path.display(),
-                e
-            ))
+            conf_err_source(
+                format!("parse PEM certs from {} failed", cert_path.display()),
+                e,
+            )
         })?;
     if certs.is_empty() {
-        return Err(conf_err(format!(
+        return Err(tls_validation_err(format!(
             "no certificates found in {}",
             cert_path.display()
         )));
     }
     let key = PrivateKeyDer::from_pem_slice(&key_pem).map_err(|e| {
-        conf_err(format!(
-            "parse PEM key from {} failed: {}",
-            key_path.display(),
-            e
-        ))
+        conf_err_source(
+            format!("parse PEM key from {} failed", key_path.display()),
+            e,
+        )
     })?;
 
     let mut server_config = ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(certs, key)
-        .map_err(|e| conf_err(format!("build TLS server config failed: {}", e)))?;
+        .map_err(|e| conf_err_source("build TLS server config failed", e))?;
     server_config.alpn_protocols = vec![b"http/1.1".to_vec()];
     Ok(server_config)
-}
-
-fn resolve_path(work_root: &Path, raw: &str) -> PathBuf {
-    let path = PathBuf::from(raw);
-    if path.is_absolute() {
-        path
-    } else {
-        work_root.join(path)
-    }
 }
 
 async fn run_plain(
@@ -498,6 +383,7 @@ where
 struct AppState {
     control_handle: RuntimeControlHandle,
     work_root: PathBuf,
+    dict: EnvDict,
     reload_gate: Mutex<()>,
     bearer_token: String,
     request_timeout: Duration,
@@ -830,9 +716,10 @@ async fn reload_response(
             remote_addr,
             reload_req.version.as_deref().unwrap_or("(auto)")
         );
-        match crate::project_remote::sync_project_remote(
+        match crate::project_remote::sync_project_remote_with_dict(
             &state.work_root,
             reload_req.version.as_deref(),
+            &state.dict,
         ) {
             Ok(result) => {
                 info_ctrl!(
@@ -1360,24 +1247,26 @@ fn hostname_for_instance() -> String {
     System::host_name().unwrap_or_else(|| "unknown-host".to_string())
 }
 
-fn conf_err(detail: impl Into<String>) -> wp_error::RunError {
+fn admin_api_validation_err(detail: impl Into<String>) -> wp_error::RunError {
     RunReason::from_conf().to_err().with_detail(detail.into())
 }
 
-fn default_bind() -> String {
-    DEFAULT_BIND.to_string()
+fn token_file_validation_err(detail: impl Into<String>) -> wp_error::RunError {
+    RunReason::from_conf().to_err().with_detail(detail.into())
 }
 
-fn default_request_timeout_ms() -> u64 {
-    DEFAULT_REQUEST_TIMEOUT_MS
+fn tls_validation_err(detail: impl Into<String>) -> wp_error::RunError {
+    RunReason::from_conf().to_err().with_detail(detail.into())
 }
 
-fn default_max_body_bytes() -> usize {
-    DEFAULT_MAX_BODY_BYTES
-}
-
-fn default_auth_mode() -> String {
-    DEFAULT_AUTH_MODE.to_string()
+fn conf_err_source<E>(detail: impl Into<String>, source: E) -> wp_error::RunError
+where
+    E: std::error::Error + Send + Sync + 'static,
+{
+    RunReason::from_conf()
+        .to_err()
+        .with_detail(detail.into())
+        .with_std_source(source)
 }
 
 fn default_wait() -> bool {
@@ -1537,7 +1426,8 @@ token_file = "{token_file}"
         write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o644);
 
-        let err = start_if_enabled(temp.path(), shared_control_handle())
+        let dict = EnvDict::default();
+        let err = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
             .expect_err("should reject unsafe token file");
         assert!(
@@ -1562,7 +1452,8 @@ token_file = "{token_file}"
         );
         write_token(temp.path(), "fake-home/.warp_parse/admin_api.token", 0o600);
 
-        let loaded = load_config(temp.path())
+        let dict = EnvDict::default();
+        let loaded = load_config(temp.path(), &dict)
             .expect("load admin api config with env token path")
             .expect("enabled");
         assert_eq!(
@@ -1578,7 +1469,8 @@ token_file = "{token_file}"
         write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
-        let runtime = start_if_enabled(temp.path(), shared_control_handle())
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
             .expect("start admin api")
             .expect("enabled");
@@ -1623,7 +1515,8 @@ token_file = "{token_file}"
         write_test_work_root(temp.path(), "0.0.0.0:19090", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
-        let err = start_if_enabled(temp.path(), shared_control_handle())
+        let dict = EnvDict::default();
+        let err = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
             .expect_err("should reject non-loopback without tls");
         assert!(
@@ -1640,7 +1533,8 @@ token_file = "{token_file}"
         write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
-        let runtime = start_if_enabled(temp.path(), shared_control_handle())
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
             .expect("start admin api")
             .expect("enabled");

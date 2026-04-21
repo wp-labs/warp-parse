@@ -1,7 +1,6 @@
 use clap::Parser;
 mod args;
 mod format;
-use libc::exit;
 use std::env;
 use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics;
@@ -12,10 +11,8 @@ mod handlers;
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
     if let Err(e) = do_main().await {
-        unsafe {
-            diagnostics::print_run_error("wproj", &e);
-            exit(diagnostics::exit_code_for(e.reason()));
-        }
+        diagnostics::print_run_error("wproj", &e);
+        std::process::exit(diagnostics::exit_code_for(e.reason()));
     }
 }
 
