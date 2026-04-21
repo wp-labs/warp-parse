@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.3 Unreleased]
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.5`, bringing stability improvements to diagnostics, config loading, and project-management flows.
+- **Admin API**: Switched Admin API and client profile loading to the core engine config loader, reusing the standard environment and path resolution semantics.
+- **CLI Errors**: Further unified error messages across `wparse`, `wpgen`, `wproj`, and `wprescue`; failures now preserve the main reason, related paths, and upstream clues more consistently so issues are easier to diagnose.
+- **Project Management UX**: Further aligned error output across config loading, project remote operations, and project-management commands so similar failures are reported more consistently instead of being overly short in some paths and overly verbose in others.
+
+### Fixed
+- **wproj/Engine**: Improved error reporting for engine status/reload requests, token loading, header construction, and response decoding so failures surface more complete reasons instead of only a short failure message.
+- **wproj/Conf Update**: Fixed overly short validation errors after config updates; validation failures now show a more complete chain so the actual failure point is easier to locate.
+- **Project Remote**: Fixed error-chain handling in some remote project sync and state-persistence failure paths, avoiding cases where errors could be rewrapped incorrectly, lose useful details, or behave inconsistently.
+
 ## [0.22.2] - 2026-04-16
 
 ### Added

@@ -7,6 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.3 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.5`，同步错误诊断、配置加载与工程管理链路的稳定性改进。
+- **Admin API**: Admin API 与 client profile 加载改用核心引擎统一配置 loader，复用环境变量与路径解析语义。
+- **CLI Errors**: `wparse`、`wpgen`、`wproj`、`wprescue` 的报错信息进一步统一；现在会更稳定地保留失败原因、相关路径和上游错误线索，便于直接定位问题。
+- **工程管理体验**: 配置加载、project remote 与工程管理相关命令的错误输出进一步收敛；同类问题会更一致地显示，不再出现一部分路径过于简略、一部分路径信息过多的情况。
+
+### Fixed
+- **wproj/Engine**: 改进 engine status/reload 的请求、token、header 与响应解析错误，失败时会提供更完整的原因信息，减少“只知道失败但不知道为什么”的情况。
+- **wproj/Conf Update**: 修复配置更新后校验失败时错误信息过短的问题；现在会更完整地显示校验链路，便于定位具体失败点。
+- **Project Remote**: 修复部分远端工程同步与状态持久化失败场景下的错误链问题，避免出现报错被错误重包、信息不完整或行为不稳定的情况。
+
 ## [0.22.2] - 2026-04-16
 
 ### Added
