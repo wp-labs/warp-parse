@@ -5,9 +5,11 @@ use warp_parse::build::CLAP_LONG_VERSION;
 use warp_parse::load_sec_dict;
 use wp_cli_core::split_quiet_args;
 
+use orion_error::{ToStructError, UvsFrom};
+use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpRescueApp;
 use wp_error::error_handling::RobustnessMode;
-use wp_error::run_error::RunResult;
+use wp_error::run_error::{RunReason, RunResult};
 
 #[derive(Parser)]
 #[command(
@@ -69,7 +71,14 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
 }
 
 #[tokio::main(flavor = "multi_thread")]
-async fn main() -> RunResult<()> {
+async fn main() {
+    if let Err(e) = do_main().await {
+        print_run_error("wprescue", &e);
+        std::process::exit(exit_code_for(e.reason()));
+    }
+}
+
+async fn do_main() -> RunResult<()> {
     warp_parse::feats::register_for_runtime();
     let argv: Vec<String> = env::args().collect();
     let (_quiet, filtered_args) = split_quiet_args(argv);
@@ -77,16 +86,12 @@ async fn main() -> RunResult<()> {
 
     let cmd = WpRescueCli::parse_from(&filtered_args);
     match cmd {
-        WpRescueCli::Daemon(_) => {
-            eprintln!("wprescue 仅支持 batch 模式（常驻服务）");
-            std::process::exit(2);
-        }
+        WpRescueCli::Daemon(_) => Err(RunReason::from_conf()
+            .to_err()
+            .with_detail("wprescue only supports batch mode; use 'wprescue batch'"))?,
         WpRescueCli::Batch(args) => {
             let mut app = WpRescueApp::try_from(args.into(), env_dict).err_conv()?;
-            if let Err(e) = app.run_batch().await {
-                wp_engine::facade::diagnostics::print_run_error("wprescue", &e);
-                std::process::exit(wp_engine::facade::diagnostics::exit_code_for(e.reason()));
-            }
+            app.run_batch().await?;
         }
     }
 

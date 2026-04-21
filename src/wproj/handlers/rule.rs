@@ -1,6 +1,7 @@
-use orion_error::ErrorOwe;
+use orion_error::{ErrorWrapAs, UvsFrom};
 use orion_variate::EnvDict;
 use wp_error::run_error::RunResult;
+use wp_error::RunReason;
 use wp_proj::wparse::samples::parse_wpl_samples;
 
 use crate::args::{ParseArgs, RuleCmd};
@@ -12,7 +13,8 @@ pub fn dispatch_rule_cmd(sub: RuleCmd, dict: &EnvDict) -> RunResult<()> {
 }
 
 fn run_rule_parse(_args: ParseArgs, dict: &EnvDict) -> RunResult<()> {
-    wp_log::conf::log_init(&wp_log::conf::LogConf::log_to_console("error")).owe_conf()?;
+    wp_log::conf::log_init(&wp_log::conf::LogConf::log_to_console("error"))
+        .wrap_as(RunReason::from_conf(), "init log failed")?;
     parse_wpl_samples("./", dict)
 }
 
