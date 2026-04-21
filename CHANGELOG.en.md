@@ -7,6 +7,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2026-04-21
+
+### Changed
+- **Core Engine**: Upgraded `wp-motor` dependencies from `v1.20.0` to `v1.21.1`, pulling in the latest core engine updates and OML fixes.
+- **Connectors**: Upgraded `wp-connectors` from `v0.12.1` to `v0.13.1`, pulling in connector and metrics pipeline updates.
+- **Dependencies**: Refreshed multiple third-party dependencies in `Cargo.lock` to stay aligned with the current release line.
+
+### Fixed
+- **OML/Take**: Pulled in upstream `wp-motor` fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records contain the same field name.
+- **OML/SQL Parser**: Pulled in upstream `wp-motor` fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
+
 ## [0.22.0] - 2026-03-31
 
 ### Added
