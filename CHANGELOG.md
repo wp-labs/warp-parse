@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.0] - 2026-04-20
+
+### Changed
+- **Core Engine**: 升级 `wp-motor` 相关依赖从 `v1.20.0` 到 `v1.21.0`，同步引入最新核心引擎能力与运行时改进。
+- **Connectors**: 升级 `wp-connectors` 从 `v0.12.1` 到 `v0.13.1`，同步引入连接器与指标链路更新。
+- **Dependencies**: 更新 `Cargo.lock` 中多项三方依赖到新版本，保持与当前版本线一致。
+
 ## [0.22.0] - 2026-03-31
 
 ### Added
