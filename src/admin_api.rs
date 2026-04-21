@@ -288,13 +288,6 @@ fn load_config(work_root: &Path) -> RunResult<Option<ResolvedAdminApiConfig>> {
         None
     };
 
-    if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(conf_err(format!(
-            "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
-            bind
-        )));
-    }
-
     Ok(Some(ResolvedAdminApiConfig {
         bind,
         request_timeout: Duration::from_millis(parsed.admin_api.request_timeout_ms),
@@ -1583,7 +1576,10 @@ token_file = "{token_file}"
             .expect("start admin api")
             .expect("enabled");
 
-        let client = Client::new();
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
         let base = format!("http://{}", runtime.local_addr());
 
         let unauthorized = client
@@ -1618,20 +1614,17 @@ token_file = "{token_file}"
     }
 
     #[tokio::test]
-    async fn admin_api_rejects_non_loopback_without_tls() {
+    async fn admin_api_allows_non_loopback_without_tls() {
         let temp = tempdir().expect("tempdir");
         write_test_work_root(temp.path(), "0.0.0.0:19090", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
-        let err = start_if_enabled(temp.path(), shared_control_handle())
+        let runtime = start_if_enabled(temp.path(), shared_control_handle())
             .await
-            .expect_err("should reject non-loopback without tls");
-        assert!(
-            err.to_string()
-                .contains("requires admin_api.tls.enabled=true"),
-            "unexpected error: {}",
-            err
-        );
+            .expect("start admin api")
+            .expect("enabled");
+
+        runtime.shutdown().await;
     }
 
     #[tokio::test]
@@ -1645,7 +1638,10 @@ token_file = "{token_file}"
             .expect("start admin api")
             .expect("enabled");
 
-        let client = Client::new();
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
         let base = format!("http://{}", runtime.local_addr());
         let response = client
             .post(format!("{}/admin/v1/reloads/model", base))
