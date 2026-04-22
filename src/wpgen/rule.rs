@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use orion_error::{ErrorConv, ErrorOwe, ToStructError, UvsFrom};
+use orion_error::{ErrorConv, ErrorWrapAs, ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use tokio::time::sleep;
 use wp_engine::facade::config::WarpConf;
@@ -63,7 +63,7 @@ pub async fn run(
     wp_log::info_ctrl!("wpgen.rule: loading config from '{}'", conf_path.display());
     let rt = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;
     // init logging
-    log_init(&rt.conf.logging.to_log_conf()).owe_conf()?;
+    log_init(&rt.conf.logging.to_log_conf()).wrap_as(RunReason::from_conf(), "init log failed")?;
     wp_proj::wpgen::log_resolved_out_sink(&rt);
 
     // direct runner builds sink instances from resolved spec; no need to pre-build here

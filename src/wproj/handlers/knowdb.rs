@@ -1,5 +1,5 @@
 use orion_conf::ToStructError;
-use orion_error::UvsFrom;
+use orion_error::{ErrorWrapAs, UvsFrom};
 use orion_variate::EnvDict;
 use std::path::PathBuf;
 use wp_error::run_error::{RunReason, RunResult};
@@ -8,9 +8,9 @@ use crate::args::{KnowdbCheckArgs, KnowdbCleanArgs, KnowdbInitArgs};
 
 pub fn init_knowdb(a: &KnowdbInitArgs) -> RunResult<()> {
     wp_cli_core::knowdb::init(&a.work_root, a.full)
-        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
+        .wrap_as(RunReason::from_conf(), "init knowdb failed")?;
     println!(
-        "wprojknowdb skeleton created under '{}'",
+        "knowdb skeleton created under '{}'",
         PathBuf::from(&a.work_root).display()
     );
     Ok(())
@@ -18,7 +18,7 @@ pub fn init_knowdb(a: &KnowdbInitArgs) -> RunResult<()> {
 
 pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
     let rep = wp_cli_core::knowdb::check(&a.work_root, dict)
-        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
+        .wrap_as(RunReason::from_conf(), "check knowdb failed")?;
     println!("提示: 按配置顺序加载（[[tables]] 出现顺序）");
     for t in &rep.tables {
         if t.create_ok && t.insert_ok && t.data_ok && t.columns_ok {
@@ -44,14 +44,14 @@ pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
 
 pub fn clean_knowdb(a: &KnowdbCleanArgs) -> RunResult<()> {
     let rep = wp_cli_core::knowdb::clean(&a.work_root)
-        .map_err(|e| RunReason::from_conf().to_err().with_detail(e.to_string()))?;
+        .wrap_as(RunReason::from_conf(), "clean knowdb failed")?;
 
     let wr = PathBuf::from(&a.work_root);
     let models_dir = wr.join("models").join("knowledge");
     if rep.removed_models_dir {
-        println!("wprojremoved '{}'", models_dir.display());
+        println!("removed '{}'", models_dir.display());
     } else if rep.not_found_models {
-        println!("wproj'{}' not found (skip)", models_dir.display());
+        println!("'{}' not found (skip)", models_dir.display());
     }
     if rep.removed_authority_cache {
         let auth = wr.join(".run").join("authority.sqlite");

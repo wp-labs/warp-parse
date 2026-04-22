@@ -17,6 +17,29 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **OML/Take**: Pulled in upstream `wp-motor` fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records contain the same field name.
 - **OML/SQL Parser**: Pulled in upstream `wp-motor` fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
+## [0.22.3 Unreleased]
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.5`, bringing stability improvements to diagnostics, config loading, and project-management flows.
+- **Admin API**: Switched Admin API and client profile loading to the core engine config loader, reusing the standard environment and path resolution semantics.
+- **CLI Errors**: Further unified error messages across `wparse`, `wpgen`, `wproj`, and `wprescue`; failures now preserve the main reason, related paths, and upstream clues more consistently so issues are easier to diagnose.
+- **Project Management UX**: Further aligned error output across config loading, project remote operations, and project-management commands so similar failures are reported more consistently instead of being overly short in some paths and overly verbose in others.
+
+### Fixed
+- **wproj/Engine**: Improved error reporting for engine status/reload requests, token loading, header construction, and response decoding so failures surface more complete reasons instead of only a short failure message.
+- **wproj/Conf Update**: Fixed overly short validation errors after config updates; validation failures now show a more complete chain so the actual failure point is easier to locate.
+- **Project Remote**: Fixed error-chain handling in some remote project sync and state-persistence failure paths, avoiding cases where errors could be rewrapped incorrectly, lose useful details, or behave inconsistently.
+
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: Added tool-specific CLI documentation for `wparse`, `wpgen`, `wproj`, and `wprescue`, plus a shared index that maps common local-development, operations, and rescue workflows.
+- **Operations/Overview Docs**: Added the new `overview/` and `operations/` documentation structure, including reorganized product overview, runtime admin usage, and remote project sync / hot reload SOP pages.
+
+### Changed
+- **Dependencies**: Upgraded remote `wp-motor` dependencies from `v1.20.0` to `v1.20.1`, and upgraded `wp-connectors` from `v0.12.1` to `v0.12.2`.
+- **Victoria Templates**: Updated the Docker default sink connector templates for `victorialogs` and `victoriametrics` so their IDs, parameter names, and default endpoints match the latest connector definitions and use host-reachable `127.0.0.1` addresses.
+- **Docs Layout**: Reorganized user-facing docs into `overview/`, `cli/`, and `operations/` sections; moved the runtime admin and remote project sync guides to the new paths and added fresh Chinese/English navigation pages.
 
 ## [0.22.0] - 2026-03-31
 

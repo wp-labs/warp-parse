@@ -1,8 +1,8 @@
 [[connectors]]
-allow_override = ["endpoint", "flush_interval_secs"]
-id = "victoriametric_sink"
+allow_override = ["insert_url", "flush_interval_secs"]
+id = "victoriametrics_sink"
 type = "victoriametrics"
 
 [connectors.params]
-endpoint = "http://localhost:8480"
-flush_interval_secs = 5.0
+insert_url = "http://127.0.0.1:8428/api/v1/import/prometheus"   # Host-exposed VictoriaMetrics import endpoint
+flush_interval_secs = 1                                          # Metric push interval in seconds

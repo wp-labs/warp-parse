@@ -3,6 +3,8 @@ use std::path::Path;
 
 use git2::Oid;
 use orion_conf::{ToStructError, UvsConfFrom};
+use orion_error::WrapStructErrorAs;
+use orion_variate::EnvDict;
 use serde::{Deserialize, Serialize};
 use wp_error::run_error::{RunReason, RunResult};
 use wp_log::{info_ctrl, warn_ctrl};
@@ -34,6 +36,7 @@ const LOCK_PATH: &str = ".run/project_remote.lock";
 const MANAGED_DIRS: &[&str] = &["conf", "models", "topology", "connectors"];
 const RULE_MAPPING_PATH: &str = ".run/rule_mapping.dat";
 const AUTHORITY_DB_PATH: &str = ".run/authority.sqlite";
+const MODEL_VERSION_PATH: &str = "models/version.txt";
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ProjectRemoteUpdateResult {
@@ -48,6 +51,7 @@ pub struct ProjectRemoteUpdateResult {
 #[derive(Debug, Clone)]
 pub struct ProjectRemoteSnapshot {
     state_file: Option<Vec<u8>>,
+    model_version_file: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone)]
@@ -83,17 +87,25 @@ pub fn sync_project_remote<P: AsRef<Path>>(
     work_root: P,
     requested_version: Option<&str>,
 ) -> RunResult<ProjectRemoteUpdateResult> {
+    let dict = crate::load_sec_dict()?;
+    sync_project_remote_with_dict(work_root, requested_version, &dict)
+}
+
+pub fn sync_project_remote_with_dict<P: AsRef<Path>>(
+    work_root: P,
+    requested_version: Option<&str>,
+    dict: &EnvDict,
+) -> RunResult<ProjectRemoteUpdateResult> {
     let work_root = work_root.as_ref();
-    let conf = load_engine_config(work_root)?;
+    let conf = load_engine_config(work_root, dict)?;
     let remote_conf = conf.project_remote();
     if !remote_conf.enabled {
-        return Err(conf_err(format!(
-            "project_remote is disabled in {}",
-            work_root.join(ENGINE_CONF_PATH).display()
-        )));
+        return Err(project_remote_disabled_err(
+            work_root.join(ENGINE_CONF_PATH).display().to_string(),
+        ));
     }
     if remote_conf.repo.trim().is_empty() {
-        return Err(conf_err("project_remote.repo must not be empty"));
+        return Err(project_remote_repo_required_err());
     }
     sync_project_remote_with_repo_inner(
         work_root,
@@ -110,7 +122,7 @@ pub fn sync_project_remote_from_repo<P: AsRef<Path>>(
 ) -> RunResult<ProjectRemoteUpdateResult> {
     let work_root = work_root.as_ref();
     if repo_url.trim().is_empty() {
-        return Err(conf_err("project_remote.repo must not be empty"));
+        return Err(project_remote_repo_required_err());
     }
     sync_project_remote_with_repo_inner(work_root, repo_url, requested_version, None)
 }
@@ -148,12 +160,8 @@ fn sync_project_remote_with_repo_inner(
                 init_version.unwrap_or("-"),
                 previous_state.is_some()
             );
-            resolve_tag_for_version(&repo, &target_version)?.ok_or_else(|| {
-                conf_err(format!(
-                    "requested version '{}' was not found",
-                    target_version
-                ))
-            })?
+            resolve_tag_for_version(&repo, &target_version)?
+                .ok_or_else(|| requested_version_not_found_err(&target_version))?
         }
         _ => {
             let resolved = resolve_default_target(work_root, &repo, init_version.map(str::trim))?;
@@ -231,7 +239,9 @@ fn sync_project_remote_with_repo_inner(
             err
         );
         rollback_partial_update(work_root, previous_state.as_ref(), changed).map_err(
-            |rollback_err| conf_err(format!("{}; rollback failed: {}", err, rollback_err)),
+            |rollback_err| {
+                rollback_err.wrap_as(RunReason::from_conf(), format!("{}; rollback failed", err))
+            },
         )?;
         warn_ctrl!(
             "project remote sync rollback done work_root={} requested_version={} current_version={} resolved_tag={} changed={}",
@@ -271,8 +281,32 @@ fn oid_to_string(oid: Oid) -> String {
     oid.to_string()
 }
 
-fn conf_err(message: impl Into<String>) -> wp_error::RunError {
-    RunReason::from_conf().to_err().with_detail(message.into())
+fn project_remote_disabled_err(path: impl Into<String>) -> wp_error::RunError {
+    RunReason::from_conf()
+        .to_err()
+        .with_detail(format!("project_remote is disabled in {}", path.into()))
+}
+
+fn project_remote_repo_required_err() -> wp_error::RunError {
+    RunReason::from_conf()
+        .to_err()
+        .with_detail("project_remote.repo must not be empty")
+}
+
+fn requested_version_not_found_err(version: &str) -> wp_error::RunError {
+    RunReason::from_conf()
+        .to_err()
+        .with_detail(format!("requested version '{}' was not found", version))
+}
+
+fn conf_err_source<E>(message: impl Into<String>, source: E) -> wp_error::RunError
+where
+    E: std::error::Error + Send + Sync + 'static,
+{
+    RunReason::from_conf()
+        .to_err()
+        .with_detail(message.into())
+        .with_std_source(source)
 }
 
 #[cfg(test)]
@@ -441,6 +475,31 @@ mod tests {
             fs::read_to_string(work_root.path().join("runtime/admin_api.token"))
                 .expect("read token"),
             "token\n"
+        );
+    }
+
+    #[test]
+    fn capture_project_remote_snapshot_restores_model_version_after_changed_update() {
+        let fixture = create_remote_fixture();
+        let work_root = create_work_root(&fixture);
+        write_model_version(work_root.path(), "1.4.2");
+
+        let snapshot = capture_project_remote_snapshot(work_root.path()).expect("capture snapshot");
+        let result = sync_project_remote(work_root.path(), Some("1.4.3")).expect("sync remote");
+        assert!(result.changed);
+        assert_eq!(
+            fs::read_to_string(work_root.path().join("models/version.txt"))
+                .expect("read updated version"),
+            "1.4.3\n"
+        );
+
+        restore_project_remote_update(work_root.path(), &snapshot, result.changed)
+            .expect("restore project remote update");
+
+        assert_eq!(
+            fs::read_to_string(work_root.path().join("models/version.txt"))
+                .expect("read restored version"),
+            "1.4.2\n"
         );
     }
 

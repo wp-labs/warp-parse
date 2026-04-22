@@ -17,6 +17,28 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **OML/Take**: 同步上游 `wp-motor` 修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正目标记录与源记录存在同名字段时的取值顺序。
 - **OML/SQL Parser**: 同步上游 `wp-motor` 修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
+## [0.22.3 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.5`，同步错误诊断、配置加载与工程管理链路的稳定性改进。
+- **Admin API**: Admin API 与 client profile 加载改用核心引擎统一配置 loader，复用环境变量与路径解析语义。
+- **CLI Errors**: `wparse`、`wpgen`、`wproj`、`wprescue` 的报错信息进一步统一；现在会更稳定地保留失败原因、相关路径和上游错误线索，便于直接定位问题。
+- **工程管理体验**: 配置加载、project remote 与工程管理相关命令的错误输出进一步收敛；同类问题会更一致地显示，不再出现一部分路径过于简略、一部分路径信息过多的情况。
+
+### Fixed
+- **wproj/Engine**: 改进 engine status/reload 的请求、token、header 与响应解析错误，失败时会提供更完整的原因信息，减少“只知道失败但不知道为什么”的情况。
+- **wproj/Conf Update**: 修复配置更新后校验失败时错误信息过短的问题；现在会更完整地显示校验链路，便于定位具体失败点。
+- **Project Remote**: 修复部分远端工程同步与状态持久化失败场景下的错误链问题，避免出现报错被错误重包、信息不完整或行为不稳定的情况。
+
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: 新增按工具拆分的 CLI 使用文档，包括 `wparse`、`wpgen`、`wproj`、`wprescue` 的专题页。
+- **Operations/Overview Docs**: 新增 `overview/` 与 `operations/` 目录结构，补充产品概览、运行时管理面使用说明、远端工程同步与热更新 SOP 的重组版本。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 远端依赖从 `v1.20.0` 到 `v1.20.1`，并同步升级 `wp-connectors` 从 `v0.12.1` 到 `v0.12.2`。
+- **Docs Layout**: 使用类文档重组为 `overview/`、`cli/`、`operations/` 分层目录；
 
 ## [0.22.0] - 2026-03-31
 

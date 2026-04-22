@@ -46,9 +46,10 @@ async fn do_main() -> RunResult<()> {
             let work_root = wp_engine::facade::args::resolve_run_work_root(&args.work_root)?;
             let engine_args: wp_engine::facade::args::ParseArgs = args.into();
 
-            let mut app = WpApp::try_from(engine_args, env_dict)?;
+            let mut app = WpApp::try_from(engine_args, env_dict.clone())?;
             let admin_api = warp_parse::admin_api::start_if_enabled(
                 Path::new(&work_root),
+                &env_dict,
                 app.control_handle(),
             )
             .await?;

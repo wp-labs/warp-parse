@@ -33,6 +33,7 @@
 - Branch source and maturity control: [design/zh/branch_source_and_maturity_control.md](design/zh/branch_source_and_maturity_control.md) | [design/en/branch_source_and_maturity_control.md](design/en/branch_source_and_maturity_control.md)
 - Self-update design: [design/zh/self_update_design.md](design/zh/self_update_design.md) | [design/en/self_update_design.md](design/en/self_update_design.md)
 - Remote rule version update design: [design/zh/project_remote_sync_design.md](design/zh/project_remote_sync_design.md) | [design/en/project_remote_sync_design.md](design/en/project_remote_sync_design.md)
+- Large-scale error design guide based on `wp-motor` and `warp-parse`: [design/zh/error_design_from_wp_motor_and_warp_parse.md](design/zh/error_design_from_wp_motor_and_warp_parse.md)
 
 ## Editing Rule
 
