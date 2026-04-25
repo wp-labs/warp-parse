@@ -7,7 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.3 Unreleased]
+## [0.22.4 Unreleased]
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.6`, pulling in upstream improvements; upgraded `wp-knowledge` from `0.11.4` to `0.11.6`, improving MySQL/PostgreSQL knowledge-base connection stability and field type compatibility (added `BYTEA`, `ENUM`, `UUID` support etc.), with fine-grained connection pool configuration.
+
+### Fixed
+- **Security**: Fixed a potential panic in `load_sec_dict` caused by mismatched error types (`with_std_source` → `with_struct_source`), ensuring sec_key loading failures are reported gracefully instead of crashing.
+
+### Added
+- **Audit**: Added `.cargo/audit.toml` to ignore RUSTSEC-2023-0071 (rsa crate Marvin Attack timing side-channel — only affects loopback TLS which is disabled by default; low real-world risk, scheduled for re-evaluation on 2026-07-25).
+
+
+## [0.22.3] - 2026-04-22
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` to `v1.20.5`, bringing stability improvements to diagnostics, config loading, and project-management flows.

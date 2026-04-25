@@ -1,0 +1,6 @@
+[advisories]
+# RUSTSEC-2023-0071: rsa crate Marvin Attack timing sidechannel
+# Only reaches us indirectly via rustls → pkcs8 → rsa.
+# Admin API listens on loopback and TLS is disabled by default; real risk is low.
+# Next review: 2026-07-25
+ignore = ["RUSTSEC-2023-0071"]

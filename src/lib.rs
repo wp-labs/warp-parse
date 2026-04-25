@@ -19,7 +19,7 @@ pub fn load_sec_dict() -> RunResult<EnvDict> {
         wp_error::RunReason::from_conf()
             .to_err()
             .with_detail("load sec dict failed")
-            .with_std_source(e)
+            .with_struct_source(e)
     })
 }
 

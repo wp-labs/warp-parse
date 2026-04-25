@@ -7,7 +7,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.3 Unreleased]
+## [0.22.4 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.6`，同步上游改进；升级 `wp-knowledge` 从 `0.11.4` 到 `0.11.6`，改善 MySQL/PostgreSQL 知识库连接稳定性与字段类型兼容性（新增 `BYTEA`、`ENUM`、`UUID` 等类型支持），并支持连接池细粒度配置。
+
+### Fixed
+- **Security**: 修复 `load_sec_dict` 中因错误类型不匹配导致的潜在 panic（`with_std_source` → `with_struct_source`），确保 sec_key 加载失败时能正常报告错误而非崩溃。
+
+### Added
+- **Audit**: 新增 `.cargo/audit.toml`，忽略 RUSTSEC-2023-0071（rsa crate Marvin Attack 时序侧信道 — 仅影响 loopback TLS 且默认关闭，实际风险低，计划 2026-07-25 再评估）。
+
+
+## [0.22.3] - 2026-04-22
 
 ### Changed
 - **Dependencies**: 升级 `wp-motor` 到 `v1.20.5`，同步错误诊断、配置加载与工程管理链路的稳定性改进。
@@ -16,7 +28,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **工程管理体验**: 配置加载、project remote 与工程管理相关命令的错误输出进一步收敛；同类问题会更一致地显示，不再出现一部分路径过于简略、一部分路径信息过多的情况。
 
 ### Fixed
-- **wproj/Engine**: 改进 engine status/reload 的请求、token、header 与响应解析错误，失败时会提供更完整的原因信息，减少“只知道失败但不知道为什么”的情况。
+- **wproj/Engine**: 改进 engine status/reload 的请求、token、header 与响应解析错误，失败时会提供更完整的原因信息，减少”只知道失败但不知道为什么”的情况。
 - **wproj/Conf Update**: 修复配置更新后校验失败时错误信息过短的问题；现在会更完整地显示校验链路，便于定位具体失败点。
 - **Project Remote**: 修复部分远端工程同步与状态持久化失败场景下的错误链问题，避免出现报错被错误重包、信息不完整或行为不稳定的情况。
 
