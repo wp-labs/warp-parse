@@ -7,7 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.4 Unreleased]
+## [0.22.5 Unreleased]
+
+### Changed
+- **wproj/Check**: Significantly improved validation depth and breadth — added `wpgen` config checks (`output.connect`, `rule_root`, `sample_pattern`, `logging.file_path`); semantic-dict now validates empty words / duplicates / empty categories; missing source/sink directories, source files, and GLOB mismatches downgraded to warnings.
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.7`, bringing `wproj check` enhancements and validation chain improvements.
+- **CLI Errors**: Unified `-q/--quiet` argument handling, improving quiet-mode diagnostics.
+
+### Fixed
+- **wproj/Check JSON**: Fixed stdout pollution of `--json` output.
+- **wpgen/Schema**: Rejected missing `output.connect`; removed deprecated `mode` / `duration_secs` from examples.
+- **wpgen/Level**: Supported compound log level format (e.g., `info,ctrl=info`).
+- **Config/Panic**: Fixed panic when engine config contains unknown TOML fields (`with_source` → `with_struct_source`).
+- **Project Loading**: wpgen.toml no longer blocks project loading when absent.
+- **OML/WPL Lint**: Extra semantic checks changed to non-blocking lint.
+
+
+## [0.22.4] - 2026-04-26
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` to `v1.20.6`, pulling in upstream improvements; upgraded `wp-knowledge` from `0.11.4` to `0.11.6`, improving MySQL/PostgreSQL knowledge-base connection stability and field type compatibility (added `BYTEA`, `ENUM`, `UUID` support etc.), with fine-grained connection pool configuration.

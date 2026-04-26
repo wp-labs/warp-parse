@@ -88,6 +88,7 @@ fn parse_component(token: &str) -> Option<checker::CheckComponent> {
         "sinks" | "sink" => Some(checker::CheckComponent::Sinks),
         "wpl" | "rules" | "rule" => Some(checker::CheckComponent::Wpl),
         "oml" => Some(checker::CheckComponent::Oml),
+        "wpgen" | "gen" => Some(checker::CheckComponent::Wpgen),
         "all" => None,
         _ => None,
     }

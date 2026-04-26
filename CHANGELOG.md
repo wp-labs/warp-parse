@@ -7,7 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.4 Unreleased]
+## [0.22.5 Unreleased]
+
+### Changed
+- **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.7`，同步 `wproj check` 增强与校验链路改进。
+- **CLI Errors**: 统一 `-q/--quiet` 参数处理，改善安静模式下的诊断输出。
+
+### Fixed
+- **wproj/Check JSON**: 修复 stdout 污染 `--json` 输出的问题。
+- **wpgen/Schema**: 拒绝缺失 `output.connect` 的配置，移除示例中废弃的 `mode`/`duration_secs` 字段。
+- **wpgen/Level**: 支持 compound 日志级别格式（如 `info,ctrl=info`）。
+- **Config/Panic**: 修复引擎配置含未知 TOML 字段时 `with_source` 导致的 panic。
+- **Project Loading**: wpgen.toml 缺失时不再阻塞项目加载。
+- **OML/WPL Lint**: 额外语义检查改为非阻断 lint。
+
+
+## [0.22.4] - 2026-04-26
 
 ### Changed
 - **Dependencies**: 升级 `wp-motor` 到 `v1.20.6`，同步上游改进；升级 `wp-knowledge` 从 `0.11.4` 到 `0.11.6`，改善 MySQL/PostgreSQL 知识库连接稳定性与字段类型兼容性（新增 `BYTEA`、`ENUM`、`UUID` 等类型支持），并支持连接池细粒度配置。
