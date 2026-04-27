@@ -1513,18 +1513,21 @@ token_file = "{token_file}"
     }
 
     #[tokio::test]
-    async fn admin_api_allows_non_loopback_without_tls() {
+    async fn admin_api_rejects_non_loopback_without_tls() {
         let temp = tempdir().expect("tempdir");
         write_test_work_root(temp.path(), "0.0.0.0:19090", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
         let dict = EnvDict::default();
-        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+        let err = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
-            .expect("start admin api")
-            .expect("enabled");
-
-        runtime.shutdown().await;
+            .expect_err("should reject non-loopback without tls");
+        assert!(
+            err.to_string()
+                .contains("requires admin_api.tls.enabled=true"),
+            "unexpected error: {}",
+            err
+        );
     }
 
     #[tokio::test]
