@@ -167,7 +167,7 @@ hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service
 anyhow = "1.0"
 orion-error = "0.6.3"
 orion-sec = "0.4"
-orion-variate = "0.11"
+orion-variate = "0.12"
 orion_conf = { version = "0.5", features = ["yaml", "toml"] }
 
 # --- Time ---
