@@ -3,9 +3,10 @@
 // - rule.rs / sample.rs: 生成逻辑
 // - conf.rs / data.rs: 配置与数据管理逻辑
 
-use anyhow::Result;
 use clap::Parser;
 use warp_parse::load_sec_dict; // bring Parser trait for Cli::parse()
+use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
+use wp_error::RunResult;
 
 mod cli;
 mod conf;
@@ -19,7 +20,14 @@ use crate::rule::RuleRunOpts;
 use crate::sample::SampleRunOpts;
 
 #[tokio::main(flavor = "multi_thread")]
-async fn main() -> Result<()> {
+async fn main() {
+    if let Err(e) = do_main().await {
+        print_run_error("wpgen", &e);
+        std::process::exit(exit_code_for(e.reason()));
+    }
+}
+
+async fn do_main() -> RunResult<()> {
     // 注册可用的 sink 工厂（内置）
     warp_parse::feats::register_for_runtime();
     let cli = Cli::parse();

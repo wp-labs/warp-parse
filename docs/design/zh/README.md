@@ -10,6 +10,7 @@
 - 分支来源与成熟度控制: [branch_source_and_maturity_control.md](branch_source_and_maturity_control.md)
 - 自动更新设计: [self_update_design.md](self_update_design.md)
 - 远程规则版本更新设计: [project_remote_sync_design.md](project_remote_sync_design.md)
+- 基于 `wp-motor` 与 `warp-parse` 的大型工程错误设计指南: [error_design_from_wp_motor_and_warp_parse.md](error_design_from_wp_motor_and_warp_parse.md)
 - `wp-update` 仓库布局: [wp_update_repo_layout.md](wp_update_repo_layout.md)
 
 ## 对应英文版

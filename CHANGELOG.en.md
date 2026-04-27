@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.3 Unreleased]
+
+### Added
+- **HTTP Source**: Added HTTP Source connector support (`http` feature), enabling data ingestion via HTTP.
+- **Postgres Source**: Added Postgres Source feature inheritance support.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.21.0` to `v1.21.6`, pulling in upstream improvements: OML `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, and `WarpProject::load()` semantic restoration.
+- **Admin API**: Added listen address configuration support (`admin_api.listen`).
+
+### Fixed
+- Fixed runtime stability issues in certain scenarios.
+
+
 ## [0.23.0] - 2026-04-21
 
 ### Changed
@@ -17,6 +31,59 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **OML/Take**: Pulled in upstream `wp-motor` fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records contain the same field name.
 - **OML/SQL Parser**: Pulled in upstream `wp-motor` fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
+
+
+## [0.22.5 Unreleased]
+
+### Changed
+- **wproj/Check**: Significantly improved validation depth and breadth — added `wpgen` config checks (`output.connect`, `rule_root`, `sample_pattern`, `logging.file_path`); semantic-dict now validates empty words / duplicates / empty categories; missing source/sink directories, source files, and GLOB mismatches downgraded to warnings.
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.7`, bringing `wproj check` enhancements and validation chain improvements.
+- **CLI Errors**: Unified `-q/--quiet` argument handling, improving quiet-mode diagnostics.
+
+### Fixed
+- **wproj/Check JSON**: Fixed stdout pollution of `--json` output.
+- **wpgen/Schema**: Rejected missing `output.connect`; removed deprecated `mode` / `duration_secs` from examples.
+- **wpgen/Level**: Supported compound log level format (e.g., `info,ctrl=info`).
+- **Config/Panic**: Fixed panic when engine config contains unknown TOML fields (`with_source` → `with_struct_source`).
+- **Project Loading**: wpgen.toml no longer blocks project loading when absent.
+- **OML/WPL Lint**: Extra semantic checks changed to non-blocking lint.
+
+
+## [0.22.4] - 2026-04-26
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.6`, pulling in upstream improvements; upgraded `wp-knowledge` from `0.11.4` to `0.11.6`, improving MySQL/PostgreSQL knowledge-base connection stability and field type compatibility (added `BYTEA`, `ENUM`, `UUID` support etc.), with fine-grained connection pool configuration.
+
+### Fixed
+- **Security**: Fixed a potential panic in `load_sec_dict` caused by mismatched error types (`with_std_source` → `with_struct_source`), ensuring sec_key loading failures are reported gracefully instead of crashing.
+
+### Added
+- **Audit**: Added `.cargo/audit.toml` to ignore RUSTSEC-2023-0071 (rsa crate Marvin Attack timing side-channel — only affects loopback TLS which is disabled by default; low real-world risk, scheduled for re-evaluation on 2026-07-25).
+
+
+## [0.22.3] - 2026-04-22
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` to `v1.20.5`, bringing stability improvements to diagnostics, config loading, and project-management flows.
+- **Admin API**: Switched Admin API and client profile loading to the core engine config loader, reusing the standard environment and path resolution semantics.
+- **CLI Errors**: Further unified error messages across `wparse`, `wpgen`, `wproj`, and `wprescue`; failures now preserve the main reason, related paths, and upstream clues more consistently so issues are easier to diagnose.
+- **Project Management UX**: Further aligned error output across config loading, project remote operations, and project-management commands so similar failures are reported more consistently instead of being overly short in some paths and overly verbose in others.
+
+### Fixed
+- **wproj/Engine**: Improved error reporting for engine status/reload requests, token loading, header construction, and response decoding so failures surface more complete reasons instead of only a short failure message.
+- **wproj/Conf Update**: Fixed overly short validation errors after config updates; validation failures now show a more complete chain so the actual failure point is easier to locate.
+- **Project Remote**: Fixed error-chain handling in some remote project sync and state-persistence failure paths, avoiding cases where errors could be rewrapped incorrectly, lose useful details, or behave inconsistently.
+
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: Added tool-specific CLI documentation for `wparse`, `wpgen`, `wproj`, and `wprescue`, plus a shared index that maps common local-development, operations, and rescue workflows.
+- **Operations/Overview Docs**: Added the new `overview/` and `operations/` documentation structure, including reorganized product overview, runtime admin usage, and remote project sync / hot reload SOP pages.
+
+### Changed
+- **Dependencies**: Upgraded remote `wp-motor` dependencies from `v1.20.0` to `v1.20.1`, and upgraded `wp-connectors` from `v0.12.1` to `v0.12.2`.
+- **Victoria Templates**: Updated the Docker default sink connector templates for `victorialogs` and `victoriametrics` so their IDs, parameter names, and default endpoints match the latest connector definitions and use host-reachable `127.0.0.1` addresses.
+- **Docs Layout**: Reorganized user-facing docs into `overview/`, `cli/`, and `operations/` sections; moved the runtime admin and remote project sync guides to the new paths and added fresh Chinese/English navigation pages.
 
 ## [0.22.0] - 2026-03-31
 

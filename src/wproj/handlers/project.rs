@@ -88,6 +88,7 @@ fn parse_component(token: &str) -> Option<checker::CheckComponent> {
         "sinks" | "sink" => Some(checker::CheckComponent::Sinks),
         "wpl" | "rules" | "rule" => Some(checker::CheckComponent::Wpl),
         "oml" => Some(checker::CheckComponent::Oml),
+        "wpgen" | "gen" => Some(checker::CheckComponent::Wpgen),
         "all" => None,
         _ => None,
     }
@@ -120,11 +121,10 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
     }
 
     let mut conf = fs::read_to_string(&conf_path).map_err(|e| {
-        RunReason::from_conf().to_err().with_detail(format!(
-            "read {} failed: {}",
-            conf_path.display(),
-            e
-        ))
+        RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("read {} failed", conf_path.display()))
+            .with_std_source(e)
     })?;
     if conf.contains("[admin_api]") {
         if !conf.contains(HOME_ADMIN_API_TOKEN_FILE_LINE)
@@ -135,11 +135,10 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
                 HOME_ADMIN_API_TOKEN_FILE_LINE,
             );
             fs::write(&conf_path, conf).map_err(|e| {
-                RunReason::from_conf().to_err().with_detail(format!(
-                    "write {} failed: {}",
-                    conf_path.display(),
-                    e
-                ))
+                RunReason::from_conf()
+                    .to_err()
+                    .with_detail(format!("write {} failed", conf_path.display()))
+                    .with_std_source(e)
             })?;
         }
         return Ok(());
@@ -151,11 +150,10 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
     conf.push_str(DEFAULT_ADMIN_API_BLOCK);
 
     fs::write(&conf_path, conf).map_err(|e| {
-        RunReason::from_conf().to_err().with_detail(format!(
-            "write {} failed: {}",
-            conf_path.display(),
-            e
-        ))
+        RunReason::from_conf()
+            .to_err()
+            .with_detail(format!("write {} failed", conf_path.display()))
+            .with_std_source(e)
     })?;
     Ok(())
 }

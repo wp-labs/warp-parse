@@ -7,6 +7,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.3 Unreleased]
+
+### Added
+- **HTTP Source**: 新增 HTTP Source 连接器支持（`http` feature），支持通过 HTTP 接口接收外部数据推送。
+- **Postgres Source**: 新增 Postgres Source 特性继承支持。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.21.0` 到 `v1.21.6`，同步上游改进：OML `take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复。
+- **Admin API**: 支持监听地址配置修改（`admin_api.listen`）。
+
+### Fixed
+- 修复部分场景下运行时稳定性问题。
+
+
 ## [0.23.0] - 2026-04-21
 
 ### Changed
@@ -17,6 +31,58 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **OML/Take**: 同步上游 `wp-motor` 修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正目标记录与源记录存在同名字段时的取值顺序。
 - **OML/SQL Parser**: 同步上游 `wp-motor` 修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
+
+
+## [0.22.5 Unreleased]
+
+### Changed
+- **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.7`，同步 `wproj check` 增强与校验链路改进。
+- **CLI Errors**: 统一 `-q/--quiet` 参数处理，改善安静模式下的诊断输出。
+
+### Fixed
+- **wproj/Check JSON**: 修复 stdout 污染 `--json` 输出的问题。
+- **wpgen/Schema**: 拒绝缺失 `output.connect` 的配置，移除示例中废弃的 `mode`/`duration_secs` 字段。
+- **wpgen/Level**: 支持 compound 日志级别格式（如 `info,ctrl=info`）。
+- **Config/Panic**: 修复引擎配置含未知 TOML 字段时 `with_source` 导致的 panic。
+- **Project Loading**: wpgen.toml 缺失时不再阻塞项目加载。
+- **OML/WPL Lint**: 额外语义检查改为非阻断 lint。
+
+
+## [0.22.4] - 2026-04-26
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.6`，同步上游改进；升级 `wp-knowledge` 从 `0.11.4` 到 `0.11.6`，改善 MySQL/PostgreSQL 知识库连接稳定性与字段类型兼容性（新增 `BYTEA`、`ENUM`、`UUID` 等类型支持），并支持连接池细粒度配置。
+
+### Fixed
+- **Security**: 修复 `load_sec_dict` 中因错误类型不匹配导致的潜在 panic（`with_std_source` → `with_struct_source`），确保 sec_key 加载失败时能正常报告错误而非崩溃。
+
+### Added
+- **Audit**: 新增 `.cargo/audit.toml`，忽略 RUSTSEC-2023-0071（rsa crate Marvin Attack 时序侧信道 — 仅影响 loopback TLS 且默认关闭，实际风险低，计划 2026-07-25 再评估）。
+
+
+## [0.22.3] - 2026-04-22
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 到 `v1.20.5`，同步错误诊断、配置加载与工程管理链路的稳定性改进。
+- **Admin API**: Admin API 与 client profile 加载改用核心引擎统一配置 loader，复用环境变量与路径解析语义。
+- **CLI Errors**: `wparse`、`wpgen`、`wproj`、`wprescue` 的报错信息进一步统一；现在会更稳定地保留失败原因、相关路径和上游错误线索，便于直接定位问题。
+- **工程管理体验**: 配置加载、project remote 与工程管理相关命令的错误输出进一步收敛；同类问题会更一致地显示，不再出现一部分路径过于简略、一部分路径信息过多的情况。
+
+### Fixed
+- **wproj/Engine**: 改进 engine status/reload 的请求、token、header 与响应解析错误，失败时会提供更完整的原因信息，减少”只知道失败但不知道为什么”的情况。
+- **wproj/Conf Update**: 修复配置更新后校验失败时错误信息过短的问题；现在会更完整地显示校验链路，便于定位具体失败点。
+- **Project Remote**: 修复部分远端工程同步与状态持久化失败场景下的错误链问题，避免出现报错被错误重包、信息不完整或行为不稳定的情况。
+
+## [0.22.2] - 2026-04-16
+
+### Added
+- **CLI Usage Docs**: 新增按工具拆分的 CLI 使用文档，包括 `wparse`、`wpgen`、`wproj`、`wprescue` 的专题页。
+- **Operations/Overview Docs**: 新增 `overview/` 与 `operations/` 目录结构，补充产品概览、运行时管理面使用说明、远端工程同步与热更新 SOP 的重组版本。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 远端依赖从 `v1.20.0` 到 `v1.20.1`，并同步升级 `wp-connectors` 从 `v0.12.1` 到 `v0.12.2`。
+- **Docs Layout**: 使用类文档重组为 `overview/`、`cli/`、`operations/` 分层目录；
 
 ## [0.22.0] - 2026-03-31
 

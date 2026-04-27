@@ -1,9 +1,8 @@
 [[connectors]]
-allow_override = ["endpoint", "insert_path", "fmt"]
-id = "victorialog_sink"
+allow_override = ["endpoint", "insert_path", "create_time_field", "tags"]
+id = "victorialogs_sink"
 type = "victorialogs"
 
 [connectors.params]
-endpoint = "http://localhost:8481"
-fmt = "json"
-insert_path = "/insert/json"
+endpoint = "http://127.0.0.1:9428"   # Host-exposed VictoriaLogs endpoint
+insert_path = "/insert/jsonline"     # VictoriaLogs JSON Lines ingest path

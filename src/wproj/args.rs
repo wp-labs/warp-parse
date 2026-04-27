@@ -526,7 +526,7 @@ pub struct ProjectCheckArgs {
     /// 根目录 | Root path (contains multiple projects)
     #[clap(short, long, default_value = DEFAULT_WORK_ROOT, visible_alias = "工作目录")]
     pub work_root: String,
-    /// 检查项：conf,connectors,sources,sinks,wpl,oml,all | What to check
+    /// 检查项：conf,connectors,sources,sinks,wpl,oml,wpgen,all | What to check
     #[clap(long = "what", default_value = "all", visible_alias = "检查项")]
     pub what: String,
     /// 强制日志输出到控制台 | Log to console
