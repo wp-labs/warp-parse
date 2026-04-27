@@ -6616,8 +6616,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.12.3"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.12.3#da8d217d72462a93f86c43ed8d0592c105314b7f"
+version = "0.13.1"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.13.1#c127f98281ef023ffd6ffd3b17bb9af7814c371f"
 dependencies = [
  "actix-web",
  "anyhow",
