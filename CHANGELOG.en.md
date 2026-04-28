@@ -7,19 +7,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.3 Unreleased]
+## [Unreleased]
+
+## [0.23.4] - 2026-04-28
 
 ### Added
 - **HTTP Source**: Added HTTP Source connector support (`http` feature), enabling data ingestion via HTTP.
 - **Postgres Source**: Added Postgres Source feature inheritance support.
+- **Project Remote**: Added dual-repo mode support (`[project_remote.models]` + `[project_remote.infra]`), allowing `models/` and `infra/` (`conf/`, `topology/`, `connectors/`) to sync independently from two separate Git repos via `--group models|infra`.
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.21.0` to `v1.21.6`, pulling in upstream improvements: OML `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, and `WarpProject::load()` semantic restoration.
-- **Admin API**: Added listen address configuration support (`admin_api.listen`).
+- **Dependencies**: Upgraded `wp-motor` from `v1.21.0` to `v1.21.7`, pulling in upstream improvements: OML `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, and `WarpProject::load()` semantic restoration.
+- **Admin API**: Added listen address configuration support (`admin_api.listen`); reload endpoint now supports `group` parameter for dual-repo mode; status endpoint returns per-group version info in dual-repo mode.
 
 ### Fixed
 - Fixed runtime stability issues in certain scenarios.
 
+
+## [0.23.3]
 
 ## [0.23.0] - 2026-04-21
 

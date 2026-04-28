@@ -141,3 +141,82 @@ fn tag_head(repo: &Repository, tag: &str) {
     repo.tag_lightweight(tag, &obj, false)
         .expect("create lightweight tag");
 }
+
+pub(super) fn create_models_remote_fixture() -> RemoteFixture {
+    let temp = tempdir().expect("tempdir");
+    let repo = Repository::init(temp.path()).expect("init models remote repo");
+    fs::create_dir_all(temp.path().join("models")).expect("create models dir");
+    fs::write(temp.path().join("models/version.txt"), "1.4.2\n").expect("write v1.4.2");
+    commit_all(&repo, "models release 1.4.2");
+    tag_head(&repo, "v1.4.2");
+
+    fs::write(temp.path().join("models/version.txt"), "1.4.3\n").expect("write v1.4.3");
+    commit_all(&repo, "models release 1.4.3");
+    tag_head(&repo, "v1.4.3");
+
+    RemoteFixture {
+        remote_path: temp.path().to_path_buf(),
+        _temp: temp,
+    }
+}
+
+pub(super) fn create_infra_remote_fixture() -> RemoteFixture {
+    create_infra_remote_fixture_with_config(
+        "version = \"1.0\"\n\n[project_remote]\nenabled = true\n\n[project_remote.models]\nrepo = \"https://example.com/models.git\"\ninit_version = \"1.4.2\"\n\n[project_remote.infra]\nrepo = \"https://example.com/infra.git\"\ninit_version = \"1.0.0\"\n"
+    )
+}
+
+pub(super) fn create_infra_remote_fixture_with_config(engine_config: &str) -> RemoteFixture {
+    let temp = tempdir().expect("tempdir");
+    let repo = Repository::init(temp.path()).expect("init infra remote repo");
+    fs::create_dir_all(temp.path().join("conf")).expect("create conf dir");
+    fs::create_dir_all(temp.path().join("topology")).expect("create topology dir");
+    fs::create_dir_all(temp.path().join("connectors")).expect("create connectors dir");
+    fs::write(temp.path().join("conf/wparse.toml"), engine_config).expect("write engine config");
+    fs::write(temp.path().join("conf/infra.toml"), "[infra]\nversion = \"1.0.0\"\n").expect("write v1.0.0");
+    commit_all(&repo, "infra release 1.0.0");
+    tag_head(&repo, "v1.0.0");
+
+    fs::write(temp.path().join("conf/infra.toml"), "[infra]\nversion = \"1.1.0\"\n").expect("write v1.1.0");
+    commit_all(&repo, "infra release 1.1.0");
+    tag_head(&repo, "v1.1.0");
+
+    RemoteFixture {
+        remote_path: temp.path().to_path_buf(),
+        _temp: temp,
+    }
+}
+
+pub(super) fn write_dual_engine_conf(
+    work_root: &Path,
+    models_repo_url: &str,
+    infra_repo_url: &str,
+) {
+    let conf_dir = work_root.join("conf");
+    fs::create_dir_all(&conf_dir).expect("create conf dir");
+    fs::write(
+        conf_dir.join("wparse.toml"),
+        format!(
+            r#"version = "1.0"
+
+[project_remote]
+enabled = true
+
+[project_remote.models]
+repo = "{models_repo_url}"
+init_version = "1.4.2"
+
+[project_remote.infra]
+repo = "{infra_repo_url}"
+init_version = "1.0.0"
+"#
+        ),
+    )
+    .expect("write dual wparse.toml");
+}
+
+pub(super) fn create_dual_work_root(models_remote: &RemoteFixture, infra_remote: &RemoteFixture) -> TempDir {
+    let work_root = tempdir().expect("tempdir");
+    write_dual_engine_conf(work_root.path(), models_remote.repo_url(), infra_remote.repo_url());
+    work_root
+}

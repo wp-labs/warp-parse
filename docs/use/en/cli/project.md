@@ -64,7 +64,30 @@ wproj conf update --work-root .
 wproj conf update --work-root . --version 1.4.3
 ```
 
-For the full sync and reload workflow, see [../operations/project-sync.md](../operations/project-sync.md).
+Dual-repo mode:
+
+```bash
+wproj conf update --work-root . --group models --version 1.4.3
+wproj conf update --work-root . --group infra --version 1.1.0
+```
+
+Dual-repo config (`conf/wparse.toml`):
+
+```toml
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.6"
+```
+
+> For architecture overview, version resolution rules, sync flow, and state file format, see [../operations/project-sync.md](../operations/project-sync.md).
 
 ## Rescue Statistics
 

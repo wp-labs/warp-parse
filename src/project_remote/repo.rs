@@ -8,7 +8,7 @@ use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 
 use super::managed::remove_path;
-use super::{conf_err_source, requested_version_not_found_err, ResolvedTag, STATE_PATH};
+use super::{conf_err_source, requested_version_not_found_err, RemoteGroup, ResolvedTag, STATE_PATH};
 
 pub(super) fn prepare_remote_repo(remote_root: &Path, repo_url: &str) -> RunResult<Repository> {
     if !remote_root.exists() {
@@ -117,8 +117,9 @@ pub(super) fn resolve_default_target(
     work_root: &Path,
     repo: &Repository,
     init_version: Option<&str>,
+    group: Option<RemoteGroup>,
 ) -> RunResult<ResolvedTag> {
-    if is_first_initialization(work_root)? {
+    if is_first_initialization(work_root, group)? {
         if let Some(init_version) = init_version {
             if !init_version.trim().is_empty() {
                 return resolve_tag_for_version(repo, init_version.trim())?
@@ -132,8 +133,21 @@ pub(super) fn resolve_default_target(
     }
 }
 
-fn is_first_initialization(work_root: &Path) -> RunResult<bool> {
-    Ok(!work_root.join(STATE_PATH).exists())
+fn is_first_initialization(work_root: &Path, group: Option<RemoteGroup>) -> RunResult<bool> {
+    match group {
+        Some(g) => {
+            let state = super::state::load_state(work_root)?;
+            let has_group = match state {
+                Some(super::ProjectRemoteState::Dual { models, infra }) => match g {
+                    RemoteGroup::Models => models.is_some(),
+                    RemoteGroup::Infra => infra.is_some(),
+                },
+                _ => false,
+            };
+            Ok(!has_group)
+        }
+        None => Ok(!work_root.join(STATE_PATH).exists()),
+    }
 }
 
 fn resolve_latest_released_target(repo: &Repository) -> RunResult<Option<ResolvedTag>> {

@@ -7,19 +7,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.3 Unreleased]
+## [Unreleased]
+
+## [0.23.4] - 2026-04-28
 
 ### Added
 - **HTTP Source**: 新增 HTTP Source 连接器支持（`http` feature），支持通过 HTTP 接口接收外部数据推送。
 - **Postgres Source**: 新增 Postgres Source 特性继承支持。
+- **Project Remote**: 新增双仓库模式支持（`[project_remote.models]` + `[project_remote.infra]`），支持 `models/` 和 `infra/`（`conf/`、`topology/`、`connectors/`）从两个独立的 Git 仓库分别同步，通过 `--group models|infra` 逐组更新。
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.21.0` 到 `v1.21.6`，同步上游改进：OML `take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复。
-- **Admin API**: 支持监听地址配置修改（`admin_api.listen`）。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.21.0` 到 `v1.21.7`，同步上游改进：OML `take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复。
+- **Admin API**: 支持监听地址配置修改（`admin_api.listen`）；reload 接口新增 `group` 参数支持双仓库模式分组更新；status 接口在双仓库模式下返回分组版本信息。
 
 ### Fixed
 - 修复部分场景下运行时稳定性问题。
 
+
+## [0.23.3]
 
 ## [0.23.0] - 2026-04-21
 

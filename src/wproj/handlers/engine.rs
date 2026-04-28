@@ -16,7 +16,8 @@ use wp_error::run_error::{RunReason, RunResult};
 struct EngineStatusResponse {
     instance_id: String,
     version: String,
-    project_version: Option<String>,
+    #[serde(default)]
+    project_version: Option<serde_json::Value>,
     accepting_commands: bool,
     reloading: bool,
     current_request_id: Option<String>,
@@ -35,6 +36,7 @@ struct EngineReloadResponse {
     requested_version: Option<String>,
     current_version: Option<String>,
     resolved_tag: Option<String>,
+    group: Option<String>,
     force_replaced: Option<bool>,
     warning: Option<String>,
     error: Option<String>,
@@ -55,6 +57,8 @@ struct EngineReloadRequest<'a> {
     update: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     version: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    group: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reason: Option<&'a str>,
 }
@@ -89,7 +93,11 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
         println!("  Version    : {}", status.version);
         println!(
             "  Project V  : {}",
-            status.project_version.as_deref().unwrap_or("-")
+            status
+                .project_version
+                .as_ref()
+                .map(|v| v.to_string())
+                .unwrap_or_else(|| "-".to_string())
         );
         println!("  Accepting  : {}", status.accepting_commands);
         println!("  Reloading  : {}", status.reloading);
@@ -124,6 +132,9 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
     if !args.update && args.version.is_some() {
         return Err(reload_args_err("--version requires --update"));
     }
+    if !args.update && args.group.is_some() {
+        return Err(reload_args_err("--group requires --update"));
+    }
 
     let profile = resolve_target(&args.target)?;
     let client = build_client(&profile, args.target.insecure)?;
@@ -145,6 +156,7 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
             timeout_ms: args.timeout_ms,
             update: args.update,
             version: args.version.as_deref(),
+            group: args.group.as_deref(),
             reason: args.reason.as_deref(),
         })
         .send()
@@ -181,6 +193,9 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
             }
             if let Some(tag) = body.resolved_tag.as_deref() {
                 println!("  Tag      : {}", tag);
+            }
+            if let Some(group) = body.group.as_deref() {
+                println!("  Group    : {}", group);
             }
             if let Some(force_replaced) = body.force_replaced {
                 println!("  Forced   : {}", force_replaced);
@@ -530,6 +545,7 @@ token_file = "{token_file}"
             reason: None,
             update: false,
             version: Some("1.4.3".to_string()),
+            group: None,
             request_id: None,
             json: false,
         })
@@ -541,5 +557,104 @@ token_file = "{token_file}"
             "unexpected error: {}",
             err
         );
+    }
+
+    #[tokio::test]
+    async fn reload_rejects_group_without_update() {
+        let err = run_engine_reload(EngineReloadArgs {
+            target: EngineTargetArgs {
+                work_root: ".".to_string(),
+                admin_url: None,
+                token_file: None,
+                insecure: false,
+            },
+            wait: true,
+            timeout_ms: 15_000,
+            reason: None,
+            update: false,
+            version: None,
+            group: Some("models".to_string()),
+            request_id: None,
+            json: false,
+        })
+        .await
+        .expect_err("group without update should be rejected");
+
+        assert!(
+            err.to_string().contains("--group requires --update"),
+            "unexpected error: {}",
+            err
+        );
+    }
+
+    #[test]
+    fn reload_request_serializes_group_when_set() {
+        let req = EngineReloadRequest {
+            wait: true,
+            timeout_ms: 15_000,
+            update: true,
+            version: None,
+            group: Some("models"),
+            reason: None,
+        };
+        let json = serde_json::to_string(&req).expect("serialize");
+        assert!(json.contains("\"group\":\"models\""), "group should be serialized: {}", json);
+    }
+
+    #[test]
+    fn reload_request_omits_group_when_none() {
+        let req = EngineReloadRequest {
+            wait: true,
+            timeout_ms: 15_000,
+            update: false,
+            version: None,
+            group: None,
+            reason: None,
+        };
+        let json = serde_json::to_string(&req).expect("serialize");
+        assert!(!json.contains("group"), "group should be absent: {}", json);
+    }
+
+    #[test]
+    fn reload_response_deserializes_group() {
+        let json = r#"{"request_id":"req-1","accepted":true,"result":"reload_done","update":true,"requested_version":"1.4.3","current_version":"1.4.3","resolved_tag":"v1.4.3","group":"models"}"#;
+        let resp: EngineReloadResponse = serde_json::from_str(json).expect("deserialize");
+        assert_eq!(resp.group, Some("models".to_string()));
+    }
+
+    #[test]
+    fn reload_response_deserializes_without_group() {
+        let json = r#"{"request_id":"req-1","accepted":true,"result":"reload_done","update":false}"#;
+        let resp: EngineReloadResponse = serde_json::from_str(json).expect("deserialize");
+        assert_eq!(resp.group, None);
+    }
+
+    #[test]
+    fn status_response_deserializes_group_versions_object() {
+        // Dual-repo mode returns a JSON object for project_version
+        let json = r#"{"instance_id":"i-1","version":"0.23.3","project_version":{"models":{"version":"1.4.3","tag":"v1.4.3"},"infra":{"version":"1.1.0","tag":"v1.1.0"}},"accepting_commands":true,"reloading":false}"#;
+        let status: EngineStatusResponse = serde_json::from_str(json).expect("deserialize");
+        match status.project_version {
+            Some(serde_json::Value::Object(map)) => {
+                assert_eq!(map["models"]["version"], "1.4.3");
+                assert_eq!(map["infra"]["version"], "1.1.0");
+            }
+            other => panic!("expected JSON object, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn status_response_deserializes_string_project_version() {
+        // Single-repo mode returns a string for project_version (backward compat)
+        let json = r#"{"instance_id":"i-1","version":"0.23.3","project_version":"1.4.2","accepting_commands":true,"reloading":false}"#;
+        let status: EngineStatusResponse = serde_json::from_str(json).expect("deserialize");
+        assert_eq!(status.project_version, Some(serde_json::Value::String("1.4.2".to_string())));
+    }
+
+    #[test]
+    fn status_response_deserializes_null_project_version() {
+        let json = r#"{"instance_id":"i-1","version":"0.23.3","project_version":null,"accepting_commands":true,"reloading":false}"#;
+        let status: EngineStatusResponse = serde_json::from_str(json).expect("deserialize");
+        assert_eq!(status.project_version, None);
     }
 }

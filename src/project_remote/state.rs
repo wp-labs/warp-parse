@@ -8,11 +8,11 @@ use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 use wp_log::info_ctrl;
 
-use super::managed::restore_managed_dirs;
+use super::managed::{managed_dirs_for, restore_managed_dirs};
 use super::{
-    conf_err_source, ProjectRemoteLockGuard, ProjectRemoteSnapshot, ProjectRemoteState,
-    ProjectRemoteUpdateResult, ProjectRuntimeArtifactSnapshot, AUTHORITY_DB_PATH, ENGINE_CONF_PATH,
-    LOCK_PATH, RULE_MAPPING_PATH, STATE_PATH,
+    conf_err_source, GroupState, ProjectRemoteLockGuard, ProjectRemoteSnapshot, ProjectRemoteState,
+    ProjectRemoteUpdateResult, ProjectRuntimeArtifactSnapshot, RemoteGroup, AUTHORITY_DB_PATH,
+    ENGINE_CONF_PATH, LOCK_PATH, RULE_MAPPING_PATH, STATE_PATH,
 };
 
 pub fn acquire_project_remote_lock<P: AsRef<Path>>(
@@ -43,6 +43,13 @@ pub fn acquire_project_remote_lock<P: AsRef<Path>>(
 pub fn capture_project_remote_snapshot<P: AsRef<Path>>(
     work_root: P,
 ) -> RunResult<ProjectRemoteSnapshot> {
+    capture_project_remote_snapshot_with_group(work_root, None)
+}
+
+pub fn capture_project_remote_snapshot_with_group<P: AsRef<Path>>(
+    work_root: P,
+    group: Option<RemoteGroup>,
+) -> RunResult<ProjectRemoteSnapshot> {
     let work_root = work_root.as_ref();
     let state_path = work_root.join(STATE_PATH);
     let state_file = match fs::read(&state_path) {
@@ -55,7 +62,7 @@ pub fn capture_project_remote_snapshot<P: AsRef<Path>>(
             ))
         }
     };
-    Ok(ProjectRemoteSnapshot { state_file })
+    Ok(ProjectRemoteSnapshot { state_file, group })
 }
 
 pub fn restore_project_remote_snapshot<P: AsRef<Path>>(
@@ -72,7 +79,8 @@ pub fn restore_project_remote_update<P: AsRef<Path>>(
 ) -> RunResult<()> {
     let work_root = work_root.as_ref();
     if changed {
-        restore_managed_dirs(work_root)?;
+        let dirs = managed_dirs_for(snapshot.group);
+        restore_managed_dirs(work_root, dirs)?;
     }
     restore_state_file_bytes(work_root, snapshot.state_file.as_deref())?;
     Ok(())
@@ -149,17 +157,27 @@ fn restore_state_file_bytes(work_root: &Path, bytes: Option<&[u8]>) -> RunResult
     restore_optional_file(&state_path, bytes)
 }
 
+fn atomic_write_file(path: &Path, bytes: &[u8]) -> RunResult<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| {
+            conf_err_source(format!("create {} failed", parent.display()), e)
+        })?;
+    }
+    let tmp_path = path.with_extension(".tmp");
+    fs::write(&tmp_path, bytes)
+        .map_err(|e| conf_err_source(format!("write {} failed", tmp_path.display()), e))?;
+    fs::rename(&tmp_path, path).map_err(|e| {
+        let _ = fs::remove_file(&tmp_path);
+        conf_err_source(
+            format!("rename {} -> {} failed", tmp_path.display(), path.display()),
+            e,
+        )
+    })
+}
+
 fn restore_optional_file(path: &Path, bytes: Option<&[u8]>) -> RunResult<()> {
     match bytes {
-        Some(bytes) => {
-            if let Some(parent) = path.parent() {
-                fs::create_dir_all(parent).map_err(|e| {
-                    conf_err_source(format!("create {} failed", parent.display()), e)
-                })?;
-            }
-            fs::write(path, bytes)
-                .map_err(|e| conf_err_source(format!("write {} failed", path.display()), e))?;
-        }
+        Some(bytes) => atomic_write_file(path, bytes)?,
         None => {
             if let Err(err) = fs::remove_file(path) {
                 if err.kind() != std::io::ErrorKind::NotFound {
@@ -231,19 +249,59 @@ fn project_remote_lock_busy_err(lock_path: impl Into<String>) -> wp_error::RunEr
 }
 
 pub(super) fn persist_state(work_root: &Path, result: &ProjectRemoteUpdateResult) -> RunResult<()> {
-    let state = ProjectRemoteState {
+    // Prevent overwriting dual-repo state with single-repo state
+    if let Some(ProjectRemoteState::Dual { .. }) = load_state(work_root)? {
+        return Err(
+            RunReason::from_conf()
+                .to_err()
+                .with_detail("cannot persist single-repo state over dual-repo state; use persist_group_state")
+        );
+    }
+    let state = ProjectRemoteState::Single {
         current_version: result.current_version.clone(),
         resolved_tag: result.resolved_tag.clone(),
         revision: result.to_revision.clone(),
     };
     let path = work_root.join(STATE_PATH);
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)
-            .map_err(|e| conf_err_source(format!("create {} failed", parent.display()), e))?;
-    }
     let body = serde_json::to_vec_pretty(&state)
         .map_err(|e| conf_err_source("encode project remote state failed", e))?;
-    fs::write(&path, body)
-        .map_err(|e| conf_err_source(format!("write {} failed", path.display()), e))?;
-    Ok(())
+    atomic_write_file(&path, &body)
+}
+
+pub(super) fn persist_group_state(
+    work_root: &Path,
+    group: RemoteGroup,
+    result: &ProjectRemoteUpdateResult,
+) -> RunResult<()> {
+    let new_group = GroupState {
+        current_version: result.current_version.clone(),
+        resolved_tag: result.resolved_tag.clone(),
+        revision: result.to_revision.clone(),
+    };
+    let state = match load_state(work_root)? {
+        Some(ProjectRemoteState::Dual { models, infra }) => match group {
+            RemoteGroup::Models => ProjectRemoteState::Dual {
+                models: Some(new_group),
+                infra,
+            },
+            RemoteGroup::Infra => ProjectRemoteState::Dual {
+                models,
+                infra: Some(new_group),
+            },
+        },
+        _ => match group {
+            RemoteGroup::Models => ProjectRemoteState::Dual {
+                models: Some(new_group),
+                infra: None,
+            },
+            RemoteGroup::Infra => ProjectRemoteState::Dual {
+                models: None,
+                infra: Some(new_group),
+            },
+        },
+    };
+    let path = work_root.join(STATE_PATH);
+    let body = serde_json::to_vec_pretty(&state)
+        .map_err(|e| conf_err_source("encode project remote state failed", e))?;
+    atomic_write_file(&path, &body)
 }

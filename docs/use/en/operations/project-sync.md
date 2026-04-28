@@ -130,6 +130,140 @@ Important fields:
 - `accepting_commands = true`
 - `reloading = false`
 
+## Dual-Repo Mode (Separate models / infra)
+
+### Architecture Overview
+
+Dual-repo mode splits the project into two independently-updated groups:
+
+```
+Project Layout                  Source Repository
+─────────────                   ────────────────
+models/                         models repo (e.g. wp-rule)
+├── wpl/                          parsing rules
+├── oml/                          model definitions
+└── knowledge/                    knowledge base
+
+conf/        ┐
+topology/    ├── infra group ─→  infra repo (e.g. editor-monitor-conf)
+connectors/  ┘                    config, topology, connectors
+```
+
+| Group | Managed Directories | Purpose |
+|-------|-------------------|---------|
+| `models` | `models/` | Parse rules (wpl), model definitions (oml), knowledge base |
+| `infra` | `conf/`, `topology/`, `connectors/` | Main config, source/sink topology, connector configs |
+
+Each repo has independent versioning. Upgrading models does not affect infra config, and vice versa.
+
+### Configuration
+
+```toml
+[project_remote]
+enabled = true
+# repo must be empty in dual-repo mode
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"       # version used on first initialization
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.6"       # version used on first initialization
+```
+
+**Field Reference:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `[project_remote].enabled` | Yes | Master switch for remote sync (shared by both groups) |
+| `[project_remote].repo` | No | Must be empty `""` in dual-repo mode |
+| `[project_remote.models].repo` | Yes | Git URL of the models repository |
+| `[project_remote.models].init_version` | No | Version used on first sync; defaults to latest tag thereafter |
+| `[project_remote.infra].repo` | Yes | Git URL of the infra repository |
+| `[project_remote.infra].init_version` | No | Version used on first sync; defaults to latest tag thereafter |
+
+### Version Resolution Rules
+
+How `wproj conf update --group <group>` resolves the target version:
+
+1. If `--version` is explicitly provided → use that version
+2. If the group has **never been initialized** (no entry in state file) → use configured `init_version` if present, otherwise use the latest remote tag
+3. If the group **already has a state record** → use the latest remote tag
+
+This ensures sensible defaults for both initial deployment and subsequent updates.
+
+### Sync Flow
+
+`wproj conf update --group <group>` steps:
+
+1. Clone/update the remote repository to a local cache (`.run/project_remote/remote-<group>/`)
+2. Fetch remote tags, resolve the target version per the resolution rules above
+3. Checkout the target commit
+4. Compare cache with work root — if managed directories differ:
+   - Back up the current managed directories from the work root
+   - Copy managed directories from the cache to the work root
+5. Persist state to `.run/project_remote_state.json`
+
+**Cache Paths:**
+
+| Group | Cache Path |
+|-------|-----------|
+| models | `.run/project_remote/remote-models/` |
+| infra | `.run/project_remote/remote-infra/` |
+| single-repo | `.run/project_remote/remote/` |
+
+### State File Format
+
+Dual-repo `.run/project_remote_state.json`:
+
+```json
+{
+  "models": {
+    "version": "0.1.0",
+    "tag": "0.1.0",
+    "revision": "fcfc9e5..."
+  },
+  "infra": {
+    "version": "0.1.6",
+    "tag": "v0.1.6",
+    "revision": "e2e84e1..."
+  }
+}
+```
+
+### Initialization Order
+
+In dual-repo mode, **infra must be initialized first, then models**. This is because the infra sync writes `conf/wparse.toml` (the project main config), which contains the dual-repo repository URLs. The models sync reads the models repo URL from this config.
+
+> **Best practice:** The infra repository's own `conf/wparse.toml` should contain the complete dual-repo configuration (`[project_remote.models]` + `[project_remote.infra]`). This way, after infra sync, models sync can proceed directly without any manual config patching.
+
+### Commands
+
+Update the models group:
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --group models --version 1.4.3
+```
+
+Update the infra group:
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --group infra --version 1.1.0
+```
+
+In dual-repo mode, `--group` is required. In single-repo mode, `--group` must not be used.
+
+### Rollback Behavior
+
+Per-group rollback only affects the directories managed by that group:
+
+- `--group models` rollback → only restores `models/`; `conf/`/`topology/`/`connectors/` unaffected
+- `--group infra` rollback → only restores `conf/`/`topology/`/`connectors/`; `models/` unaffected
+
+The current state is backed up before rollback. If the rollback fails, the backup is restored.
+
 ## Daily Rule Update SOP
 
 ### Standard Flow
@@ -150,6 +284,12 @@ To upgrade or roll back to a specific released version:
 
 ```bash
 wproj conf update --work-root /srv/wp/<project> --version 1.4.3
+```
+
+In dual-repo mode, update by group:
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --group models --version 1.4.3
 ```
 
 Default version-selection rules:
@@ -187,6 +327,17 @@ wproj engine reload \
   --update \
   --request-id update-$(date +%Y%m%d%H%M%S) \
   --reason "rule update and reload"
+```
+
+In dual-repo mode, add `--group`:
+
+```bash
+wproj engine reload \
+  --work-root . \
+  --update \
+  --group models \
+  --request-id update-models-$(date +%Y%m%d%H%M%S) \
+  --reason "models update and reload"
 ```
 
 To upgrade or roll back and reload in one step:
@@ -266,7 +417,7 @@ wproj check
 
 ## Rollback SOP
 
-If a reload introduces parse failures, field regressions, or downstream alarms, do not restart the daemon first. Roll back the project version and reload again:
+Single-repo rollback:
 
 ```bash
 wproj conf update --work-root /srv/wp/<project> --version 1.4.2
@@ -274,6 +425,16 @@ wproj engine reload \
   --work-root /srv/wp/<project> \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback rule set"
+```
+
+Dual-repo rollback by group:
+
+```bash
+wproj conf update --work-root /srv/wp/<project> --group models --version 1.4.2
+wproj engine reload \
+  --work-root /srv/wp/<project> \
+  --request-id rollback-$(date +%Y%m%d%H%M%S) \
+  --reason "rollback models"
 ```
 
 You can also do the rollback in one runtime action:
@@ -285,6 +446,18 @@ wproj engine reload \
   --version 1.4.2 \
   --request-id rollback-$(date +%Y%m%d%H%M%S) \
   --reason "rollback and reload"
+```
+
+Dual-repo:
+
+```bash
+wproj engine reload \
+  --work-root /srv/wp/<project> \
+  --update \
+  --group models \
+  --version 1.4.2 \
+  --request-id rollback-models-$(date +%Y%m%d%H%M%S) \
+  --reason "rollback models and reload"
 ```
 
 After rollback, verify:

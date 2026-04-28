@@ -223,6 +223,15 @@ pub struct EngineReloadArgs {
     )]
     pub version: Option<String>,
 
+    /// 更新目标组（双 repo 模式必填）| Target group for update (required in dual-repo mode)
+    #[clap(
+        long = "group",
+        visible_alias = "组",
+        value_parser = ["models", "infra"],
+        help = "更新目标组：models 或 infra | Target group: models or infra"
+    )]
+    pub group: Option<String>,
+
     /// 自定义请求 ID | Override request ID
     #[clap(
         long = "request-id",
@@ -260,6 +269,15 @@ pub struct ConfUpdateArgs {
         help = "本次更新目标版本 | Target version for this update"
     )]
     pub version: Option<String>,
+
+    /// 更新目标组（双 repo 模式必填）| Target group for update (required in dual-repo mode)
+    #[clap(
+        long = "group",
+        visible_alias = "组",
+        value_parser = ["models", "infra"],
+        help = "更新目标组：models 或 infra | Target group: models or infra"
+    )]
+    pub group: Option<String>,
 
     /// JSON 输出 | JSON output
     #[clap(

@@ -4,6 +4,7 @@ use crate::args::ConfUpdateArgs;
 use crate::format::print_json;
 use orion_error::{ToStructError, UvsFrom};
 use warp_parse::project_remote;
+use warp_parse::project_remote::RemoteGroup;
 use wp_engine::facade::args::ParseArgs;
 use wp_engine::facade::WpApp;
 use wp_error::run_error::{RunReason, RunResult};
@@ -11,15 +12,36 @@ use wp_log::{info_ctrl, warn_ctrl};
 
 pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
     let work_root = resolve_work_root(&args.work_root)?;
+    let group = parse_group(args.group.as_deref())?;
     run_conf_update_with_sync(
         work_root,
         args.version.as_deref(),
         args.json,
-        |work_root, requested_version, dict| {
-            project_remote::sync_project_remote_with_dict(work_root, requested_version, dict)
+        group,
+        |work_root, requested_version, dict, group| {
+            match group {
+                Some(g) => {
+                    project_remote::sync_project_remote_group_with_dict(
+                        work_root, g, requested_version, dict,
+                    )
+                }
+                None => {
+                    project_remote::sync_project_remote_with_dict(work_root, requested_version, dict)
+                }
+            }
         },
     )
     .await
+}
+
+fn parse_group(raw: Option<&str>) -> RunResult<Option<RemoteGroup>> {
+    match raw {
+        None | Some("") => Ok(None),
+        Some(s) => s
+            .parse::<RemoteGroup>()
+            .map(Some)
+            .map_err(|e| RunReason::from_conf().to_err().with_detail(e)),
+    }
 }
 
 pub async fn run_conf_update_from_repo(
@@ -38,7 +60,8 @@ pub async fn run_conf_update_from_repo(
         work_root,
         requested_version,
         false,
-        |work_root, requested_version, _dict| {
+        None,
+        |work_root, requested_version, _dict, _group| {
             project_remote::sync_project_remote_from_repo(work_root, repo_url, requested_version)
         },
     )
@@ -49,6 +72,7 @@ async fn run_conf_update_with_sync<F>(
     work_root: PathBuf,
     requested_version: Option<&str>,
     json: bool,
+    group: Option<RemoteGroup>,
     sync_fn: F,
 ) -> RunResult<()>
 where
@@ -56,18 +80,23 @@ where
         &std::path::Path,
         Option<&str>,
         &orion_variate::EnvDict,
+        Option<RemoteGroup>,
     ) -> RunResult<project_remote::ProjectRemoteUpdateResult>,
 {
     info_ctrl!(
-        "wproj conf update start work_root={} requested_version={} json={}",
+        "wproj conf update start work_root={} requested_version={} json={} group={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
-        json
+        json,
+        group.map(|g| match g {
+            RemoteGroup::Models => "models",
+            RemoteGroup::Infra => "infra",
+        }).unwrap_or("-")
     );
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
-    let rollback_snapshot = project_remote::capture_project_remote_snapshot(&work_root)?;
+    let rollback_snapshot = project_remote::capture_project_remote_snapshot_with_group(&work_root, group)?;
     let dict = warp_parse::load_sec_dict()?;
-    let result = sync_fn(&work_root, requested_version, &dict)?;
+    let result = sync_fn(&work_root, requested_version, &dict, group)?;
     info_ctrl!(
         "wproj conf update synced work_root={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
         work_root.display(),
