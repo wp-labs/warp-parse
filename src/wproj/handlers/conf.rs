@@ -18,16 +18,15 @@ pub async fn run_conf_update(args: ConfUpdateArgs) -> RunResult<()> {
         args.version.as_deref(),
         args.json,
         group,
-        |work_root, requested_version, dict, group| {
-            match group {
-                Some(g) => {
-                    project_remote::sync_project_remote_group_with_dict(
-                        work_root, g, requested_version, dict,
-                    )
-                }
-                None => {
-                    project_remote::sync_project_remote_with_dict(work_root, requested_version, dict)
-                }
+        |work_root, requested_version, dict, group| match group {
+            Some(g) => project_remote::sync_project_remote_group_with_dict(
+                work_root,
+                g,
+                requested_version,
+                dict,
+            ),
+            None => {
+                project_remote::sync_project_remote_with_dict(work_root, requested_version, dict)
             }
         },
     )
@@ -88,13 +87,16 @@ where
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         json,
-        group.map(|g| match g {
-            RemoteGroup::Models => "models",
-            RemoteGroup::Infra => "infra",
-        }).unwrap_or("-")
+        group
+            .map(|g| match g {
+                RemoteGroup::Models => "models",
+                RemoteGroup::Infra => "infra",
+            })
+            .unwrap_or("-")
     );
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
-    let rollback_snapshot = project_remote::capture_project_remote_snapshot_with_group(&work_root, group)?;
+    let rollback_snapshot =
+        project_remote::capture_project_remote_snapshot_with_group(&work_root, group)?;
     let dict = warp_parse::load_sec_dict()?;
     let result = sync_fn(&work_root, requested_version, &dict, group)?;
     info_ctrl!(

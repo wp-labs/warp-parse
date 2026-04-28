@@ -8,7 +8,9 @@ use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 
 use super::managed::remove_path;
-use super::{conf_err_source, requested_version_not_found_err, RemoteGroup, ResolvedTag, STATE_PATH};
+use super::{
+    conf_err_source, requested_version_not_found_err, RemoteGroup, ResolvedTag, STATE_PATH,
+};
 
 pub(super) fn prepare_remote_repo(remote_root: &Path, repo_url: &str) -> RunResult<Repository> {
     if !remote_root.exists() {

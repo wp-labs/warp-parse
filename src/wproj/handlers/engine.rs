@@ -598,7 +598,11 @@ token_file = "{token_file}"
             reason: None,
         };
         let json = serde_json::to_string(&req).expect("serialize");
-        assert!(json.contains("\"group\":\"models\""), "group should be serialized: {}", json);
+        assert!(
+            json.contains("\"group\":\"models\""),
+            "group should be serialized: {}",
+            json
+        );
     }
 
     #[test]
@@ -624,7 +628,8 @@ token_file = "{token_file}"
 
     #[test]
     fn reload_response_deserializes_without_group() {
-        let json = r#"{"request_id":"req-1","accepted":true,"result":"reload_done","update":false}"#;
+        let json =
+            r#"{"request_id":"req-1","accepted":true,"result":"reload_done","update":false}"#;
         let resp: EngineReloadResponse = serde_json::from_str(json).expect("deserialize");
         assert_eq!(resp.group, None);
     }
@@ -648,7 +653,10 @@ token_file = "{token_file}"
         // Single-repo mode returns a string for project_version (backward compat)
         let json = r#"{"instance_id":"i-1","version":"0.23.3","project_version":"1.4.2","accepting_commands":true,"reloading":false}"#;
         let status: EngineStatusResponse = serde_json::from_str(json).expect("deserialize");
-        assert_eq!(status.project_version, Some(serde_json::Value::String("1.4.2".to_string())));
+        assert_eq!(
+            status.project_version,
+            Some(serde_json::Value::String("1.4.2".to_string()))
+        );
     }
 
     #[test]

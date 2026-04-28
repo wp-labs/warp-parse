@@ -159,9 +159,8 @@ fn restore_state_file_bytes(work_root: &Path, bytes: Option<&[u8]>) -> RunResult
 
 fn atomic_write_file(path: &Path, bytes: &[u8]) -> RunResult<()> {
     if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(|e| {
-            conf_err_source(format!("create {} failed", parent.display()), e)
-        })?;
+        fs::create_dir_all(parent)
+            .map_err(|e| conf_err_source(format!("create {} failed", parent.display()), e))?;
     }
     let tmp_path = path.with_extension(".tmp");
     fs::write(&tmp_path, bytes)
@@ -251,11 +250,9 @@ fn project_remote_lock_busy_err(lock_path: impl Into<String>) -> wp_error::RunEr
 pub(super) fn persist_state(work_root: &Path, result: &ProjectRemoteUpdateResult) -> RunResult<()> {
     // Prevent overwriting dual-repo state with single-repo state
     if let Some(ProjectRemoteState::Dual { .. }) = load_state(work_root)? {
-        return Err(
-            RunReason::from_conf()
-                .to_err()
-                .with_detail("cannot persist single-repo state over dual-repo state; use persist_group_state")
-        );
+        return Err(RunReason::from_conf().to_err().with_detail(
+            "cannot persist single-repo state over dual-repo state; use persist_group_state",
+        ));
     }
     let state = ProjectRemoteState::Single {
         current_version: result.current_version.clone(),

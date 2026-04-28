@@ -120,7 +120,9 @@ enum ProjectRemoteState {
 impl ProjectRemoteState {
     fn single_version(&self) -> Option<&str> {
         match self {
-            ProjectRemoteState::Single { current_version, .. } => Some(current_version.as_str()),
+            ProjectRemoteState::Single {
+                current_version, ..
+            } => Some(current_version.as_str()),
             ProjectRemoteState::Dual { .. } => None,
         }
     }
@@ -171,15 +173,13 @@ pub fn sync_project_remote_with_dict<P: AsRef<Path>>(
     }
     let mode = resolve_project_remote_mode(remote_conf)?;
     match mode {
-        ProjectRemoteMode::Single { repo, init_version } => {
-            sync_project_remote_with_repo_inner(
-                work_root,
-                &repo,
-                requested_version,
-                Some(init_version.as_str()),
-                None,
-            )
-        }
+        ProjectRemoteMode::Single { repo, init_version } => sync_project_remote_with_repo_inner(
+            work_root,
+            &repo,
+            requested_version,
+            Some(init_version.as_str()),
+            None,
+        ),
         ProjectRemoteMode::Dual { .. } => Err(project_remote_dual_requires_group_err()),
     }
 }
@@ -230,7 +230,10 @@ pub fn sync_project_remote_from_repo<P: AsRef<Path>>(
 }
 
 pub fn current_project_version<P: AsRef<Path>>(work_root: P) -> RunResult<Option<String>> {
-    Ok(load_state(work_root.as_ref())?.and_then(|state| state.single_version().map(str::to_string)))
+    Ok(
+        load_state(work_root.as_ref())?
+            .and_then(|state| state.single_version().map(str::to_string)),
+    )
 }
 
 pub fn current_project_group_versions<P: AsRef<Path>>(
@@ -241,16 +244,22 @@ pub fn current_project_group_versions<P: AsRef<Path>>(
         Some(ProjectRemoteState::Dual { models, infra }) => {
             let mut map = serde_json::Map::new();
             if let Some(m) = models {
-                map.insert("models".to_string(), serde_json::json!({
-                    "version": m.current_version,
-                    "tag": m.resolved_tag,
-                }));
+                map.insert(
+                    "models".to_string(),
+                    serde_json::json!({
+                        "version": m.current_version,
+                        "tag": m.resolved_tag,
+                    }),
+                );
             }
             if let Some(i) = infra {
-                map.insert("infra".to_string(), serde_json::json!({
-                    "version": i.current_version,
-                    "tag": i.resolved_tag,
-                }));
+                map.insert(
+                    "infra".to_string(),
+                    serde_json::json!({
+                        "version": i.current_version,
+                        "tag": i.resolved_tag,
+                    }),
+                );
             }
             Ok(Some(serde_json::Value::Object(map)))
         }
@@ -258,9 +267,7 @@ pub fn current_project_group_versions<P: AsRef<Path>>(
     }
 }
 
-fn resolve_project_remote_mode(
-    conf: &ProjectRemoteConf,
-) -> RunResult<ProjectRemoteMode> {
+fn resolve_project_remote_mode(conf: &ProjectRemoteConf) -> RunResult<ProjectRemoteMode> {
     let has_single = !conf.repo.trim().is_empty();
     let has_models = conf.models.is_some();
     let has_infra = conf.infra.is_some();
@@ -338,7 +345,8 @@ fn sync_project_remote_with_repo_inner(
                 .ok_or_else(|| requested_version_not_found_err(&target_version))?
         }
         _ => {
-            let resolved = resolve_default_target(work_root, &repo, init_version.map(str::trim), group)?;
+            let resolved =
+                resolve_default_target(work_root, &repo, init_version.map(str::trim), group)?;
             info_ctrl!(
                 "project remote sync target resolved work_root={} requested_version={} target_version={} init_version={} state_exists={}",
                 work_root.display(),
@@ -501,11 +509,9 @@ fn project_remote_ambiguous_mode_err() -> wp_error::RunError {
 }
 
 fn project_remote_dual_requires_group_err() -> wp_error::RunError {
-    RunReason::from_conf()
-        .to_err()
-        .with_detail(
-            "dual-repo mode requires --group (models|infra); use sync_project_remote_group_with_dict",
-        )
+    RunReason::from_conf().to_err().with_detail(
+        "dual-repo mode requires --group (models|infra); use sync_project_remote_group_with_dict",
+    )
 }
 
 fn project_remote_single_no_group_err() -> wp_error::RunError {
@@ -536,10 +542,10 @@ mod test_support;
 #[cfg(test)]
 mod tests {
     use super::test_support::{
-        create_empty_managed_dirs, create_dual_work_root, create_infra_remote_fixture,
+        create_dual_work_root, create_empty_managed_dirs, create_infra_remote_fixture,
         create_models_remote_fixture, create_remote_fixture, create_remote_fixture_without_tags,
-        create_work_root, write_engine_conf_with_init_version,
-        write_model_version, write_runtime_local_dirs,
+        create_work_root, write_engine_conf_with_init_version, write_model_version,
+        write_runtime_local_dirs,
     };
     use super::*;
     use std::fs;
@@ -765,7 +771,8 @@ mod tests {
         let err =
             sync_project_remote(work_root.path(), Some("1.4.3")).expect_err("sync should fail");
         assert!(
-            err.to_string().contains("cannot persist single-repo state over dual-repo state"),
+            err.to_string()
+                .contains("cannot persist single-repo state over dual-repo state"),
             "unexpected error: {}",
             err
         );
@@ -912,7 +919,9 @@ mod tests {
         .expect("sync models v1.4.3");
 
         // Verify both groups are present and independent
-        let state = load_state(work_root.path()).expect("load state").expect("state exists");
+        let state = load_state(work_root.path())
+            .expect("load state")
+            .expect("state exists");
         match state {
             ProjectRemoteState::Dual { models, infra } => {
                 let models = models.expect("models synced");
@@ -946,9 +955,10 @@ mod tests {
         )
         .expect("sync infra");
 
-        let state_json: serde_json::Value =
-            serde_json::from_slice(&fs::read(work_root.path().join(STATE_PATH)).expect("read state"))
-                .expect("parse state");
+        let state_json: serde_json::Value = serde_json::from_slice(
+            &fs::read(work_root.path().join(STATE_PATH)).expect("read state"),
+        )
+        .expect("parse state");
         assert_eq!(state_json["models"]["version"], "1.4.2");
         assert_eq!(state_json["models"]["tag"], "v1.4.2");
         assert_eq!(state_json["infra"]["version"], "1.0.0");
@@ -1002,7 +1012,9 @@ mod tests {
         )
         .expect("write old state");
 
-        let state = load_state(work_root.path()).expect("load state").expect("state exists");
+        let state = load_state(work_root.path())
+            .expect("load state")
+            .expect("state exists");
         match state {
             ProjectRemoteState::Single {
                 current_version,
@@ -1043,7 +1055,9 @@ mod tests {
         .expect("sync infra");
 
         // Read back state
-        let state = load_state(work_root.path()).expect("load state").expect("state exists");
+        let state = load_state(work_root.path())
+            .expect("load state")
+            .expect("state exists");
         match state {
             ProjectRemoteState::Dual { models, infra } => {
                 let models = models.expect("models synced");

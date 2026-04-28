@@ -59,7 +59,11 @@ pub(super) fn backup_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<
     Ok(())
 }
 
-pub(super) fn sync_managed_dirs(remote_root: &Path, work_root: &Path, dirs: &[&str]) -> RunResult<()> {
+pub(super) fn sync_managed_dirs(
+    remote_root: &Path,
+    work_root: &Path,
+    dirs: &[&str],
+) -> RunResult<()> {
     for dir in dirs {
         let src = remote_root.join(dir);
         let dst = work_root.join(dir);
@@ -88,12 +92,10 @@ pub(super) fn restore_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult
     // Validate that the backup manifest matches the expected dirs
     for d in &manifest.existing_dirs {
         if !dirs.iter().any(|expected| expected == d) {
-            return Err(RunReason::from_conf()
-                .to_err()
-                .with_detail(format!(
-                    "backup manifest contains unexpected directory '{}'; expected one of {:?}",
-                    d, dirs
-                )));
+            return Err(RunReason::from_conf().to_err().with_detail(format!(
+                "backup manifest contains unexpected directory '{}'; expected one of {:?}",
+                d, dirs
+            )));
         }
     }
     let backup_root = work_root.join(BACKUP_PATH);

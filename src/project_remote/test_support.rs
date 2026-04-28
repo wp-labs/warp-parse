@@ -173,11 +173,19 @@ pub(super) fn create_infra_remote_fixture_with_config(engine_config: &str) -> Re
     fs::create_dir_all(temp.path().join("topology")).expect("create topology dir");
     fs::create_dir_all(temp.path().join("connectors")).expect("create connectors dir");
     fs::write(temp.path().join("conf/wparse.toml"), engine_config).expect("write engine config");
-    fs::write(temp.path().join("conf/infra.toml"), "[infra]\nversion = \"1.0.0\"\n").expect("write v1.0.0");
+    fs::write(
+        temp.path().join("conf/infra.toml"),
+        "[infra]\nversion = \"1.0.0\"\n",
+    )
+    .expect("write v1.0.0");
     commit_all(&repo, "infra release 1.0.0");
     tag_head(&repo, "v1.0.0");
 
-    fs::write(temp.path().join("conf/infra.toml"), "[infra]\nversion = \"1.1.0\"\n").expect("write v1.1.0");
+    fs::write(
+        temp.path().join("conf/infra.toml"),
+        "[infra]\nversion = \"1.1.0\"\n",
+    )
+    .expect("write v1.1.0");
     commit_all(&repo, "infra release 1.1.0");
     tag_head(&repo, "v1.1.0");
 
@@ -215,8 +223,15 @@ init_version = "1.0.0"
     .expect("write dual wparse.toml");
 }
 
-pub(super) fn create_dual_work_root(models_remote: &RemoteFixture, infra_remote: &RemoteFixture) -> TempDir {
+pub(super) fn create_dual_work_root(
+    models_remote: &RemoteFixture,
+    infra_remote: &RemoteFixture,
+) -> TempDir {
     let work_root = tempdir().expect("tempdir");
-    write_dual_engine_conf(work_root.path(), models_remote.repo_url(), infra_remote.repo_url());
+    write_dual_engine_conf(
+        work_root.path(),
+        models_remote.repo_url(),
+        infra_remote.repo_url(),
+    );
     work_root
 }
