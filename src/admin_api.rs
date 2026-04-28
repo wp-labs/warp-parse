@@ -627,7 +627,7 @@ async fn reload_response(
             },
         );
     }
-    if !reload_req.update && reload_req.group.as_deref().map_or(false, |g| !g.is_empty()) {
+    if !reload_req.update && reload_req.group.as_deref().is_some_and(|g| !g.is_empty()) {
         return json_response(
             StatusCode::BAD_REQUEST,
             &ErrorResponse {
@@ -759,21 +759,17 @@ async fn reload_response(
             reload_req.group.as_deref().unwrap_or("-")
         );
         let sync_result = match update_group {
-            Some(group) => {
-                crate::project_remote::sync_project_remote_group_with_dict(
-                    &state.work_root,
-                    group,
-                    reload_req.version.as_deref(),
-                    &state.dict,
-                )
-            }
-            None => {
-                crate::project_remote::sync_project_remote_with_dict(
-                    &state.work_root,
-                    reload_req.version.as_deref(),
-                    &state.dict,
-                )
-            }
+            Some(group) => crate::project_remote::sync_project_remote_group_with_dict(
+                &state.work_root,
+                group,
+                reload_req.version.as_deref(),
+                &state.dict,
+            ),
+            None => crate::project_remote::sync_project_remote_with_dict(
+                &state.work_root,
+                reload_req.version.as_deref(),
+                &state.dict,
+            ),
         };
         match sync_result {
             Ok(result) => {
@@ -859,9 +855,7 @@ async fn reload_response(
                         resolved_tag: update_result
                             .as_ref()
                             .map(|result| result.resolved_tag.clone()),
-                        group: update_result
-                            .as_ref()
-                            .and_then(|r| r.group.clone()),
+                        group: update_result.as_ref().and_then(|r| r.group.clone()),
                         force_replaced: None,
                         warning: None,
                         error: None,
@@ -913,9 +907,7 @@ async fn reload_response(
                         resolved_tag: update_result
                             .as_ref()
                             .map(|result| result.resolved_tag.clone()),
-                        group: update_result
-                            .as_ref()
-                            .and_then(|r| r.group.clone()),
+                        group: update_result.as_ref().and_then(|r| r.group.clone()),
                         force_replaced: None,
                         warning: rollback_updated_project(
                             &state.work_root,
@@ -960,9 +952,7 @@ async fn reload_response(
                             resolved_tag: update_result
                                 .as_ref()
                                 .map(|result| result.resolved_tag.clone()),
-                            group: update_result
-                                .as_ref()
-                                .and_then(|r| r.group.clone()),
+                            group: update_result.as_ref().and_then(|r| r.group.clone()),
                             force_replaced: None,
                             warning: None,
                             error: None,
@@ -1119,9 +1109,11 @@ fn rollback_updated_project(
             // Attempt partial rollback with what we have
             let mut warnings = Vec::new();
             if let (Some(snapshot), Some(upd)) = (snap, upd) {
-                if let Err(err) =
-                    crate::project_remote::restore_project_remote_update(work_root, snapshot, upd.changed)
-                {
+                if let Err(err) = crate::project_remote::restore_project_remote_update(
+                    work_root,
+                    snapshot,
+                    upd.changed,
+                ) {
                     warnings.push(format!("restore project failed: {}", err));
                 }
             }
@@ -1138,8 +1130,7 @@ fn rollback_updated_project(
             return Some(warnings.join("; "));
         }
     };
-    match rollback_project_and_runtime(work_root, snapshot, changed, runtime_snapshot)
-    {
+    match rollback_project_and_runtime(work_root, snapshot, changed, runtime_snapshot) {
         Ok(()) => {
             info_ctrl!(
                 "admin api project rollback done request_id={} remote={} stage={} target_version={} changed={}",
