@@ -639,6 +639,30 @@ async fn reload_response(
         );
     }
 
+    // In dual-repo mode, update requires --group
+    if reload_req.update && reload_req.group.as_deref().map_or(true, |g| g.is_empty()) {
+        if let Ok(config) = load_engine_config(&state.work_root, &state.dict) {
+            let remote_conf = config.project_remote();
+            if remote_conf.enabled
+                && matches!(
+                    crate::project_remote::resolve_project_remote_mode(remote_conf),
+                    Ok(crate::project_remote::ProjectRemoteMode::Dual { .. })
+                )
+            {
+                return json_response(
+                    StatusCode::BAD_REQUEST,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "invalid_request",
+                        error: "dual-repo mode requires group (models|infra) with update=true"
+                            .to_string(),
+                    },
+                );
+            }
+        }
+    }
+
     let runtime_status = state.control_handle.status_snapshot();
     if !runtime_status.accepting_commands {
         return json_response(
@@ -1714,6 +1738,172 @@ token_file = "{token_file}"
         let body: serde_json::Value = response.json().await.expect("parse json");
         assert_eq!(body["result"], "invalid_request");
         assert_eq!(body["error"], "group requires update=true");
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_rejects_dual_update_without_group() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "127.0.0.1:0"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = false
+cert_file = ""
+key_file = ""
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.7"
+"#,
+        );
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write dual config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
+        let base = format!("http://{}", runtime.local_addr());
+
+        let response = client
+            .post(format!("{}/admin/v1/reloads/model", base))
+            .bearer_auth("test-token")
+            .json(&serde_json::json!({"wait": false, "update": true}))
+            .send()
+            .await
+            .expect("send reload request");
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let body: serde_json::Value = response.json().await.expect("parse json");
+        assert_eq!(body["result"], "invalid_request");
+        assert!(
+            body["error"]
+                .as_str()
+                .expect("error string")
+                .contains("group"),
+            "error should mention group: {}",
+            body["error"]
+        );
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_status_reports_per_group_versions_in_dual_mode() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "127.0.0.1:0"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = false
+cert_file = ""
+key_file = ""
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.7"
+"#,
+        );
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write dual config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        // Write dual state file
+        let run_dir = temp.path().join(".run");
+        fs::create_dir_all(&run_dir).expect("create .run dir");
+        let state_json = serde_json::json!({
+            "models": {
+                "version": "1.4.2",
+                "tag": "v1.4.2",
+                "revision": "abc123def456"
+            },
+            "infra": {
+                "version": "0.1.7",
+                "tag": "v0.1.7",
+                "revision": "def456abc123"
+            }
+        });
+        fs::write(
+            run_dir.join("project_remote_state.json"),
+            serde_json::to_vec(&state_json).expect("serialize state"),
+        )
+        .expect("write state");
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
+        let base = format!("http://{}", runtime.local_addr());
+
+        let authorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send authorized request");
+        assert_eq!(authorized.status(), StatusCode::OK);
+        let body: serde_json::Value = authorized.json().await.expect("parse json");
+        let pv = &body["project_version"];
+        assert!(pv.is_object(), "project_version should be object, got: {}", pv);
+        assert_eq!(pv["models"]["version"], "1.4.2");
+        assert_eq!(pv["models"]["tag"], "v1.4.2");
+        assert_eq!(pv["infra"]["version"], "0.1.7");
+        assert_eq!(pv["infra"]["tag"], "v0.1.7");
 
         runtime.shutdown().await;
     }
