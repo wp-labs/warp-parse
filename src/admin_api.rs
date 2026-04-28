@@ -1899,7 +1899,11 @@ init_version = "0.1.7"
         assert_eq!(authorized.status(), StatusCode::OK);
         let body: serde_json::Value = authorized.json().await.expect("parse json");
         let pv = &body["project_version"];
-        assert!(pv.is_object(), "project_version should be object, got: {}", pv);
+        assert!(
+            pv.is_object(),
+            "project_version should be object, got: {}",
+            pv
+        );
         assert_eq!(pv["models"]["version"], "1.4.2");
         assert_eq!(pv["models"]["tag"], "v1.4.2");
         assert_eq!(pv["infra"]["version"], "0.1.7");

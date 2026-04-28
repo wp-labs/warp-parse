@@ -267,7 +267,9 @@ pub fn current_project_group_versions<P: AsRef<Path>>(
     }
 }
 
-pub(crate) fn resolve_project_remote_mode(conf: &ProjectRemoteConf) -> RunResult<ProjectRemoteMode> {
+pub(crate) fn resolve_project_remote_mode(
+    conf: &ProjectRemoteConf,
+) -> RunResult<ProjectRemoteMode> {
     let has_single = !conf.repo.trim().is_empty();
     let has_models = conf.models.is_some();
     let has_infra = conf.infra.is_some();
