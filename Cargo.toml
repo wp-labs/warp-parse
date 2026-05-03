@@ -141,7 +141,7 @@ hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service
 
 # --- Logging and Errors ---
 anyhow = "1.0"
-orion-error = "0.7"
+orion-error = "0.8"
 orion-sec = "0.5"
 orion-variate = "0.12"
 orion_conf = { version = "0.6", features = ["yaml", "toml"] }
