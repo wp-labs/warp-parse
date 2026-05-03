@@ -43,14 +43,21 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
-      - name: Cargo build
+      - name: Cargo build (stable)
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
         run: cargo build --release --target ${{ matrix.target }}
 
+      - name: Cargo build (labs)
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
+        run: cargo build --release --target ${{ matrix.target }} --features labs --target-dir target/labs
+
       - name: Show version
         if: matrix.can-run == true
-        run: ./target/${{ matrix.target }}/release/wparse --version
+        run: |
+          ./target/${{ matrix.target }}/release/wparse --version
+          ./target/labs/${{ matrix.target }}/release/wparse --version || echo "(labs version check skipped)"
 
       - name: Determine wp-examples branch
         if: matrix.can-run == true
@@ -92,6 +99,7 @@ jobs:
           cp -av target/${{ matrix.target }}/release/wpgen artifacts/
           cp -av target/${{ matrix.target }}/release/wprescue artifacts/
           cp -av target/${{ matrix.target }}/release/wproj artifacts/
+          cp -av target/labs/${{ matrix.target }}/release/wparse artifacts/wparse-labs
           tar -czf "${ARTIFACT}.tar.gz" artifacts
 
       - name: Attest Build Provenance

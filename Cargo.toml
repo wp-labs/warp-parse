@@ -94,10 +94,13 @@ core = []
 # --- Community Edition (default) ---
 community = ["core", "wp-connectors"]
 
+# --- Labs (Experimental connectors) ---
+labs = ["wp-connectors-labs"]
+
 # --- Enterprise ---
 
 # --- Convenience ---
-all = ["community"]
+all = ["community", "labs"]
 
 # --- Testing (cfg gates) ---
 sys_test = []
@@ -196,6 +199,7 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 
 wp-self-update =  "0.1"
 wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.13.2", optional = true }
+wp-connectors-labs = { path = "/Users/zuowenjian/devspace/rust/crates-wp/wp-connectors-labs", features = ["dmdb"], optional = true }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
