@@ -3378,6 +3378,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "odbc-api"
+version = "24.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f04f75fb2176707bce6c9180bf722346005d26df377471672e65fcb63252bf6c"
+dependencies = [
+ "atoi",
+ "log",
+ "odbc-sys",
+ "thiserror 2.0.18",
+ "widestring",
+]
+
+[[package]]
+name = "odbc-sys"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "245cb4fe8236df4fd352ba96075d754233c6509d654d9f1c1482158b7d6c083d"
+
+[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5871,6 +5890,7 @@ dependencies = [
  "wp-config",
  "wp-connector-api",
  "wp-connectors",
+ "wp-connectors-labs",
  "wp-engine",
  "wp-error",
  "wp-knowledge",
@@ -6054,6 +6074,12 @@ dependencies = [
  "libredox",
  "wasite",
 ]
+
+[[package]]
+name = "widestring"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72069c3113ab32ab29e5584db3c6ec55d416895e60715417b5b883a357c3e471"
 
 [[package]]
 name = "wildmatch"
@@ -6703,6 +6729,31 @@ dependencies = [
  "wp-model-core",
  "wp-parse-api",
  "wp-specs",
+]
+
+[[package]]
+name = "wp-connectors-labs"
+version = "0.1.1"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?rev=822e095#822e095e60a1e83b692256e0cfa193a3224c2c24"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "chrono",
+ "educe",
+ "log",
+ "odbc-api",
+ "orion-error",
+ "orion_conf",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "wp-conf-base",
+ "wp-connector-api",
+ "wp-error",
+ "wp-log",
+ "wp-model-core",
 ]
 
 [[package]]

@@ -58,4 +58,13 @@ pub fn register_optional_connectors() {
         register_sink_factory(wp_connectors::http::HttpSinkFactory);
     }
 
+    #[cfg(feature = "wp-connectors-labs")]
+    {
+        use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
+
+        // Dmdb (达梦数据库, experimental)
+        register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
+        register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
+    }
+
 }
