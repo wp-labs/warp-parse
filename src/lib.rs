@@ -1,4 +1,4 @@
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use orion_sec::load_sec_dict_by;
 use orion_variate::EnvDict;
 use std::sync::Once;
@@ -19,7 +19,7 @@ pub fn load_sec_dict() -> RunResult<EnvDict> {
         wp_error::RunReason::from_conf()
             .to_err()
             .with_detail("load sec dict failed")
-            .with_struct_source(e)
+            .with_source(e)
     })
 }
 

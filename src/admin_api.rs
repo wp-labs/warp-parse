@@ -1411,8 +1411,8 @@ where
 {
     RunReason::from_conf()
         .to_err()
+        .with_source(source)
         .with_detail(detail.into())
-        .with_std_source(source)
 }
 
 fn default_wait() -> bool {

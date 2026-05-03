@@ -1,6 +1,8 @@
 use std::time::Duration;
 
-use orion_error::{ErrorConv, ErrorOwe, ToStructError, UvsFrom};
+use orion_error::{
+    compat_prelude::ErrorOweBase, conversion::ToStructError, ErrorConv, UvsFrom, UvsReason,
+};
 use orion_variate::EnvDict;
 use tokio::time::sleep;
 use wp_log::info_ctrl;
@@ -68,7 +70,8 @@ pub async fn run(
         conf_path.display()
     );
     let resolved = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;
-    log_init(&resolved.conf.logging.to_log_conf()).owe_res()?;
+    log_init(&resolved.conf.logging.to_log_conf())
+        .owe(RunReason::Uvs(UvsReason::system_error()))?;
     log_resolved_out_sink(&resolved);
     let conf = &resolved.conf.generator;
     // 如果命令行指定了 gen_speed，使用恒定速率；否则使用配置中的 speed_profile

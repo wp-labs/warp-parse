@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::path::Path;
 
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use walkdir::WalkDir;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;

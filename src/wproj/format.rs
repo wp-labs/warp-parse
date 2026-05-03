@@ -1,4 +1,4 @@
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use serde::Serialize;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;
@@ -8,7 +8,7 @@ pub fn print_json<T: Serialize>(value: &T) -> RunResult<()> {
         RunReason::from_conf()
             .to_err()
             .with_detail("serialize json failed")
-            .with_std_source(err)
+            .with_source(err)
     })?;
     println!("{}", s);
     Ok(())

@@ -1,4 +1,4 @@
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use std::sync::Arc;
 use wp_error::run_error::{RunReason, RunResult};

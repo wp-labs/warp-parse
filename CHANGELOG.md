@@ -7,7 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.23.5 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.21.7` 到 `v1.21.9`，同步引入错误诊断双语提示、`stable_code` 提示索引等改进。
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.13.1` 到 `v0.13.2`。
+- **Dependencies**: 升级 `orion-error` 从 `0.6.3` 到 `0.7`，`orion-sec` 从 `0.4` 到 `0.5`，`orion-variate` 从 `0.11` 到 `0.12`，`orion_conf` 从 `0.5` 到 `0.6`。
+- **Dependencies**: 升级 `wp-connector-api` 从 `0.8` 到 `0.9`，`wp-log` 从 `0.2` 到 `0.3`，`wp-error` 从 `0.8` 到 `0.9`。
+- **Dependencies**: 升级 `shadow-rs` 从 `1.6.0` 到 `2.0`。
 
 ## [0.23.4] - 2026-04-28
 

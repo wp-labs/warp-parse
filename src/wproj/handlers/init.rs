@@ -1,4 +1,4 @@
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{UvsFrom , conversion::ToStructError};
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::{
     connectors::{types::SilentErrKind, LintSeverity},

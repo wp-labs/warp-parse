@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use crate::args::{EngineReloadArgs, EngineStatusArgs, EngineTargetArgs};
 use crate::format::print_json;
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -373,7 +373,7 @@ where
     RunReason::from_conf()
         .to_err()
         .with_detail(detail.into())
-        .with_std_source(source)
+        .with_source(source)
 }
 
 #[cfg(test)]

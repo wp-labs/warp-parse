@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::Path;
 
-use orion_error::{ErrorWrapAs, ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, ErrorWrapAs, UvsFrom};
 use orion_variate::{EnvDict, EnvEvaluable};
 use wp_config::engine::EngineConfig;
 use wp_error::run_error::RunResult;

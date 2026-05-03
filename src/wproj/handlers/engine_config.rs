@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use orion_error::{ErrorWrapAs, ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, ErrorWrapAs, UvsFrom};
 use orion_variate::{EnvDict, EnvEvaluable};
 use wp_config::engine::EngineConfig;
 use wp_error::run_error::{RunReason, RunResult};
@@ -25,6 +25,6 @@ fn resolve_work_root_path(path: &Path) -> RunResult<PathBuf> {
             RunReason::from_conf()
                 .to_err()
                 .with_detail("resolve current dir failed")
-                .with_std_source(e)
+                .with_source(e)
         })
 }

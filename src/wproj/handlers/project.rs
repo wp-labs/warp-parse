@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use orion_variate::EnvDict;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::project::{checker, init::PrjScope, WarpProject};
@@ -124,7 +124,7 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
         RunReason::from_conf()
             .to_err()
             .with_detail(format!("read {} failed", conf_path.display()))
-            .with_std_source(e)
+            .with_source(e)
     })?;
     if conf.contains("[admin_api]") {
         if !conf.contains(HOME_ADMIN_API_TOKEN_FILE_LINE)
@@ -138,7 +138,7 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
                 RunReason::from_conf()
                     .to_err()
                     .with_detail(format!("write {} failed", conf_path.display()))
-                    .with_std_source(e)
+                    .with_source(e)
             })?;
         }
         return Ok(());
@@ -153,7 +153,7 @@ fn ensure_admin_api_config_block(work_root: &Path) -> RunResult<()> {
         RunReason::from_conf()
             .to_err()
             .with_detail(format!("write {} failed", conf_path.display()))
-            .with_std_source(e)
+            .with_source(e)
     })?;
     Ok(())
 }

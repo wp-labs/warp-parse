@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.23.4" # @gxl:set(version)
+version = "0.23.5" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -92,31 +92,7 @@ default = ["community"]
 core = []
 
 # --- Community Edition (default) ---
-community = [
-    "core",
-    "kafka",
-    "doris",
-    "mysql",
-    "postgres",
-    "clickhouse",
-    "http",
-    "elasticsearch",
-    "prometheus",
-    "victorialogs",
-    "victoriametrics"
-]
-
-# --- Connectors (via wp_connectors) ---
-kafka = ["wp-connectors/kafka"]
-mysql = ["wp-connectors/mysql"]
-postgres = ["wp-connectors/postgres"]
-doris = ["wp-connectors/doris"]
-clickhouse = ["wp-connectors/clickhouse"]
-http = ["wp-connectors/http"]
-elasticsearch = ["wp-connectors/elasticsearch"]
-prometheus = ["wp-connectors/prometheus"]
-victorialogs = ["wp-connectors/victorialogs"]
-victoriametrics = ["wp-connectors/victoriametrics"]
+community = ["core", "wp-connectors"]
 
 # --- Enterprise ---
 
@@ -158,17 +134,17 @@ serde_json = "1.0"
 toml = "1.0"
 semver = "1.0"
 git2 = "0.20"
-reqwest = "0.13.2"
+reqwest = { version = "0.13.2", features = ["json"] }
 http-body-util = "0.1"
 hyper = { version = "1.8", features = ["server", "http1"] }
 hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service", "tokio", "http1"] }
 
 # --- Logging and Errors ---
 anyhow = "1.0"
-orion-error = "0.6.3"
-orion-sec = "0.4"
-orion-variate = "0.11"
-orion_conf = { version = "0.5", features = ["yaml", "toml"] }
+orion-error = "0.7"
+orion-sec = "0.5"
+orion-variate = "0.12"
+orion_conf = { version = "0.6", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
@@ -186,7 +162,7 @@ clap = { version = "4.5", features = ["derive"] }
 #bytes = "~1.7"
 uuid = { version = "1.19", features = ["v4"] }
 once_cell = "1.21"
-shadow-rs = { version = "1.6.0", default-features = false }
+shadow-rs = { version = "2.0", default-features = false }
 rand = "0.9"
 rustls = "0.23"
 tokio-rustls = "0.26"
@@ -199,27 +175,27 @@ glob = "0.3"
 
 # --- Internal: Open API ---
 
-wp-connector-api = "0.8"
+wp-connector-api = "0.9"
 
 # --- Internal: Infrastructure ---
-wp-log = "0.2"
-wp-error = "0.8"
+wp-log = "0.3"
+wp-error = "0.9"
 
 # --- Internal: Engine ---
 
 # feats/oml_static.1
 
 
-wp-knowledge  =  "0.11"
+wp-knowledge  =  "0.12"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.7" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.7" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.7" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.7" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.9" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.9" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.9" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.21.9" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.1"
-wp-connectors = { package = "wp-connectors", git = "https://github.com/wp-labs/wp-connectors", tag = "v0.13.1" }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.13.2", optional = true }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }

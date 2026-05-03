@@ -25,102 +25,36 @@ pub fn register_for_runtime() {
 
 /// Register external connector factories based on feature flags.
 /// This function is community edition ready and includes Kafka, MySQL,
-/// ClickHouse, Elasticsearch, and Prometheus connectors when enabled.
+/// ClickHouse, Elasticsearch, Prometheus, VictoriaMetrics, VictoriaLogs,
+/// Doris, Count, and HTTP connectors when enabled.
 pub fn register_optional_connectors() {
-    // Initialize runtime registries if needed
-    wp_engine::connectors::startup::init_runtime_registries();
-
-    // NOTE:
-    // 目前大部分社区连接器工厂已可与 wp-engine 注册接口兼容，恢复注册。
-    // 仍未恢复的 connector 会按具体原因单独告警。
-
-    #[cfg(any(feature = "community", feature = "kafka"))]
+    #[cfg(feature = "wp-connectors")]
     {
-        wp_engine::connectors::registry::register_source_factory(
-            wp_connectors::kafka::KafkaSourceFactory,
-        );
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::kafka::KafkaSinkFactory,
-        );
-    }
+        use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
 
-    #[cfg(any(feature = "community", feature = "doris"))]
-    {
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::doris::DorisSinkFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "mysql"))]
-    {
-        wp_engine::connectors::registry::register_source_factory(
-            wp_connectors::mysql::MySQLSourceFactory,
-        );
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::mysql::MySQLSinkFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "postgres"))]
-    {
-        wp_engine::connectors::registry::register_source_factory(
-            wp_connectors::postgres::PostgresSourceFactory,
-        );
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::postgres::PostgresSinkFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "victoriametrics"))]
-    {
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::victoriametrics::VictoriaMetricFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "victorialogs"))]
-    {
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::victorialogs::VictoriaLogSinkFactory,
-        );
-    }
-
-    // ClickHouse connector is not exported from wp-connectors crate root currently.
-    #[cfg(any(feature = "community", feature = "clickhouse"))]
-    {
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::clickhouse::ClickHouseSinkFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "http"))]
-    {
-        wp_engine::connectors::registry::register_source_factory(
-            wp_connectors::http::HttpSourceFactory,
-        );
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::http::HttpSinkFactory,
-        );
-    }
-
-    #[cfg(any(feature = "community", feature = "elasticsearch"))]
-    {
-        wp_engine::connectors::registry::register_sink_factory(
-            wp_connectors::elasticsearch::ElasticsearchSinkFactory,
-        );
-    }
-
-    // Prometheus module currently does not export a public sink factory type.
-    #[cfg(any(feature = "community", feature = "prometheus"))]
-    {
-        wp_log::warn_ctrl!(
-            "skip prometheus connector registration: public factory type is not exported"
-        );
-    }
-
-    // Enterprise features placeholder
-    #[cfg(feature = "wp-enterprise")]
-    {
-        // Enterprise-specific connectors would be registered here
+        // Kafka
+        register_source_factory(wp_connectors::kafka::KafkaSourceFactory);
+        register_sink_factory(wp_connectors::kafka::KafkaSinkFactory);
+        // MySQL
+        register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
+        register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
+        // ClickHouse
+        register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
+        // Elasticsearch
+        register_sink_factory(wp_connectors::elasticsearch::ElasticsearchSinkFactory);
+        // Prometheus
+        register_sink_factory(wp_connectors::prometheus::PrometheusFactory);
+        // Doris
+        register_sink_factory(wp_connectors::doris::DorisSinkFactory);
+        // Count (debug/bench)
+        register_source_factory(wp_connectors::count::CountSourceFactory);
+        register_sink_factory(wp_connectors::count::CountSinkFactory);
+        // VictoriaLogs
+        register_sink_factory(wp_connectors::victorialogs::VictoriaLogSinkFactory);
+        // VictoriaMetrics
+        register_sink_factory(wp_connectors::victoriametrics::VictoriaMetricFactory);
+        // HTTP
+        register_source_factory(wp_connectors::http::HttpSourceFactory);
+        register_sink_factory(wp_connectors::http::HttpSinkFactory);
     }
 }

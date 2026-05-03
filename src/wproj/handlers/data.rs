@@ -4,7 +4,9 @@ use crate::args::{
 };
 use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
 use orion_conf::TomlIO;
-use orion_error::{ErrorWith, ErrorWrapAs, ToStructError, UvsFrom, WrapStructErrorAs};
+use orion_error::{
+    conversion::ToStructError, traits_ext::WrapStructErrorAs, ErrorWith, ErrorWrapAs, UvsFrom,
+};
 use orion_variate::EnvDict;
 use wp_config::sources::types::WarpSources;
 use wp_engine::facade::config as constants;
@@ -61,7 +63,7 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     let wpsrc_path = std::path::PathBuf::from(main_conf.src_conf_of(constants::WPSRC_TOML));
     let sources_config = WarpSources::load_toml(&wpsrc_path)
         .wrap_as(RunReason::from_conf(), "load wpsrc.toml failed")
-        .with(&wpsrc_path)
+        .with_context(&wpsrc_path)
         .doing("load wpsrc.toml")?;
 
     // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
@@ -72,9 +74,9 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
             RunReason::from_conf()
                 .to_err()
                 .with_detail("serialize wpsrc.toml failed")
-                .with_std_source(err)
+                .with_source(err)
         })
-        .with(&wpsrc_path)
+        .with_context(&wpsrc_path)
         .doing("serialize wpsrc.toml")?;
 
     match parser.parse_and_build_from(&config_str, dict).await {

@@ -394,7 +394,12 @@ wproj is the official CLI tool for Warp Flow Engine, providing comprehensive pro
 • Model (rules/sources/sinks) management and monitoring
 • Knowledge base (KnowDB) creation and maintenance",
     version = CLAP_LONG_VERSION,
-    author = "Warp Flow Engine Team"
+    author = "Warp Flow Engine Team",
+    after_long_help = "ENVIRONMENT VARIABLES/环境变量:\n  \
+        WP_LANG=<locale>  设置提示语言: en_US.UTF-8 (English) / zh_CN.UTF-8 (中文, 默认); fallback 到 LANG\n  \
+        NO_COLOR=1        禁用彩色输出\n  \
+        UPDATE_BASE_URL=<url>  覆盖自动更新基础 URL\n  \
+        WPROJ_SELF_UPDATE_ROOT=<path>  覆盖自动更新本地根目录",
 )]
 pub struct WProjCli {
     /// 安静模式，减少输出信息 | Quiet mode with reduced output

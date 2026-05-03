@@ -5,7 +5,7 @@ use warp_parse::build::CLAP_LONG_VERSION;
 use warp_parse::load_sec_dict;
 use wp_cli_core::split_quiet_args;
 
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::{conversion::ToStructError, UvsFrom};
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpRescueApp;
 use wp_error::error_handling::RobustnessMode;

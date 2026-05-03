@@ -3,7 +3,7 @@ use std::path::Path;
 
 use git2::Oid;
 use orion_conf::{ToStructError, UvsConfFrom};
-use orion_error::WrapStructErrorAs;
+use orion_error::traits_ext::WrapStructErrorAs;
 use orion_variate::EnvDict;
 use serde::{Deserialize, Serialize};
 use wp_config::engine::{ProjectRemoteConf, RepoGroupConf};
@@ -535,7 +535,7 @@ where
     RunReason::from_conf()
         .to_err()
         .with_detail(message.into())
-        .with_std_source(source)
+        .with_source(source)
 }
 
 #[cfg(test)]
