@@ -23,7 +23,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Copy pre-built binaries (provided via build context, arch-specific)
 COPY ${TARGETARCH}/wparse /usr/local/bin/
-COPY ${TARGETARCH}/wparse-labs /usr/local/bin/
 COPY ${TARGETARCH}/wpgen /usr/local/bin/
 COPY ${TARGETARCH}/wproj /usr/local/bin/
 COPY ${TARGETARCH}/wprescue /usr/local/bin/
