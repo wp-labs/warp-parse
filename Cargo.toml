@@ -175,7 +175,7 @@ glob = "0.3"
 
 # --- Internal: Open API ---
 
-wp-connector-api = "0.9"
+wp-connector-api = "0.10"
 
 # --- Internal: Infrastructure ---
 wp-log = "0.3"
