@@ -178,7 +178,7 @@ glob = "0.3"
 wp-connector-api = "0.9"
 
 # --- Internal: Infrastructure ---
-wp-log = "0.3"
+wp-log = "0.4"
 wp-error = "0.9"
 
 # --- Internal: Engine ---
