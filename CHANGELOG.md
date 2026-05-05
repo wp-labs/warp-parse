@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.6] - 2026-05-05
+
+### Changed
+- 升级错误与 WP 依赖主线：`orion-error 0.8`、`wp-motor v1.21.11`、`wp-connectors v0.13.5`。
+
+### Fixed
+- 适配 `orion-error` 升级后的错误转换 API，移除旧兼容调用残留。
+
 ## [0.23.5 Unreleased]
 
 ### Changed

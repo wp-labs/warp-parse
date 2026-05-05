@@ -1,7 +1,8 @@
 use crate::args::{SelfCheckArgs, SelfSourceArgs, SelfUpdateArgs, UpdateChannel};
 use crate::format::print_json;
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use std::env;
+use warp_parse::compat::UvsFrom;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_self_update::{
     check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,

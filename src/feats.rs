@@ -57,5 +57,4 @@ pub fn register_optional_connectors() {
         register_source_factory(wp_connectors::http::HttpSourceFactory);
         register_sink_factory(wp_connectors::http::HttpSinkFactory);
     }
-
 }

@@ -1,5 +1,6 @@
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use serde::Serialize;
+use warp_parse::compat::UvsFrom;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 

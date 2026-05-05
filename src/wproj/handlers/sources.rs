@@ -1,6 +1,7 @@
-use orion_error::{ErrorWrapAs, UvsFrom};
+use orion_error::conversion::SourceErr;
 use orion_variate::EnvDict;
 use std::sync::Arc;
+use warp_parse::compat::UvsFrom;
 use wp_cli_core::business::connectors::sources as sources_core;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::sources::Sources;
@@ -12,7 +13,7 @@ pub fn list_sources_for_cli(args: &SourcesCommonArgs, dict: &EnvDict) -> RunResu
     let eng_conf = Arc::new(load_resolved_engine_config(&args.work_root, dict)?);
     let sources = Sources::new(&args.work_root, eng_conf.clone());
     let rows = sources_core::route_table(&args.work_root, eng_conf.as_ref(), None, dict)
-        .wrap_as(RunReason::from_conf(), "load source route table failed")?;
+        .source_err(RunReason::from_conf(), "load source route table failed")?;
     if args.json {
         sources.display_as_json(&rows);
     } else {

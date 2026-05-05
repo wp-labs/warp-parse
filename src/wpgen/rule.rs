@@ -1,8 +1,9 @@
 use std::time::Duration;
 
-use orion_error::{conversion::ToStructError, ErrorConv, ErrorWrapAs, UvsFrom};
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::EnvDict;
 use tokio::time::sleep;
+use warp_parse::compat::{ErrorConv, UvsFrom};
 use wp_engine::facade::config::WarpConf;
 use wp_engine::facade::generator::{GenGRA, RuleGRA};
 use wp_engine::runtime::generator::SpeedProfile;
@@ -58,8 +59,9 @@ pub async fn run(
             .with_detail(format!("config file not found: {}", conf_path.display())));
     }
     wp_log::info_ctrl!("wpgen.rule: loading config from '{}'", conf_path.display());
-    let rt = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;
-    log_init(&rt.conf.logging.to_log_conf()).wrap_as(RunReason::from_conf(), "init log failed")?;
+    let rt = load_wpgen_resolved(conf_name, &god, dict).conv_err()?;
+    log_init(&rt.conf.logging.to_log_conf())
+        .source_err(RunReason::from_conf(), "init log failed")?;
     wp_proj::wpgen::log_resolved_out_sink(&rt);
 
     let g = &rt.conf.generator;
@@ -85,7 +87,7 @@ pub async fn run(
     );
     let default_rule_root = god
         .load_engine_config(dict)
-        .err_conv()?
+        .conv_err()?
         .rule_root()
         .to_string();
     let rule_root = wpl_dir.unwrap_or(default_rule_root.as_str());

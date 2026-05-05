@@ -1,9 +1,9 @@
 use std::fs;
 use std::path::Path;
 
+use crate::compat::UvsFrom;
 use git2::Oid;
-use orion_conf::{ToStructError, UvsConfFrom};
-use orion_error::traits_ext::WrapStructErrorAs;
+use orion_error::conversion::ToStructError;
 use orion_variate::EnvDict;
 use serde::{Deserialize, Serialize};
 use wp_config::engine::{ProjectRemoteConf, RepoGroupConf};
@@ -433,7 +433,10 @@ fn sync_project_remote_with_repo_inner(
         );
         rollback_partial_update(work_root, previous_state.as_ref(), changed, dirs).map_err(
             |rollback_err| {
-                rollback_err.wrap_as(RunReason::from_conf(), format!("{}; rollback failed", err))
+                RunReason::from_conf()
+                    .to_err()
+                    .with_detail(format!("{}; rollback failed", err))
+                    .with_source(rollback_err)
             },
         )?;
         warn_ctrl!(

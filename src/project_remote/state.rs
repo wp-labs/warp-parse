@@ -1,7 +1,8 @@
 use std::fs;
 use std::path::Path;
 
-use orion_error::{conversion::ToStructError, ErrorWrapAs, UvsFrom};
+use crate::compat::UvsFrom;
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
 use wp_config::engine::EngineConfig;
 use wp_error::run_error::RunResult;
@@ -114,7 +115,7 @@ pub fn restore_runtime_artifact_snapshot<P: AsRef<Path>>(
 
 pub(super) fn load_engine_config(work_root: &Path, dict: &EnvDict) -> RunResult<EngineConfig> {
     EngineConfig::load(work_root, dict)
-        .wrap_as(
+        .source_err(
             RunReason::from_conf(),
             format!("load {} failed", work_root.join(ENGINE_CONF_PATH).display()),
         )

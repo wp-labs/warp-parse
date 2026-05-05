@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
+use crate::compat::UvsFrom;
 use chrono::{DateTime, Utc};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -14,8 +15,7 @@ use hyper::service::service_fn;
 use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
-use orion_conf::{ToStructError, UvsConfFrom};
-use orion_error::ErrorWrapAs;
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
@@ -244,7 +244,7 @@ fn load_engine_config(
     dict: &EnvDict,
 ) -> RunResult<wp_config::engine::EngineConfig> {
     wp_config::engine::EngineConfig::load(work_root, dict)
-        .wrap_as(RunReason::from_conf(), "load engine config failed")
+        .source_err(RunReason::from_conf(), "load engine config failed")
         .map(|conf| conf.env_eval(dict).conf_absolutize(work_root))
 }
 
