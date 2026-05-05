@@ -351,9 +351,17 @@ jobs:
       - name: Build assets map and validate
         run: |
           set -euo pipefail
-          jq -c '
+          REPO_NAME="${GITHUB_REPOSITORY#*/}"
+          TAG="${{ steps.meta.outputs.tag }}"
+          ASSET_PREFIX="${REPO_NAME}-${TAG}-"
+          RELEASE_URL_PREFIX="https://github.com/${GITHUB_REPOSITORY}/releases/download/"
+
+          jq -c --arg prefix "$ASSET_PREFIX" '
             [ .assets[]
-              | select(.name | test("^warp-parse-v[^/]+-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
+              | select(
+                  (.name | startswith($prefix)) and
+                  (.name | test("-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
+                )
               | {
                   key: (.name | capture("-(?<target>aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$").target),
                   value: {
@@ -364,9 +372,9 @@ jobs:
             ] | from_entries
           ' /tmp/release.json > /tmp/assets.json
 
-          jq -e '
+          jq -e --arg release_url_prefix "$RELEASE_URL_PREFIX" '
             (keys | sort) == ["aarch64-apple-darwin","aarch64-unknown-linux-gnu","x86_64-unknown-linux-gnu"] and
-            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse-exp/releases/download/"))) and
+            (to_entries | all(.value.url | startswith($release_url_prefix))) and
             (to_entries | all(.value.sha256 | test("^[0-9a-f]{64}$")))
           ' /tmp/assets.json >/dev/null
 
