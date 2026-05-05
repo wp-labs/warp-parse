@@ -314,7 +314,7 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: wp-install-updates
+      group: wp-install-updates-exp
       cancel-in-progress: false
     steps:
       - name: Determine channel
@@ -366,7 +366,7 @@ jobs:
 
           jq -e '
             (keys | sort) == ["aarch64-apple-darwin","aarch64-unknown-linux-gnu","x86_64-unknown-linux-gnu"] and
-            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse/releases/download/"))) and
+            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse-exp/releases/download/"))) and
             (to_entries | all(.value.sha256 | test("^[0-9a-f]{64}$")))
           ' /tmp/assets.json >/dev/null
 
@@ -388,8 +388,8 @@ jobs:
           fi
 
           cd wp-install
-          MANIFEST="updates/${CHANNEL}/manifest.json"
-          HISTORY="updates/${CHANNEL}/versions/${TAG}.json"
+          MANIFEST="updates_exp/${CHANNEL}/manifest.json"
+          HISTORY="updates_exp/${CHANNEL}/versions/${TAG}.json"
           mkdir -p "$(dirname "$MANIFEST")" "$(dirname "$HISTORY")"
 
           jq -n \
