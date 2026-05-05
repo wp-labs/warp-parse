@@ -1,8 +1,9 @@
 use std::fs;
 use std::path::Path;
 
+use crate::compat::UvsFrom;
 use git2::{build::CheckoutBuilder, ErrorCode, FetchOptions, Oid, Remote, Repository};
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use semver::Version;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;

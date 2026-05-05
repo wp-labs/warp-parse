@@ -1,4 +1,5 @@
-use orion_error::{conversion::ToStructError, UvsFrom};
+use crate::compat::UvsFrom;
+use orion_error::conversion::ToStructError;
 use orion_sec::load_sec_dict_by;
 use orion_variate::EnvDict;
 use std::sync::Once;
@@ -8,6 +9,7 @@ shadow_rs::shadow!(build);
 
 // Shared library module for warp-parse
 pub mod admin_api;
+pub mod compat;
 pub mod feats;
 pub mod project_remote;
 pub const SEK_KEY_FILE: &str = "sec_key.toml";

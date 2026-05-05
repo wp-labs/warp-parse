@@ -2,7 +2,8 @@ use std::path::PathBuf;
 
 use crate::args::ConfUpdateArgs;
 use crate::format::print_json;
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
+use warp_parse::compat::UvsFrom;
 use warp_parse::project_remote;
 use warp_parse::project_remote::RemoteGroup;
 use wp_engine::facade::args::ParseArgs;

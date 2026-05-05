@@ -4,11 +4,12 @@ use std::time::Duration;
 
 use crate::args::{EngineReloadArgs, EngineStatusArgs, EngineTargetArgs};
 use crate::format::print_json;
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION};
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use warp_parse::admin_api;
+use warp_parse::compat::UvsFrom;
 use warp_parse::load_sec_dict;
 use wp_error::run_error::{RunReason, RunResult};
 

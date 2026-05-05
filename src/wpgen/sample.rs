@@ -1,10 +1,9 @@
 use std::time::Duration;
 
-use orion_error::{
-    compat_prelude::ErrorOweBase, conversion::ToStructError, ErrorConv, UvsFrom, UvsReason,
-};
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::EnvDict;
 use tokio::time::sleep;
+use warp_parse::compat::{ErrorConv, UvsFrom};
 use wp_log::info_ctrl;
 use wp_proj::wpgen::load_wpgen_resolved;
 use wp_proj::wpgen::{log_resolved_out_sink, sample_exec_direct_core};
@@ -69,9 +68,9 @@ pub async fn run(
         "wpgen.sample: loading config from '{}'",
         conf_path.display()
     );
-    let resolved = load_wpgen_resolved(conf_name, &god, dict).err_conv()?;
+    let resolved = load_wpgen_resolved(conf_name, &god, dict).conv_err()?;
     log_init(&resolved.conf.logging.to_log_conf())
-        .owe(RunReason::Uvs(UvsReason::system_error()))?;
+        .source_err(RunReason::system_error(), "init log failed")?;
     log_resolved_out_sink(&resolved);
     let conf = &resolved.conf.generator;
     // 如果命令行指定了 gen_speed，使用恒定速率；否则使用配置中的 speed_profile

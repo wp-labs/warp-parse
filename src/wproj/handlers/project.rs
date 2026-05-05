@@ -2,8 +2,9 @@ use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use orion_variate::EnvDict;
+use warp_parse::compat::UvsFrom;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::project::{checker, init::PrjScope, WarpProject};
 

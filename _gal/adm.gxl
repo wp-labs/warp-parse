@@ -1,20 +1,25 @@
-extern mod cfm { git = "https://github.com/galaxy-operators/cfm-gxl.git", branch = "${GXL_CHANNEL:develop}" }
-//extern mod ver { path = "./_gal/mods" }
+extern mod vfm { path = "@{PATH}"; }
+
 mod  envs {
   env default {
-    root = "./" ;
+     ROOT= "./";
   }
 }
 mod main   : ver_adm {
 
-  #[auto_load(entry)]
-    flow _entry : ver.use {
-    }
+#[auto_load(entry)]
+  flow _entry | ver.use {
+    gx.sn( file: "./exp_sn.txt");
+  }
 
-  #[auto_load(exit)]
-    flow ver.set_cargo_ver | @_set_ver {
-        gx.cmd ("cargo check")
-    }
+#[auto_load(exit)]
+  flow _set_ver | ver.syn_file {
+    VERSION = "${VERSION}-E${SN}";
+    SYN_FILE= "${ENV_ROOT}/Cargo.toml";
+    gx.echo ("syn cargo file");
+  }
 
-
+  flow up_sn {
+    gx.sn( file: "./exp_sn.txt", action : "add");
+  }
 }

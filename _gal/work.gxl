@@ -1,12 +1,9 @@
-extern mod head { path = "${GXL_START_ROOT}/_gal/"; }
+extern mod rust,ver { path = "@{PATH}"; }
 
 mod envs  {
    env _common  : rust_env.init   {
     root      = ".";
-    target_name = "";
     prj_key   = "warp-parse" ;
-    DIST_REPO = "unknow";
-    PATCH_FLAG = "#";
 
   }
 
@@ -16,10 +13,6 @@ mod envs  {
   #[usage(desp="use debug ",color="blue")]
   env release :  _common,rust_env.release{
   }
-  env patch  {
-        PATCH_FLAG = " ";
-  }
-
 
   #[usage(desp="default mamcos", color="green")]
   env default    : envs._common,debug;
@@ -27,33 +20,18 @@ mod envs  {
 
 mod main  {
       bld_bins = "target/${ENV_BUILD_NAME}" ;
-      rls_bins = "target/release" ;
       HOME_BIN = "${HOME}/bin" ;
 
     #[auto_load(entry)]
     flow __into | conf {
-        DIST_REPO = "unkonw";
-        if defined(${GXL_OS_SYS}) {
-             gx.echo (  "${GXL_OS_SYS} is defined " )
-        }
-        if ${GXL_OS_SYS} =* "arm64_macos_*" {
-            DIST_REPO = "macos";
-        } else if ${GXL_OS_SYS} =* "x86_64_ubuntu*" {
-            DIST_REPO = "ubuntu22";
-        }
-        else {
-            DIST_REPO = "other";
-        }
-
     }
     #[task(name="config")]
-    flow conf {
+    flow conf  {
     }
 
   #[task(name="${ENV_PRJ_KEY}@build")]
   flow ver.use | conf | rust_flow.build | @build | _pub_local {
       gx.echo(  "${MAIN_HOME_BIN}" );
-      //os.path (  "${MAIN_HOME_BIN}" );
   }
   #[usage(desp="lint code")]
   flow lint | rust_flow.lint {} ;
@@ -62,6 +40,7 @@ mod main  {
   flow build  |   @test  {
     gx.cmd ( "cargo test --all ${ENV_BUILD_FLAG}", log : "1" , out:"true"  );
   }
+
 
   flow use_local  {
     gx.patch_file(file: "./Cargo.toml", action: "comment_block", marker: "remote_motor");

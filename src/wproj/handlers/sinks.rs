@@ -1,6 +1,7 @@
-use orion_error::{conversion::ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use orion_variate::EnvDict;
 use std::sync::Arc;
+use warp_parse::compat::UvsFrom;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_proj::sinks::{
     collect_oml_models, expand_route_rows, render_route_rows, render_sink_list, DisplayFormat,
