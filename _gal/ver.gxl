@@ -1,0 +1,26 @@
+mod ver {
+
+  flow use   {
+      gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null" );
+    }
+  flow build   {
+      gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "build"  );
+      gx.echo ( "current version : ${VERSION}" );
+    }
+  flow patch {
+      gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "bugfix" );
+      gx.echo (  "current version : ${VERSION}"  );
+    }
+  flow feature {
+      gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "feature"  );
+      gx.echo ( "current version : ${VERSION}"  );
+    }
+  flow syn_file {
+        gx.patch_file(
+        file   : "${SYN_FILE}",
+        action : "set",
+        marker : "version",
+        value  : r#""${VERSION}""#
+        );
+    }
+}
