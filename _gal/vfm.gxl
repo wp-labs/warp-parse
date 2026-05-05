@@ -11,20 +11,20 @@ mod sys_ver_adm {
   flow tag_stable {
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
     gx.sn( file: "./exp_sn.txt");
-    gx.cmd (  "git tag v${VERSION}-E${SN}" );
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}" );
     gx.cmd (  "git push --tags" );
   }
 
   flow tag_beta{
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
     gx.sn( file: "./exp_sn.txt");
-    gx.cmd (  "git tag v${VERSION}-E${SN}-beta" );
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}-beta" );
     gx.cmd (  "git push --tags" );
   }
   flow tag_alpha{
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
     gx.sn( file: "./exp_sn.txt");
-    gx.cmd (  "git tag v${VERSION}-E${SN}-alpha" );
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}-alpha" );
     gx.cmd (  "git push --tags" );
   }
 }
