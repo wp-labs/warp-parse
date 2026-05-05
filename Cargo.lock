@@ -5824,7 +5824,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.23.6-E1"
+version = "0.23.6-E2"
 dependencies = [
  "anyhow",
  "chrono",
