@@ -6624,8 +6624,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.13.5"
-source = "git+https://github.com/wp-labs/wp-connectors?branch=fix/issues_112#b3ca4d93f4fcd45dd6f8de68c5179681133709d1"
+version = "0.13.6"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.13.6#86d668c6af6c2440d3d6a482e82dc18687f908e8"
 dependencies = [
  "actix-web",
  "async-trait",
