@@ -38,6 +38,9 @@ pub fn register_optional_connectors() {
         // MySQL
         register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
         register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
+        // postgres
+        register_source_factory(wp_connectors::postgres::PostgresSourceFactory);
+        register_sink_factory(wp_connectors::postgres::PostgresSinkFactory);
         // ClickHouse
         register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
         // Elasticsearch
