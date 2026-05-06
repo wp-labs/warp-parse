@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.23.7] - 2026-05-06
+
+### Changed
+- **Dependencies**: Upgraded `wp-connectors` from `v0.13.5` to `v0.13.6`.
+- **Postgres Source**: Postgres source low-version compatibility adaptation.
+
 ## [0.23.6] - 2026-05-05
 
 ### Changed
