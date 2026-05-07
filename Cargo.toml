@@ -164,7 +164,7 @@ uuid = { version = "1.19", features = ["v4"] }
 once_cell = "1.21"
 shadow-rs = { version = "2.0", default-features = false }
 rand = "0.9"
-rustls = "0.23"
+rustls = { version = "0.23" ,features = ["ring"] }
 tokio-rustls = "0.26"
 
 # --- Data Structures ---
