@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["v*.*.*", "exp-v*.*.*"]
+    tags: ["exp-v*.*.*"]
 
 env:
   REGISTRY: ghcr.io
