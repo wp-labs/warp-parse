@@ -1491,7 +1491,10 @@ target = "*"
             ])
             .status()
             .expect("run openssl to generate self-signed cert");
-        assert!(status.success(), "openssl failed to generate self-signed cert");
+        assert!(
+            status.success(),
+            "openssl failed to generate self-signed cert"
+        );
         (cert_path, key_path)
     }
 
