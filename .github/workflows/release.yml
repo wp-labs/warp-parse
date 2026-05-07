@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["exp-v*.*.*"]
+    tags: ["v*.*.*"]
 
 env:
   REGISTRY: ghcr.io
@@ -52,29 +52,9 @@ jobs:
         if: matrix.can-run == true
         run: ./target/${{ matrix.target }}/release/wparse --version
 
-      - name: Determine wp-examples branch
-        if: matrix.can-run == true
-        id: examples-branch
-        run: |
-          VERSION="${{ github.ref_name }}"
-          if [[ "$VERSION" == *"-alpha"* ]]; then
-            BRANCH="alpha"
-          elif [[ "$VERSION" == *"-beta"* ]]; then
-            BRANCH="beta"
-          else
-            BRANCH="main"
-          fi
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "Using wp-examples branch: $BRANCH"
-
       - name: Clone wp-examples
         if: matrix.can-run == true
-        run: |
-          git clone \
-            --branch "${{ steps.examples-branch.outputs.branch }}" \
-            --single-branch \
-            https://github.com/wp-labs/wp-examples \
-            /tmp/wp-examples
+        run: git clone https://github.com/wp-labs/wp-examples /tmp/wp-examples
 
       - name: Run integration tests
         if: matrix.can-run == true
@@ -269,7 +249,7 @@ jobs:
 
             ### Quick Install Script
             ```bash
-            curl -sSf https://get.warpparse.ai/inst-x.sh | bash -s -- wparse ${{ steps.branch.outputs.branch }}
+            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/${{ steps.branch.outputs.branch }}/scripts/install.sh | bash
             ```
 
             ### Docker Image
@@ -314,7 +294,7 @@ jobs:
     permissions:
       contents: read
     concurrency:
-      group: wp-install-updates-exp
+      group: wp-install-updates
       cancel-in-progress: false
     steps:
       - name: Determine channel
@@ -351,17 +331,9 @@ jobs:
       - name: Build assets map and validate
         run: |
           set -euo pipefail
-          REPO_NAME="${GITHUB_REPOSITORY#*/}"
-          TAG="${{ steps.meta.outputs.tag }}"
-          ASSET_PREFIX="${REPO_NAME}-${TAG}-"
-          RELEASE_URL_PREFIX="https://github.com/${GITHUB_REPOSITORY}/releases/download/"
-
-          jq -c --arg prefix "$ASSET_PREFIX" '
+          jq -c '
             [ .assets[]
-              | select(
-                  (.name | startswith($prefix)) and
-                  (.name | test("-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
-                )
+              | select(.name | test("^warp-parse-v[^/]+-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
               | {
                   key: (.name | capture("-(?<target>aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$").target),
                   value: {
@@ -372,9 +344,9 @@ jobs:
             ] | from_entries
           ' /tmp/release.json > /tmp/assets.json
 
-          jq -e --arg release_url_prefix "$RELEASE_URL_PREFIX" '
+          jq -e '
             (keys | sort) == ["aarch64-apple-darwin","aarch64-unknown-linux-gnu","x86_64-unknown-linux-gnu"] and
-            (to_entries | all(.value.url | startswith($release_url_prefix))) and
+            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse-exp/releases/download/"))) and
             (to_entries | all(.value.sha256 | test("^[0-9a-f]{64}$")))
           ' /tmp/assets.json >/dev/null
 
@@ -396,8 +368,8 @@ jobs:
           fi
 
           cd wp-install
-          MANIFEST="updates_exp/${CHANNEL}/manifest.json"
-          HISTORY="updates_exp/${CHANNEL}/versions/${TAG}.json"
+          MANIFEST="updates-exp/${CHANNEL}/manifest.json"
+          HISTORY="updates-exp/${CHANNEL}/versions/${TAG}.json"
           mkdir -p "$(dirname "$MANIFEST")" "$(dirname "$HISTORY")"
 
           jq -n \
@@ -424,7 +396,7 @@ jobs:
           cd wp-install
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add updates
+          git add updates-exp
           if git diff --cached --quiet; then
             echo "no manifest changes"
             exit 0
