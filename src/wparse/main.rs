@@ -12,7 +12,7 @@ use tikv_jemallocator::Jemalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 use clap::Parser;
 
-use warp_parse::{load_sec_dict, log_build_info_once};
+use warp_parse::{init_rustls_crypto_provider, load_sec_dict, log_build_info_once};
 
 use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
@@ -36,6 +36,7 @@ async fn main() {
 }
 
 async fn do_main() -> RunResult<()> {
+    init_rustls_crypto_provider();
     let argv: Vec<String> = env::args().collect();
     let (_quiet, filtered_args) = split_quiet_args(argv);
     register_extension();
