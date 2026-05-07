@@ -15,6 +15,13 @@ pub mod project_remote;
 pub const SEK_KEY_FILE: &str = "sec_key.toml";
 pub const WP_DOT_DIR: &str = ".warp_parse";
 
+pub fn init_rustls_crypto_provider() {
+    static RUSTLS_PROVIDER_ONCE: Once = Once::new();
+    RUSTLS_PROVIDER_ONCE.call_once(|| {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    });
+}
+
 pub fn load_sec_dict() -> RunResult<EnvDict> {
     load_sec_dict_by(WP_DOT_DIR, SEK_KEY_FILE, orion_sec::SecFileFmt::Toml).map_err(|e| {
         wp_log::warn_ctrl!("load sec dict failed: {}", e);
