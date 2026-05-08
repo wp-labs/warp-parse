@@ -7,59 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.7] - 2026-05-06
-
-### Changed
-- **Dependencies**: 升级 `wp-connectors` 从 `v0.13.5` 到 `v0.13.6`。
-- **Postgres Source**: Postgres Source 低版本兼容性适配。
-
-## [0.23.6] - 2026-05-05
-
-### Changed
-- 升级错误与 WP 依赖主线：`orion-error 0.8`、`wp-motor v1.21.11`、`wp-connectors v0.13.5`。
-
-### Fixed
-- 适配 `orion-error` 升级后的错误转换 API，移除旧兼容调用残留。
-
-## [0.23.5 Unreleased]
-
-### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.21.7` 到 `v1.21.9`，同步引入错误诊断双语提示、`stable_code` 提示索引等改进。
-- **Dependencies**: 升级 `wp-connectors` 从 `v0.13.1` 到 `v0.13.2`。
-- **Dependencies**: 升级 `orion-error` 从 `0.6.3` 到 `0.7`，`orion-sec` 从 `0.4` 到 `0.5`，`orion-variate` 从 `0.11` 到 `0.12`，`orion_conf` 从 `0.5` 到 `0.6`。
-- **Dependencies**: 升级 `wp-connector-api` 从 `0.8` 到 `0.9`，`wp-log` 从 `0.2` 到 `0.3`，`wp-error` 从 `0.8` 到 `0.9`。
-- **Dependencies**: 升级 `shadow-rs` 从 `1.6.0` 到 `2.0`。
-
-## [0.23.4] - 2026-04-28
+## [0.24.0] - 2026-05-08
 
 ### Added
 - **HTTP Source**: 新增 HTTP Source 连接器支持（`http` feature），支持通过 HTTP 接口接收外部数据推送。
-- **Postgres Source**: 新增 Postgres Source 特性继承支持。
-- **Project Remote**: 新增双仓库模式支持（`[project_remote.models]` + `[project_remote.infra]`），支持 `models/` 和 `infra/`（`conf/`、`topology/`、`connectors/`）从两个独立的 Git 仓库分别同步，通过 `--group models|infra` 逐组更新。
+- **Postgres Source**: 新增 Postgres Source 特性继承支持；低版本兼容性适配。
+- **Project Remote**: 新增双仓库模式支持（`[project_remote.models]` + `[project_remote.infra]`），支持 `models/` 和 `infra/` 从两个独立的 Git 仓库分别同步，通过 `--group models|infra` 逐组更新。
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.21.0` 到 `v1.21.7`，同步上游改进：OML `take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复。
-- **Admin API**: 支持监听地址配置修改（`admin_api.listen`）；reload 接口新增 `group` 参数支持双仓库模式分组更新；status 接口在双仓库模式下返回分组版本信息。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.20.0` 到 `v1.22.0`，同步引入：`take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复、`stable_code` 双语错误提示、`orion-error 0.8` 升级适配等全部上游改进。
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.12.1` 到 `v0.14.0`（新增 HTTP Source、PostgreSQL Source 连接器）；
+- **Error Handling**: 全面升级错误治理体系 — `orion-error` 升级到 `0.8` 主线，，错误信息附带路径上下文，CLI 报错更完整可读。
+- **Admin API**: 支持监听地址配置修改；reload 接口新增 `group` 参数支持双仓库模式分组更新；status 接口在双仓库模式下返回分组版本信息。
 
 ### Fixed
+- **OML/Take**: 同步上游修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正同名字段取值顺序。
+- **OML/SQL Parser**: 同步上游修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
 - 修复部分场景下运行时稳定性问题。
 
-
-## [0.23.3]
-
-## [0.23.0] - 2026-04-21
-
-### Changed
-- **Core Engine**: 升级 `wp-motor` 相关依赖从 `v1.20.0` 到 `v1.21.1`，同步引入最新核心引擎能力与 OML 修复。
-- **Connectors**: 升级 `wp-connectors` 从 `v0.12.1` 到 `v0.13.1`，同步引入连接器与指标链路更新。
-- **Dependencies**: 更新 `Cargo.lock` 中多项三方依赖到新版本，保持与当前版本线一致。
-
-### Fixed
-- **OML/Take**: 同步上游 `wp-motor` 修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正目标记录与源记录存在同名字段时的取值顺序。
-- **OML/SQL Parser**: 同步上游 `wp-motor` 修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
-
-
-## [0.22.5 Unreleased]
+## [0.22.5 ]
 
 ### Changed
 - **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。
