@@ -3368,6 +3368,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "odbc-api"
+version = "25.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9144219b357fb103b928a1ef1b4e466a84b8f52aa9f5d5e538c409e1ffb9d26"
+dependencies = [
+ "atoi",
+ "log",
+ "odbc-sys",
+ "thiserror 2.0.18",
+ "widestring",
+]
+
+[[package]]
+name = "odbc-sys"
+version = "0.31.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "245cb4fe8236df4fd352ba96075d754233c6509d654d9f1c1482158b7d6c083d"
+
+[[package]]
 name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6018,6 +6037,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "widestring"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72069c3113ab32ab29e5584db3c6ec55d416895e60715417b5b883a357c3e471"
+
+[[package]]
 name = "wildmatch"
 version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6624,10 +6649,11 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.14.0"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.14.0#4b962f82c20863bf2c463a646f3ee2053c681268"
+version = "0.14.1"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.14.1#58b990c08df03a886b288655916f2449b4fe522b"
 dependencies = [
  "actix-web",
+ "anyhow",
  "async-trait",
  "base64 0.22.1",
  "bytes",
@@ -6638,6 +6664,7 @@ dependencies = [
  "flate2",
  "lazy_static",
  "log",
+ "odbc-api",
  "orion-error",
  "orion_conf",
  "orion_exp 0.1.2",
