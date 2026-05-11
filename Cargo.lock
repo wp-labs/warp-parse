@@ -2177,9 +2177,9 @@ checksum = "135b12329e5e3ce057a9f972339ea52bc954fe1e9358ef27f95e89716fbc5424"
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.11"
+version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "08d46837a0ed51fe95bd3b05de33cd64a1ee88fc797477ca48446872504507c5"
+checksum = "9155a582abd142abc056962c29e3ce5ff2ad5469f4246b537ed42c5deba857da"
 dependencies = [
  "typenum",
 ]
@@ -3371,6 +3371,19 @@ name = "odbc-api"
 version = "24.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f04f75fb2176707bce6c9180bf722346005d26df377471672e65fcb63252bf6c"
+dependencies = [
+ "atoi",
+ "log",
+ "odbc-sys",
+ "thiserror 2.0.18",
+ "widestring",
+]
+
+[[package]]
+name = "odbc-api"
+version = "25.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9144219b357fb103b928a1ef1b4e466a84b8f52aa9f5d5e538c409e1ffb9d26"
 dependencies = [
  "atoi",
  "log",
@@ -6649,10 +6662,11 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.13.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.13.5#6bd00aa68085e1715bb27247f03a70d4c4e87b58"
+version = "0.14.1"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.14.1#58b990c08df03a886b288655916f2449b4fe522b"
 dependencies = [
  "actix-web",
+ "anyhow",
  "async-trait",
  "base64 0.22.1",
  "bytes",
@@ -6663,6 +6677,7 @@ dependencies = [
  "flate2",
  "lazy_static",
  "log",
+ "odbc-api 25.0.0",
  "orion-error",
  "orion_conf",
  "orion_exp 0.1.2",
@@ -6699,7 +6714,7 @@ dependencies = [
  "chrono",
  "educe",
  "log",
- "odbc-api",
+ "odbc-api 24.1.1",
  "orion-error",
  "orion_conf",
  "serde",
