@@ -92,7 +92,7 @@ default = ["community"]
 core = []
 
 # --- Community Edition (default) ---
-community = ["core", "wp-connectors"]
+community = ["core", "wp-connectors", "labs"]
 
 # --- Labs (experimental connectors) ---
 labs = ["wp-connectors-labs"]
@@ -198,9 +198,9 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.13.5", optional = true }
-wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.3", optional = true, features = ["dmdb"] }
-
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.1", optional = true }
+wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.4", optional = true, features = ["dmdb"] }
+# wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb"] }
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
 #wp-config = { path = "../wp-motor/crates/wp-config" }

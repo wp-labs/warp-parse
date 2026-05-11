@@ -38,6 +38,12 @@ pub fn register_optional_connectors() {
         // MySQL
         register_source_factory(wp_connectors::mysql::MySQLSourceFactory);
         register_sink_factory(wp_connectors::mysql::MySQLSinkFactory);
+        // PostgreSQL
+        register_source_factory(wp_connectors::postgres::PostgresSourceFactory);
+        register_sink_factory(wp_connectors::postgres::PostgresSinkFactory);
+        // DMDB达梦数据库
+        register_source_factory(wp_connectors::dmdb::DmdbSourceFactory);
+        register_sink_factory(wp_connectors::dmdb::DmdbSinkFactory);
         // ClickHouse
         register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
         // Elasticsearch
@@ -60,10 +66,10 @@ pub fn register_optional_connectors() {
 
     #[cfg(feature = "wp-connectors-labs")]
     {
-        use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
+        // use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
 
         // Dmdb (达梦数据库, experimental)
-        register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
-        register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
+        // register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
+        // register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
     }
 }
