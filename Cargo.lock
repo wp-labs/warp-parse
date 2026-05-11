@@ -5826,7 +5826,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.23.6-E5"
+version = "0.23.6-E7"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6706,13 +6706,14 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors-labs"
-version = "0.1.4"
-source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.4#a1561dcded005a6cc38f8eae99a6167cb4b4fb59"
+version = "0.1.5"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.5#ce5656a8e333d119fe4726d4b1f61931262a2dd8"
 dependencies = [
  "async-trait",
  "bytes",
  "chrono",
  "educe",
+ "hex",
  "log",
  "odbc-api 24.1.1",
  "orion-error",
