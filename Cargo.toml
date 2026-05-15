@@ -92,7 +92,7 @@ default = ["community"]
 core = []
 
 # --- Community Edition (default) ---
-community = ["core", "wp-connectors", "labs"]
+community = ["core", "wp-connectors"]
 
 # --- Labs (experimental connectors) ---
 labs = ["wp-connectors-labs"]
