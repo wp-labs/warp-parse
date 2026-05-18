@@ -191,7 +191,7 @@ wp-knowledge  =  "0.13"
 wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.0" }
 wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.0" }
 wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.0" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.0" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.2" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
