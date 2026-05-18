@@ -7,6 +7,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.3] - 2026-05-18
+
+### Added
+- **SQL/Route**: Added SQL query table-name routing to local SQLite or external Provider — supports `[[tables]]` and `[provider.tables]` configuration in `knowdb.toml`, automatically resolves table names from `FROM` clauses and dispatches queries.
+- **KnowDB/Config**: Added `uses_external_provider_only()` check; pure external provider configurations no longer delete local authority files.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.2` to `v1.22.3`, pulling in SQL routing, KnowDB external Provider support, `sanitize_sql_body` sub-query and alias syntax enhancements, and related improvements.
+
+## [0.24.2] - 2026-05-13
+
+### Added
+- **Sinks/Sync**: Pulled in upstream `wp-motor` sink batch write methods (`send_to_sink_batch`, `try_send_to_sink_batch`) to reduce backpressure from excessive statistical slicing.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.1` to `v1.22.2`, bringing sink batch write capabilities.
+
+## [0.24.1] - 2026-05-12
+
+### Fixed
+- **OML/SQL**: Pulled in upstream fix to skip unnecessary remote calls when all SQL parameters are Null.
+- **OML/Extract**: Pulled in upstream fix so `SingleEvalExp` skips `Value::Null` when extracting fields, instead of creating target fields for null values.
+- **OML/SQL**: Pulled in upstream knowledge base query bug fixes.
+
+### Changed
+- **Knowledge Base**: Pulled in upstream knowledge base query optimizations.
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.0` to `v1.22.1`, bringing OML/SQL query optimizations and knowledge base improvements.
+
 ## [0.24.0] - 2026-05-08
 
 ### Added
