@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.23.6-E9" # @gxl:set(version)
+version = "0.23.6-E11" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -92,7 +92,7 @@ default = ["community"]
 core = []
 
 # --- Community Edition (default) ---
-community = ["core", "wp-connectors"]
+community = ["core", "wp-connectors", "labs"]
 
 # --- Labs (experimental connectors) ---
 labs = ["wp-connectors-labs"]
@@ -191,15 +191,15 @@ wp-error = "0.10"
 
 wp-knowledge  =  "0.13"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.1" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.1" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.1" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.1" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.1", optional = true }
-wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.5", optional = true, features = ["dmdb"] }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.2", optional = true }
+wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.6", optional = true, features = ["dmdb"] }
 # wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb"] }
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
