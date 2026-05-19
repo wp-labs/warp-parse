@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.4] - 2026-05-19
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.3` to `v1.22.4`, pulling in the `ip4_to_int` fix — added string IPv4 address parsing support, IPv6 addresses now return Null instead of silently passing through unchanged.
+
 ## [0.24.3] - 2026-05-18
 
 ### Added
