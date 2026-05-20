@@ -1470,6 +1470,34 @@ key = "sink_stat"
 target = "*"
 "#;
 
+    fn generate_self_signed_cert(dir: &Path) -> (PathBuf, PathBuf) {
+        let cert_path = dir.join("cert.pem");
+        let key_path = dir.join("key.pem");
+        let status = std::process::Command::new("openssl")
+            .args([
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:2048",
+                "-keyout",
+                key_path.to_str().expect("key path is valid utf-8"),
+                "-out",
+                cert_path.to_str().expect("cert path is valid utf-8"),
+                "-days",
+                "365",
+                "-nodes",
+                "-subj",
+                "/CN=localhost",
+            ])
+            .status()
+            .expect("run openssl to generate self-signed cert");
+        assert!(
+            status.success(),
+            "openssl failed to generate self-signed cert"
+        );
+        (cert_path, key_path)
+    }
+
     fn write_test_work_root(dir: &Path, bind: &str, token_file: &str) {
         let conf_dir = dir.join("conf");
         fs::create_dir_all(&conf_dir).expect("create conf dir");
@@ -1674,6 +1702,135 @@ token_file = "{token_file}"
             "unexpected error: {}",
             err
         );
+    }
+
+    fn write_test_work_root_with_tls(
+        dir: &Path,
+        bind: &str,
+        token_file: &str,
+        cert_file: &str,
+        key_file: &str,
+    ) {
+        let conf_dir = dir.join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(&format!(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "{bind}"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = true
+cert_file = "{cert_file}"
+key_file = "{key_file}"
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "{token_file}"
+"#
+        ));
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write config");
+    }
+
+    fn init_tls_crypto() {
+        use std::sync::Once;
+        static INIT: Once = Once::new();
+        INIT.call_once(|| {
+            rustls::crypto::ring::default_provider()
+                .install_default()
+                .expect("install rustls ring crypto provider");
+        });
+    }
+
+    #[tokio::test]
+    async fn admin_api_tls_accepts_https_requests() {
+        init_tls_crypto();
+        let temp = tempdir().expect("tempdir");
+        let (cert_path, key_path) = generate_self_signed_cert(temp.path());
+        write_test_work_root_with_tls(
+            temp.path(),
+            "127.0.0.1:0",
+            "runtime/admin_api.token",
+            &cert_path.to_string_lossy(),
+            &key_path.to_string_lossy(),
+        );
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api with TLS")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .expect("build reqwest client with unsafe TLS");
+        let base = format!("https://{}", runtime.local_addr());
+
+        // Without bearer token -> 401
+        let unauthorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .send()
+            .await
+            .expect("send unauthorized HTTPS request");
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+
+        // With bearer token -> 200
+        let authorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send authorized HTTPS request");
+        assert_eq!(authorized.status(), StatusCode::OK);
+        let body: serde_json::Value = authorized.json().await.expect("parse json");
+        assert_eq!(body["accepting_commands"], false);
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_tls_works_with_non_loopback() {
+        init_tls_crypto();
+        let temp = tempdir().expect("tempdir");
+        let (cert_path, key_path) = generate_self_signed_cert(temp.path());
+        write_test_work_root_with_tls(
+            temp.path(),
+            "0.0.0.0:0",
+            "runtime/admin_api.token",
+            &cert_path.to_string_lossy(),
+            &key_path.to_string_lossy(),
+        );
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("non-loopback with TLS should start successfully")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .expect("build reqwest client with unsafe TLS");
+        let base = format!("https://{}", runtime.local_addr());
+
+        let response = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send HTTPS request to non-loopback TLS server");
+        assert_eq!(response.status(), StatusCode::OK);
+
+        runtime.shutdown().await;
     }
 
     #[tokio::test]

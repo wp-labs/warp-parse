@@ -7,53 +7,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.23.6] - 2026-05-05
-
-### Changed
-- Upgraded the error and WP dependency line: `orion-error 0.8`, `wp-motor v1.21.11`, and `wp-connectors v0.13.5`.
-
-### Fixed
-- Adapted error conversions for the `orion-error` upgrade and removed stale compatibility calls.
-
-## [0.23.5 Unreleased]
-
-### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.21.7` to `v1.21.9`, pulling in bilingual error diagnostics hints and `stable_code` hint indexing improvements.
-- **Dependencies**: Upgraded `wp-connectors` from `v0.13.1` to `v0.13.2`.
-- **Dependencies**: Upgraded `orion-error` from `0.6.3` to `0.7`, `orion-sec` from `0.4` to `0.5`, `orion-variate` from `0.11` to `0.12`, `orion_conf` from `0.5` to `0.6`.
-- **Dependencies**: Upgraded `wp-connector-api` from `0.8` to `0.9`, `wp-log` from `0.2` to `0.3`, `wp-error` from `0.8` to `0.9`.
-- **Dependencies**: Upgraded `shadow-rs` from `1.6.0` to `2.0`.
-
-## [0.23.4] - 2026-04-28
+## [0.24.0] - 2026-05-08
 
 ### Added
 - **HTTP Source**: Added HTTP Source connector support (`http` feature), enabling data ingestion via HTTP.
-- **Postgres Source**: Added Postgres Source feature inheritance support.
-- **Project Remote**: Added dual-repo mode support (`[project_remote.models]` + `[project_remote.infra]`), allowing `models/` and `infra/` (`conf/`, `topology/`, `connectors/`) to sync independently from two separate Git repos via `--group models|infra`.
+- **Postgres Source**: Added Postgres Source feature inheritance support; low-version compatibility adaptation.
+- **Project Remote**: Added dual-repo mode support (`[project_remote.models]` + `[project_remote.infra]`), allowing `models/` and `infra/` to sync independently from two separate Git repos via `--group models|infra`.
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.21.0` to `v1.21.7`, pulling in upstream improvements: OML `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, and `WarpProject::load()` semantic restoration.
-- **Admin API**: Added listen address configuration support (`admin_api.listen`); reload endpoint now supports `group` parameter for dual-repo mode; status endpoint returns per-group version info in dual-repo mode.
+- **Dependencies**: Upgraded `wp-motor` from `v1.20.0` to `v1.22.0`, pulling in: `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, `WarpProject::load()` semantic restoration, `stable_code` bilingual error hints, and `orion-error 0.8` upgrade adaptation.
+- **Dependencies**: Upgraded `wp-connectors` from `v0.12.1` to `v0.14.0` (added HTTP Source, PostgreSQL Source connectors); upgraded `orion` family (`orion-error 0.6.3→0.8`, `orion-sec 0.4→0.5`, `orion-variate 0.11→0.12`, `orion_conf 0.5→0.6`); upgraded internal API packages (`wp-connector-api 0.8→0.9`, `wp-log 0.2→0.3`, `wp-error 0.8→0.9`); upgraded `shadow-rs 1.6.0→2.0`.
+- **Error Handling**: 全面升级错误治理体系 — `orion-error` 升级到 `0.8` 主线，错误信息附带路径上下文，CLI 报错更完整可读。
+- **Admin API**: Added listen address configuration; reload endpoint now supports `group` parameter for dual-repo mode; status endpoint returns per-group version info in dual-repo mode.
 
 ### Fixed
+- **OML/Take**: Pulled in upstream fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records share field names.
+- **OML/SQL Parser**: Pulled in upstream fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
 - Fixed runtime stability issues in certain scenarios.
 
-
-## [0.23.3]
-
-## [0.23.0] - 2026-04-21
-
-### Changed
-- **Core Engine**: Upgraded `wp-motor` dependencies from `v1.20.0` to `v1.21.1`, pulling in the latest core engine updates and OML fixes.
-- **Connectors**: Upgraded `wp-connectors` from `v0.12.1` to `v0.13.1`, pulling in connector and metrics pipeline updates.
-- **Dependencies**: Refreshed multiple third-party dependencies in `Cargo.lock` to stay aligned with the current release line.
-
-### Fixed
-- **OML/Take**: Pulled in upstream `wp-motor` fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records contain the same field name.
-- **OML/SQL Parser**: Pulled in upstream `wp-motor` fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
-
-
-## [0.22.5 Unreleased]
+## [0.22.5 ]
 
 ### Changed
 - **wproj/Check**: Significantly improved validation depth and breadth — added `wpgen` config checks (`output.connect`, `rule_root`, `sample_pattern`, `logging.file_path`); semantic-dict now validates empty words / duplicates / empty categories; missing source/sink directories, source files, and GLOB mismatches downgraded to warnings.
