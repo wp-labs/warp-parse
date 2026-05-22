@@ -7,6 +7,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.4] - 2026-05-19
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.3` 到 `v1.22.4`，同步引入 `ip4_to_int` 修复——新增字符串 IPv4 地址解析支持，IPv6 地址改返回 Null 而非静默透传。
+
+## [0.24.3] - 2026-05-18
+
+### Added
+- **SQL/Route**: 新增 SQL 查询按表名路由到本地 SQLite 或外部 Provider 的能力——支持配置 `knowdb.toml` 的 `[[tables]]` 和 `[provider.tables]`，解析 SQL 时自动识别 `FROM` 子句中的表名并分发查询。
+- **KnowDB/Config**: 新增 `uses_external_provider_only()` 判定，纯外部 provider 配置不再删除本地 authority 文件。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.2` 到 `v1.22.3`，同步引入 SQL 路由、KnowDB 外部 Provider 支持、`sanitize_sql_body` 子查询与别名语法增强等改进。
+
+## [0.24.2] - 2026-05-13
+
+### Added
+- **Sinks/Sync**: 同步上游 `wp-motor` 新增的 `SinkTerminal` 批量写入方法（`send_to_sink_batch`、`try_send_to_sink_batch`），降低统计切片过多造成的反压。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.1` 到 `v1.22.2`，同步引入 sink 批量写入能力。
+
+## [0.24.1] - 2026-05-12
+
+### Fixed
+- **OML/SQL**: 同步上游修复，当 SQL 参数全部为 Null 时跳过实际查询，避免对空参数的不必要远程调用。
+- **OML/Extract**: 同步上游修复，`SingleEvalExp` 提取字段时跳过 `Value::Null`，不再为 Null 值创建目标字段。
+- **OML/SQL**: 同步上游修复知识库相关查询 bug。
+
+### Changed
+- **Knowledge Base**: 同步上游知识库查询优化。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.0` 到 `v1.22.1`，同步引入 OML/SQL 查询优化与知识库查询改进。
+
 ## [0.24.0] - 2026-05-08
 
 ### Added
