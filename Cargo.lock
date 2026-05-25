@@ -3324,6 +3324,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "objc2-open-directory"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb82bed227edf5201dfedf072bba4015a33d3d4a98519837295a90f0a23f676d"
+dependencies = [
+ "objc2",
+ "objc2-core-foundation",
+ "objc2-foundation",
+]
+
+[[package]]
 name = "objc2-quartz-core"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5230,6 +5241,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sysinfo"
+version = "0.39.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14311e7e9a03114cd4b65eedd54e8fed2945e17f08586ae97ef53bc0669f9581"
+dependencies = [
+ "libc",
+ "memchr",
+ "ntapi",
+ "objc2-core-foundation",
+ "objc2-io-kit",
+ "objc2-open-directory",
+ "windows",
+]
+
+[[package]]
 name = "system-configuration"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5838,7 +5864,7 @@ dependencies = [
  "serial_test",
  "shadow-rs 1.7.1",
  "shadow-rs 2.0.0",
- "sysinfo",
+ "sysinfo 0.39.2",
  "tempfile",
  "tikv-jemallocator",
  "time",
@@ -6675,7 +6701,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sqlx",
- "sysinfo",
+ "sysinfo 0.38.4",
  "tokio",
  "toml",
  "uuid",
@@ -6804,7 +6830,7 @@ dependencies = [
  "smol_str",
  "socket2 0.6.3",
  "strfmt",
- "sysinfo",
+ "sysinfo 0.38.4",
  "thiserror 2.0.18",
  "time",
  "tokio",
