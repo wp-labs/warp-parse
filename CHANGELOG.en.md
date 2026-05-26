@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.6] - 2026-05-26
+
+### Changed
+- **Dependencies**: Upgraded `wp-connectors` from `v0.14.0` to `v0.14.2` (v0.14.1 added DamengDB Source/Sink support; v0.14.2 moved dmdb feature to wp-connectors-exp category); upgraded `wp-lang` from `0.3.1` to `0.3.2` (fixed kvarr `<[,]>` not raising an error when log data is missing or empty).
+
+### Fixed
+- **Event ID**: Fixed `wp_event_id` issue to ensure correct event ID generation.
+
+## [0.24.5] - 2026-05-22
+
+### Changed
+- **Dependencies**: Upgraded `wp-model-core` from `0.8.7` to `0.8.9`; upgraded `tokio` from `1.52.2` to `1.52.3`, `openssl` from `0.10.79` to `0.10.80`, `serde_json` from `1.0.149` to `1.0.150`, `aws-lc-rs` from `1.16.3` to `1.17.0`, `os_info` from `3.14.0` to `3.15.0`, and other transitive dependencies.
+
+### Fixed
+- **Model Core**: Fixed `wp-model-core` related bug.
+
 ## [0.24.4] - 2026-05-19
 
 ### Changed

@@ -7,6 +7,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.6] - 2026-05-26
+
+### Changed
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.14.0` 到 `v0.14.2`（v0.14.1 新增达梦数据库 Source/Sink 支持；v0.14.2 将 dmdb feature 移入 wp-connectors-exp 分类）；升级 `wp-lang` 从 `0.3.1` 到 `0.3.2`（修复 kvarr 中 `<[,]>` 在日志数据不存在或为空时未报错的问题）。
+
+### Fixed
+- **Event ID**: 修复 `wp_event_id` 相关问题，确保事件 ID 生成逻辑正确。
+
+## [0.24.5] - 2026-05-22
+
+### Changed
+- **Dependencies**: 升级 `wp-model-core` 从 `0.8.7` 到 `0.8.9`；升级 `tokio` 从 `1.52.2` 到 `1.52.3`、`openssl` 从 `0.10.79` 到 `0.10.80`、`serde_json` 从 `1.0.149` 到 `1.0.150`、`aws-lc-rs` 从 `1.16.3` 到 `1.17.0`、`os_info` 从 `3.14.0` 到 `3.15.0` 等多项传递依赖。
+
+### Fixed
+- **Model Core**: 修复 `wp-model-core` 相关 bug。
+
 ## [0.24.4] - 2026-05-19
 
 ### Changed
