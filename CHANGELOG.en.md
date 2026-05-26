@@ -7,6 +7,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.24.7] - 2026-05-26
+
+### Changed
+- **Dependencies**: Upgraded `wp-lang` from `0.3.2` to `0.3.3`.
+
 ## [0.24.6] - 2026-05-26
 
 ### Changed
