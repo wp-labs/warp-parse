@@ -41,9 +41,6 @@ pub fn register_optional_connectors() {
         // PostgreSQL
         register_source_factory(wp_connectors::postgres::PostgresSourceFactory);
         register_sink_factory(wp_connectors::postgres::PostgresSinkFactory);
-        // DMDB达梦数据库
-        // register_source_factory(wp_connectors::dmdb::DmdbSourceFactory);
-        // register_sink_factory(wp_connectors::dmdb::DmdbSinkFactory);
         // ClickHouse
         register_sink_factory(wp_connectors::clickhouse::ClickHouseSinkFactory);
         // Elasticsearch
