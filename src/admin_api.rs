@@ -191,10 +191,10 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
     };
 
     if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(admin_api_validation_err(format!(
-            "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
+        warn_ctrl!(
+            "非回环地址 admin_api.bind='{}' 未启用 TLS，建议设置 admin_api.tls.enabled=true 保障安全",
             bind
-        )));
+        );
     }
 
     Ok(Some(ResolvedAdminApiConfig {
