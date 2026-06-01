@@ -78,7 +78,7 @@ shadow-rs = "1.6"
 # ===========================================================================
 
 [dev-dependencies]
-serial_test = "3.2"
+serial_test = "3.5"
 tempfile = "3.23"
 
 # ===========================================================================
@@ -136,7 +136,7 @@ semver = "1.0"
 git2 = "0.20"
 reqwest = { version = "0.13.2", features = ["json"] }
 http-body-util = "0.1"
-hyper = { version = "1.8", features = ["server", "http1"] }
+hyper = { version = "1.10", features = ["server", "http1"] }
 hyper-util = { version = "0.1.20", features = ["server", "server-auto", "service", "tokio", "http1"] }
 
 # --- Logging and Errors ---
@@ -160,7 +160,7 @@ clap = { version = "4.5", features = ["derive"] }
 
 # --- Utilities ---
 #bytes = "~1.7"
-uuid = { version = "1.19", features = ["v4"] }
+uuid = { version = "1.23", features = ["v4"] }
 once_cell = "1.21"
 shadow-rs = { version = "2.0", default-features = false }
 rand = "0.9"
