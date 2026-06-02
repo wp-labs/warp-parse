@@ -1,7 +1,8 @@
 use crate::args::{SelfCheckArgs, SelfSourceArgs, SelfUpdateArgs, UpdateChannel};
 use crate::format::print_json;
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
 use std::env;
+use warp_parse::compat::UvsFrom;
 use wp_error::run_error::{RunReason, RunResult};
 use wp_self_update::{
     check, compare_versions_str, relation_message, CheckReport, CheckRequest, SourceConfig,
@@ -21,13 +22,15 @@ pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
         current_version: warp_parse::build::PKG_VERSION.to_string(),
         branch: warp_parse::build::BRANCH.to_string(),
     })
-    .await?;
+    .await
+    .map_err(|e| RunReason::from_conf().to_err().with_source(e))?;
 
     if args.source.json {
         return print_json(&report);
     }
 
-    let relation = compare_versions_str(&report.current_version, &report.latest_version)?;
+    let relation = compare_versions_str(&report.current_version, &report.latest_version)
+        .map_err(|e| RunReason::from_conf().to_err().with_source(e))?;
     print_check_report(&report, relation);
     Ok(())
 }
@@ -43,7 +46,8 @@ pub async fn run_self_update(args: SelfUpdateArgs) -> RunResult<()> {
         dry_run: args.dry_run,
         force: args.force,
     })
-    .await?;
+    .await
+    .map_err(|e| RunReason::from_conf().to_err().with_source(e))?;
 
     if args.source.json {
         return print_json(&report);

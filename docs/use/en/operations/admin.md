@@ -77,7 +77,9 @@ Important fields:
 
 - `instance_id`: runtime instance identifier
 - `version`: current binary version
-- `project_version`: project configuration version currently active in the work tree; empty when no remote state exists
+- `project_version`: project configuration version currently active in the work tree
+  - Single-repo mode: a string (e.g. `"1.0"`); empty when no remote state exists
+  - Dual-repo mode: an object with per-group versions, e.g. `{"models": {"version": "1.4.2", "tag": "v1.4.2"}, "infra": {"version": "0.1.7", "tag": "v0.1.7"}}`; a group only appears after at least one successful update
 - `accepting_commands`: whether admin commands are accepted
 - `reloading`: whether a reload is in progress
 - `current_request_id`: active reload request ID
@@ -145,15 +147,39 @@ CLI rules:
 - without `--update`, reload only applies to the current local work tree
 - with `--update`, the runtime performs the equivalent of `wproj conf update` before reload, including validation and rollback-on-failure
 
+### Dual-Repo Mode
+
+In dual-repo mode (`[project_remote.models]` + `[project_remote.infra]`), every update must specify `--group`:
+
+Update the models group:
+
+```bash
+wproj engine reload \
+  --work-root . \
+  --update \
+  --group models \
+  --request-id update-models-001 \
+  --reason "update models group"
+```
+
+Update the infra group to a specific version:
+
+```bash
+wproj engine reload \
+  --work-root . \
+  --update \
+  --group infra \
+  --version 0.1.7 \
+  --request-id update-infra-002 \
+  --reason "switch infra to 0.1.7"
+```
+
+Constraints:
+
+- In dual-repo mode, `--update` requires `--group`, otherwise an error is returned
+- `--group` is only meaningful with `--update`; it is ignored for reload-only requests
+
 ### HTTP Request Body
-
-Request fields:
-
-- `wait`: whether to wait for reload completion before returning; default `true`
-- `update`: whether to update the project content first; default `false`
-- `version`: target version; only valid when `update = true`
-- `timeout_ms`: wait timeout when `wait = true`; if omitted, the server uses local `admin_api.request_timeout_ms`
-- `reason`: extra reason string for logs
 
 Reload only:
 
@@ -188,17 +214,66 @@ curl -sS \
   }'
 ```
 
+Dual-repo — update models group:
+
+```bash
+curl -sS \
+  -X POST \
+  -H 'Authorization: Bearer replace-with-a-secret-token' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Request-Id: dual-models-update-001' \
+  http://127.0.0.1:19090/admin/v1/reloads/model \
+  -d '{
+    "wait": true,
+    "update": true,
+    "group": "models",
+    "timeout_ms": 15000,
+    "reason": "update models from dual repo"
+  }'
+```
+
+Dual-repo — update infra group:
+
+```bash
+curl -sS \
+  -X POST \
+  -H 'Authorization: Bearer replace-with-a-secret-token' \
+  -H 'Content-Type: application/json' \
+  -H 'X-Request-Id: dual-infra-update-001' \
+  http://127.0.0.1:19090/admin/v1/reloads/model \
+  -d '{
+    "wait": true,
+    "update": true,
+    "group": "infra",
+    "version": "0.1.7",
+    "timeout_ms": 15000,
+    "reason": "update infra to 0.1.7"
+  }'
+```
+
 API rules:
 
 - when `update = false`, `version` must be absent
 - when `update = true` and `version` is empty, the server resolves the target by the default version-selection rule
-- the default version-selection rule is the same as `wproj conf update`
+- in dual-repo mode, `update = true` requires `group` (`"models"` or `"infra"`), otherwise an error is returned
+- `group` is only meaningful with `update = true`
 
 Default version-selection rules:
 
 - on first initialization, use `init_version` first when configured
 - on later updates, prefer the latest release tag
 - if the remote has no release tag, fall back to the remote default branch `HEAD`
+
+### Request Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `wait` | bool | no | Wait for reload completion before returning; default `true` |
+| `update` | bool | no | Update project content first; default `false` |
+| `version` | string | no | Target version; only valid when `update = true` |
+| `group` | string | no | Target group: `"models"` or `"infra"`; required in dual-repo mode when `update = true` |
+| `timeout_ms` | number | no | Wait timeout when `wait = true`; falls back to server `admin_api.request_timeout_ms` |
+| `reason` | string | no | Extra reason string for logs |
 
 ## Response Fields
 
@@ -211,6 +286,7 @@ For accepted or completed `POST /admin/v1/reloads/model` calls, common fields in
 - `requested_version`: explicit requested version; empty in auto mode
 - `current_version`: the version actually activated by this update
 - `resolved_tag`: the resolved remote target
+- `group`: the target group in dual-repo mode (`"models"` / `"infra"`); omitted in single-repo mode
 - `force_replaced`: whether graceful drain timed out and forced replacement was used
 - `warning`: warning detail
 - `error`: error detail

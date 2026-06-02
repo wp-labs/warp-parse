@@ -7,7 +7,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.5 Unreleased]
+## [0.24.6] - 2026-05-26
+
+### Changed
+- **Dependencies**: Upgraded `wp-connectors` from `v0.14.0` to `v0.14.2` (v0.14.1 added DamengDB Source/Sink support; v0.14.2 moved dmdb feature to wp-connectors-exp category); upgraded `wp-lang` from `0.3.1` to `0.3.2` (fixed kvarr `<[,]>` not raising an error when log data is missing or empty).
+
+### Fixed
+- **Event ID**: Fixed `wp_event_id` issue to ensure correct event ID generation.
+
+## [0.24.5] - 2026-05-22
+
+### Changed
+- **Dependencies**: Upgraded `wp-model-core` from `0.8.7` to `0.8.9`; upgraded `tokio` from `1.52.2` to `1.52.3`, `openssl` from `0.10.79` to `0.10.80`, `serde_json` from `1.0.149` to `1.0.150`, `aws-lc-rs` from `1.16.3` to `1.17.0`, `os_info` from `3.14.0` to `3.15.0`, and other transitive dependencies.
+
+### Fixed
+- **Model Core**: Fixed `wp-model-core` related bug.
+
+## [0.24.4] - 2026-05-19
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.3` to `v1.22.4`, pulling in the `ip4_to_int` fix — added string IPv4 address parsing support, IPv6 addresses now return Null instead of silently passing through unchanged.
+
+## [0.24.3] - 2026-05-18
+
+### Added
+- **SQL/Route**: Added SQL query table-name routing to local SQLite or external Provider — supports `[[tables]]` and `[provider.tables]` configuration in `knowdb.toml`, automatically resolves table names from `FROM` clauses and dispatches queries.
+- **KnowDB/Config**: Added `uses_external_provider_only()` check; pure external provider configurations no longer delete local authority files.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.2` to `v1.22.3`, pulling in SQL routing, KnowDB external Provider support, `sanitize_sql_body` sub-query and alias syntax enhancements, and related improvements.
+
+## [0.24.2] - 2026-05-13
+
+### Added
+- **Sinks/Sync**: Pulled in upstream `wp-motor` sink batch write methods (`send_to_sink_batch`, `try_send_to_sink_batch`) to reduce backpressure from excessive statistical slicing.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.1` to `v1.22.2`, bringing sink batch write capabilities.
+
+## [0.24.1] - 2026-05-12
+
+### Fixed
+- **OML/SQL**: Pulled in upstream fix to skip unnecessary remote calls when all SQL parameters are Null.
+- **OML/Extract**: Pulled in upstream fix so `SingleEvalExp` skips `Value::Null` when extracting fields, instead of creating target fields for null values.
+- **OML/SQL**: Pulled in upstream knowledge base query bug fixes.
+
+### Changed
+- **Knowledge Base**: Pulled in upstream knowledge base query optimizations.
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.0` to `v1.22.1`, bringing OML/SQL query optimizations and knowledge base improvements.
+
+## [0.24.0] - 2026-05-08
+
+### Added
+- **HTTP Source**: Added HTTP Source connector support (`http` feature), enabling data ingestion via HTTP.
+- **Postgres Source**: Added Postgres Source feature inheritance support; low-version compatibility adaptation.
+- **Project Remote**: Added dual-repo mode support (`[project_remote.models]` + `[project_remote.infra]`), allowing `models/` and `infra/` to sync independently from two separate Git repos via `--group models|infra`.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.20.0` to `v1.22.0`, pulling in: `take()` field priority fix, SQL `IN (...)` parameter binding fix, error handling chain optimization, `WarpProject::load()` semantic restoration, `stable_code` bilingual error hints, and `orion-error 0.8` upgrade adaptation.
+- **Dependencies**: Upgraded `wp-connectors` from `v0.12.1` to `v0.14.0` (added HTTP Source, PostgreSQL Source connectors); upgraded `orion` family (`orion-error 0.6.3→0.8`, `orion-sec 0.4→0.5`, `orion-variate 0.11→0.12`, `orion_conf 0.5→0.6`); upgraded internal API packages (`wp-connector-api 0.8→0.9`, `wp-log 0.2→0.3`, `wp-error 0.8→0.9`); upgraded `shadow-rs 1.6.0→2.0`.
+- **Error Handling**: 全面升级错误治理体系 — `orion-error` 升级到 `0.8` 主线，错误信息附带路径上下文，CLI 报错更完整可读。
+- **Admin API**: Added listen address configuration; reload endpoint now supports `group` parameter for dual-repo mode; status endpoint returns per-group version info in dual-repo mode.
+
+### Fixed
+- **OML/Take**: Pulled in upstream fixes so `take(...)` can consume fields already produced in the target record and uses the correct priority when target and source records share field names.
+- **OML/SQL Parser**: Pulled in upstream fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
+- Fixed runtime stability issues in certain scenarios.
+
+## [0.22.5 ]
 
 ### Changed
 - **wproj/Check**: Significantly improved validation depth and breadth — added `wpgen` config checks (`output.connect`, `rule_root`, `sample_pattern`, `logging.file_path`); semantic-dict now validates empty words / duplicates / empty categories; missing source/sink directories, source files, and GLOB mismatches downgraded to warnings.

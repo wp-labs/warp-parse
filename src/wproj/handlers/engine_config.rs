@@ -1,7 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use orion_error::{ErrorWrapAs, ToStructError, UvsFrom};
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
+use warp_parse::compat::UvsFrom;
 use wp_config::engine::EngineConfig;
 use wp_error::run_error::{RunReason, RunResult};
 
@@ -11,7 +12,7 @@ pub fn load_resolved_engine_config(
 ) -> RunResult<EngineConfig> {
     let work_root = resolve_work_root_path(work_root.as_ref())?;
     EngineConfig::load(&work_root, dict)
-        .wrap_as(RunReason::from_conf(), "load engine config failed")
+        .source_err(RunReason::from_conf(), "load engine config failed")
         .map(|conf| conf.env_eval(dict).conf_absolutize(&work_root))
 }
 
@@ -25,6 +26,6 @@ fn resolve_work_root_path(path: &Path) -> RunResult<PathBuf> {
             RunReason::from_conf()
                 .to_err()
                 .with_detail("resolve current dir failed")
-                .with_std_source(e)
+                .with_source(e)
         })
 }

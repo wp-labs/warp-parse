@@ -1,11 +1,12 @@
 use clap::{Args, Parser};
-use orion_error::ErrorConv;
 use std::env;
 use warp_parse::build::CLAP_LONG_VERSION;
+use warp_parse::compat::ErrorConv;
 use warp_parse::load_sec_dict;
 use wp_cli_core::split_quiet_args;
 
-use orion_error::{ToStructError, UvsFrom};
+use orion_error::conversion::ToStructError;
+use warp_parse::compat::UvsFrom;
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpRescueApp;
 use wp_error::error_handling::RobustnessMode;
@@ -90,7 +91,7 @@ async fn do_main() -> RunResult<()> {
             .to_err()
             .with_detail("wprescue only supports batch mode; use 'wprescue batch'"))?,
         WpRescueCli::Batch(args) => {
-            let mut app = WpRescueApp::try_from(args.into(), env_dict).err_conv()?;
+            let mut app = WpRescueApp::try_from(args.into(), env_dict).conv_err()?;
             app.run_batch().await?;
         }
     }

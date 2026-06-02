@@ -2,15 +2,32 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::path::Path;
 
-use orion_error::{ToStructError, UvsFrom};
+use crate::compat::UvsFrom;
+use orion_error::conversion::ToStructError;
 use walkdir::WalkDir;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 
-use super::{conf_err_source, BackupManifest, BACKUP_MANIFEST_PATH, BACKUP_PATH, MANAGED_DIRS};
+use super::{conf_err_source, BackupManifest, RemoteGroup, BACKUP_MANIFEST_PATH, BACKUP_PATH};
 
-pub(super) fn managed_dirs_differ(remote_root: &Path, current_root: &Path) -> RunResult<bool> {
-    for dir in MANAGED_DIRS {
+const DIRS_MODELS: &[&str] = &["models"];
+const DIRS_INFRA: &[&str] = &["conf", "topology", "connectors"];
+const DIRS_ALL: &[&str] = &["conf", "models", "topology", "connectors"];
+
+pub(super) fn managed_dirs_for(group: Option<RemoteGroup>) -> &'static [&'static str] {
+    match group {
+        Some(RemoteGroup::Models) => DIRS_MODELS,
+        Some(RemoteGroup::Infra) => DIRS_INFRA,
+        None => DIRS_ALL,
+    }
+}
+
+pub(super) fn managed_dirs_differ(
+    remote_root: &Path,
+    current_root: &Path,
+    dirs: &[&str],
+) -> RunResult<bool> {
+    for dir in dirs {
         if !paths_equal(&remote_root.join(dir), &current_root.join(dir))? {
             return Ok(true);
         }
@@ -18,14 +35,14 @@ pub(super) fn managed_dirs_differ(remote_root: &Path, current_root: &Path) -> Ru
     Ok(false)
 }
 
-pub(super) fn backup_managed_dirs(work_root: &Path) -> RunResult<()> {
+pub(super) fn backup_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<()> {
     let backup_root = work_root.join(BACKUP_PATH);
     remove_path(&backup_root)?;
     fs::create_dir_all(&backup_root)
         .map_err(|e| conf_err_source(format!("create {} failed", backup_root.display()), e))?;
 
     let mut existing_dirs = Vec::new();
-    for dir in MANAGED_DIRS {
+    for dir in dirs {
         let src = work_root.join(dir);
         if !src.exists() {
             continue;
@@ -43,8 +60,12 @@ pub(super) fn backup_managed_dirs(work_root: &Path) -> RunResult<()> {
     Ok(())
 }
 
-pub(super) fn sync_managed_dirs(remote_root: &Path, work_root: &Path) -> RunResult<()> {
-    for dir in MANAGED_DIRS {
+pub(super) fn sync_managed_dirs(
+    remote_root: &Path,
+    work_root: &Path,
+    dirs: &[&str],
+) -> RunResult<()> {
+    for dir in dirs {
         let src = remote_root.join(dir);
         let dst = work_root.join(dir);
         remove_path(&dst)?;
@@ -55,7 +76,7 @@ pub(super) fn sync_managed_dirs(remote_root: &Path, work_root: &Path) -> RunResu
     Ok(())
 }
 
-pub(super) fn restore_managed_dirs(work_root: &Path) -> RunResult<()> {
+pub(super) fn restore_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<()> {
     let manifest_path = work_root.join(BACKUP_MANIFEST_PATH);
     let body = match fs::read(&manifest_path) {
         Ok(body) => body,
@@ -69,9 +90,21 @@ pub(super) fn restore_managed_dirs(work_root: &Path) -> RunResult<()> {
     };
     let manifest: BackupManifest = serde_json::from_slice(&body)
         .map_err(|e| conf_err_source(format!("parse {} failed", manifest_path.display()), e))?;
+    // Validate that the backup manifest matches the expected dirs
+    for d in &manifest.existing_dirs {
+        if !dirs.iter().any(|expected| expected == d) {
+            return Err(RunReason::from_conf().to_err().with_detail(format!(
+                "backup manifest contains unexpected directory '{}'; expected one of {:?}",
+                d, dirs
+            )));
+        }
+    }
     let backup_root = work_root.join(BACKUP_PATH);
 
-    for dir in MANAGED_DIRS {
+    // Remove all managed dirs in scope first, then restore backed-up ones.
+    // This ensures dirs created during a failed update are cleaned up, not
+    // just dirs that happened to exist before the update.
+    for dir in dirs {
         remove_path(&work_root.join(dir))?;
     }
     for dir in &manifest.existing_dirs {

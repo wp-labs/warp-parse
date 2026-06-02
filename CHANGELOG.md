@@ -7,7 +7,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.22.5 Unreleased]
+## [0.24.6] - 2026-05-26
+
+### Changed
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.14.0` 到 `v0.14.2`（v0.14.1 新增达梦数据库 Source/Sink 支持；v0.14.2 将 dmdb feature 移入 wp-connectors-exp 分类）；升级 `wp-lang` 从 `0.3.1` 到 `0.3.2`（修复 kvarr 中 `<[,]>` 在日志数据不存在或为空时未报错的问题）。
+
+### Fixed
+- **Event ID**: 修复 `wp_event_id` 相关问题，确保事件 ID 生成逻辑正确。
+
+## [0.24.5] - 2026-05-22
+
+### Changed
+- **Dependencies**: 升级 `wp-model-core` 从 `0.8.7` 到 `0.8.9`；升级 `tokio` 从 `1.52.2` 到 `1.52.3`、`openssl` 从 `0.10.79` 到 `0.10.80`、`serde_json` 从 `1.0.149` 到 `1.0.150`、`aws-lc-rs` 从 `1.16.3` 到 `1.17.0`、`os_info` 从 `3.14.0` 到 `3.15.0` 等多项传递依赖。
+
+### Fixed
+- **Model Core**: 修复 `wp-model-core` 相关 bug。
+
+## [0.24.4] - 2026-05-19
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.3` 到 `v1.22.4`，同步引入 `ip4_to_int` 修复——新增字符串 IPv4 地址解析支持，IPv6 地址改返回 Null 而非静默透传。
+
+## [0.24.3] - 2026-05-18
+
+### Added
+- **SQL/Route**: 新增 SQL 查询按表名路由到本地 SQLite 或外部 Provider 的能力——支持配置 `knowdb.toml` 的 `[[tables]]` 和 `[provider.tables]`，解析 SQL 时自动识别 `FROM` 子句中的表名并分发查询。
+- **KnowDB/Config**: 新增 `uses_external_provider_only()` 判定，纯外部 provider 配置不再删除本地 authority 文件。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.2` 到 `v1.22.3`，同步引入 SQL 路由、KnowDB 外部 Provider 支持、`sanitize_sql_body` 子查询与别名语法增强等改进。
+
+## [0.24.2] - 2026-05-13
+
+### Added
+- **Sinks/Sync**: 同步上游 `wp-motor` 新增的 `SinkTerminal` 批量写入方法（`send_to_sink_batch`、`try_send_to_sink_batch`），降低统计切片过多造成的反压。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.1` 到 `v1.22.2`，同步引入 sink 批量写入能力。
+
+## [0.24.1] - 2026-05-12
+
+### Fixed
+- **OML/SQL**: 同步上游修复，当 SQL 参数全部为 Null 时跳过实际查询，避免对空参数的不必要远程调用。
+- **OML/Extract**: 同步上游修复，`SingleEvalExp` 提取字段时跳过 `Value::Null`，不再为 Null 值创建目标字段。
+- **OML/SQL**: 同步上游修复知识库相关查询 bug。
+
+### Changed
+- **Knowledge Base**: 同步上游知识库查询优化。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.0` 到 `v1.22.1`，同步引入 OML/SQL 查询优化与知识库查询改进。
+
+## [0.24.0] - 2026-05-08
+
+### Added
+- **HTTP Source**: 新增 HTTP Source 连接器支持（`http` feature），支持通过 HTTP 接口接收外部数据推送。
+- **Postgres Source**: 新增 Postgres Source 特性继承支持；低版本兼容性适配。
+- **Project Remote**: 新增双仓库模式支持（`[project_remote.models]` + `[project_remote.infra]`），支持 `models/` 和 `infra/` 从两个独立的 Git 仓库分别同步，通过 `--group models|infra` 逐组更新。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.20.0` 到 `v1.22.0`，同步引入：`take()` 字段优先级修复、SQL `IN (...)` 参数绑定修复、错误处理链路优化、`WarpProject::load()` 语义恢复、`stable_code` 双语错误提示、`orion-error 0.8` 升级适配等全部上游改进。
+- **Dependencies**: 升级 `wp-connectors` 从 `v0.12.1` 到 `v0.14.0`（新增 HTTP Source、PostgreSQL Source 连接器）；
+- **Error Handling**: 全面升级错误治理体系 — `orion-error` 升级到 `0.8` 主线，，错误信息附带路径上下文，CLI 报错更完整可读。
+- **Admin API**: 支持监听地址配置修改；reload 接口新增 `group` 参数支持双仓库模式分组更新；status 接口在双仓库模式下返回分组版本信息。
+
+### Fixed
+- **OML/Take**: 同步上游修复，`take(...)` 可正确消费目标记录中已生成的字段，并修正同名字段取值顺序。
+- **OML/SQL Parser**: 同步上游修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
+- 修复部分场景下运行时稳定性问题。
+
+## [0.22.5 ]
 
 ### Changed
 - **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。

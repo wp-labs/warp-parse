@@ -4,8 +4,9 @@ use crate::args::{
 };
 use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
 use orion_conf::TomlIO;
-use orion_error::{ErrorWith, ErrorWrapAs, ToStructError, UvsFrom, WrapStructErrorAs};
+use orion_error::conversion::{ErrorWith, SourceErr, ToStructError};
 use orion_variate::EnvDict;
+use warp_parse::compat::UvsFrom;
 use wp_config::sources::types::WarpSources;
 use wp_engine::facade::config as constants;
 use wp_engine::facade::config::load_warp_engine_confs;
@@ -55,13 +56,13 @@ async fn do_clean(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
 
 async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     let (conf_manager, main_conf) = load_warp_engine_confs(args.work_root.as_str(), dict)?;
-    log_init(main_conf.log_conf()).wrap_as(RunReason::from_conf(), "init log failed")?;
+    log_init(main_conf.log_conf()).source_err(RunReason::from_conf(), "init log failed")?;
 
     // 使用 WarpSources::load_toml 读取 wpsrc.toml 配置
     let wpsrc_path = std::path::PathBuf::from(main_conf.src_conf_of(constants::WPSRC_TOML));
     let sources_config = WarpSources::load_toml(&wpsrc_path)
-        .wrap_as(RunReason::from_conf(), "load wpsrc.toml failed")
-        .with(&wpsrc_path)
+        .source_err(RunReason::from_conf(), "load wpsrc.toml failed")
+        .with_context(&wpsrc_path)
         .doing("load wpsrc.toml")?;
 
     // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
@@ -72,18 +73,18 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
             RunReason::from_conf()
                 .to_err()
                 .with_detail("serialize wpsrc.toml failed")
-                .with_std_source(err)
+                .with_source(err)
         })
-        .with(&wpsrc_path)
+        .with_context(&wpsrc_path)
         .doing("serialize wpsrc.toml")?;
 
     match parser.parse_and_build_from(&config_str, dict).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),
         Err(err) => {
-            return Err(err.wrap_as(
-                wp_error::run_error::RunReason::from_data(),
-                "build source config failed",
-            ));
+            return Err(RunReason::data_error()
+                .to_err()
+                .with_detail("build source config failed")
+                .with_source(err));
         }
     }
     Ok(())

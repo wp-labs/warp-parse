@@ -191,6 +191,16 @@ wproj engine reload \
   --reason "update and reload"
 ```
 
+双仓库模式下按组更新并 reload：
+
+```bash
+wproj engine reload \
+  --work-root . \
+  --update \
+  --group models \
+  --reason "update models and reload"
+```
+
 这部分属于在线运维路径，详细说明见 [../operations/admin.md](../operations/admin.md)。
 
 ## 远端版本同步
@@ -207,7 +217,30 @@ wproj conf update --work-root .
 wproj conf update --work-root . --version 1.4.3
 ```
 
-详细流程见 [../operations/project-sync.md](../operations/project-sync.md)。
+双仓库模式下按组更新：
+
+```bash
+wproj conf update --work-root . --group models --version 1.4.3
+wproj conf update --work-root . --group infra --version 1.1.0
+```
+
+双仓库配置示例（`conf/wparse.toml`）：
+
+```toml
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.6"
+```
+
+> 双仓库的架构总览、版本选择规则、同步流程、state 文件格式等详见 [../operations/project-sync.md](../operations/project-sync.md)。
 
 ## rescue 目录统计
 

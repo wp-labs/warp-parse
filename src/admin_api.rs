@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
+use crate::compat::UvsFrom;
 use chrono::{DateTime, Utc};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -14,8 +15,7 @@ use hyper::service::service_fn;
 use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
-use orion_conf::{ToStructError, UvsConfFrom};
-use orion_error::ErrorWrapAs;
+use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
@@ -191,10 +191,10 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
     };
 
     if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(admin_api_validation_err(format!(
-            "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
+        warn_ctrl!(
+            "非回环地址 admin_api.bind='{}' 未启用 TLS，建议设置 admin_api.tls.enabled=true 保障安全",
             bind
-        )));
+        );
     }
 
     Ok(Some(ResolvedAdminApiConfig {
@@ -244,7 +244,7 @@ fn load_engine_config(
     dict: &EnvDict,
 ) -> RunResult<wp_config::engine::EngineConfig> {
     wp_config::engine::EngineConfig::load(work_root, dict)
-        .wrap_as(RunReason::from_conf(), "load engine config failed")
+        .source_err(RunReason::from_conf(), "load engine config failed")
         .map(|conf| conf.env_eval(dict).conf_absolutize(work_root))
 }
 
@@ -397,6 +397,8 @@ struct ProjectRemoteReloadContext {
     snapshot: Option<crate::project_remote::ProjectRemoteSnapshot>,
     runtime_snapshot: Option<crate::project_remote::ProjectRuntimeArtifactSnapshot>,
     update_result: Option<crate::project_remote::ProjectRemoteUpdateResult>,
+    #[allow(dead_code)]
+    group: Option<crate::project_remote::RemoteGroup>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -406,6 +408,8 @@ struct ReloadRequest {
     #[serde(default)]
     update: bool,
     version: Option<String>,
+    #[serde(default)]
+    group: Option<String>,
     timeout_ms: Option<u64>,
     reason: Option<String>,
 }
@@ -424,6 +428,8 @@ struct ReloadResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     resolved_tag: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    group: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     force_replaced: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     warning: Option<String>,
@@ -435,7 +441,7 @@ struct ReloadResponse {
 struct RuntimeStatusResponse {
     instance_id: String,
     version: String,
-    project_version: Option<String>,
+    project_version: Option<serde_json::Value>,
     accepting_commands: bool,
     reloading: bool,
     current_request_id: Option<String>,
@@ -508,7 +514,7 @@ fn status_response(
     state: &AppState,
 ) -> Response<Full<Bytes>> {
     let snapshot = state.control_handle.status_snapshot();
-    let project_version = match crate::project_remote::current_project_version(&state.work_root) {
+    let project_version = match read_project_version(&state.work_root) {
         Ok(version) => version,
         Err(err) => {
             warn_ctrl!(
@@ -563,6 +569,7 @@ async fn reload_response(
                     requested_version: None,
                     current_version: None,
                     resolved_tag: None,
+                    group: None,
                     force_replaced: None,
                     warning: None,
                     error: None,
@@ -620,6 +627,41 @@ async fn reload_response(
             },
         );
     }
+    if !reload_req.update && reload_req.group.as_deref().is_some_and(|g| !g.is_empty()) {
+        return json_response(
+            StatusCode::BAD_REQUEST,
+            &ErrorResponse {
+                request_id: request_id.to_string(),
+                accepted: false,
+                result: "invalid_request",
+                error: "group requires update=true".to_string(),
+            },
+        );
+    }
+
+    // In dual-repo mode, update requires --group
+    if reload_req.update && reload_req.group.as_deref().map_or(true, |g| g.is_empty()) {
+        if let Ok(config) = load_engine_config(&state.work_root, &state.dict) {
+            let remote_conf = config.project_remote();
+            if remote_conf.enabled
+                && matches!(
+                    crate::project_remote::resolve_project_remote_mode(remote_conf),
+                    Ok(crate::project_remote::ProjectRemoteMode::Dual { .. })
+                )
+            {
+                return json_response(
+                    StatusCode::BAD_REQUEST,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "invalid_request",
+                        error: "dual-repo mode requires group (models|infra) with update=true"
+                            .to_string(),
+                    },
+                );
+            }
+        }
+    }
 
     let runtime_status = state.control_handle.status_snapshot();
     if !runtime_status.accepting_commands {
@@ -644,6 +686,7 @@ async fn reload_response(
                 requested_version: None,
                 current_version: None,
                 resolved_tag: None,
+                group: None,
                 force_replaced: None,
                 warning: None,
                 error: None,
@@ -664,6 +707,7 @@ async fn reload_response(
                     requested_version: reload_req.version.clone(),
                     current_version: None,
                     resolved_tag: None,
+                    group: None,
                     force_replaced: None,
                     warning: None,
                     error: Some(err.to_string()),
@@ -672,8 +716,29 @@ async fn reload_response(
         }
     };
 
+    let update_group = match reload_req.group.as_deref() {
+        None | Some("") => None,
+        Some(raw) => match raw.parse::<crate::project_remote::RemoteGroup>() {
+            Ok(group) => Some(group),
+            Err(err) => {
+                return json_response(
+                    StatusCode::BAD_REQUEST,
+                    &ErrorResponse {
+                        request_id: request_id.to_string(),
+                        accepted: false,
+                        result: "invalid_request",
+                        error: err,
+                    },
+                );
+            }
+        },
+    };
+
     let rollback_snapshot = if reload_req.update {
-        match crate::project_remote::capture_project_remote_snapshot(&state.work_root) {
+        match crate::project_remote::capture_project_remote_snapshot_with_group(
+            &state.work_root,
+            update_group,
+        ) {
             Ok(snapshot) => Some(snapshot),
             Err(err) => {
                 return json_response(
@@ -711,16 +776,26 @@ async fn reload_response(
 
     let update_result = if reload_req.update {
         info_ctrl!(
-            "admin api project update start request_id={} remote={} requested_version={}",
+            "admin api project update start request_id={} remote={} requested_version={} group={}",
             request_id,
             remote_addr,
-            reload_req.version.as_deref().unwrap_or("(auto)")
+            reload_req.version.as_deref().unwrap_or("(auto)"),
+            reload_req.group.as_deref().unwrap_or("-")
         );
-        match crate::project_remote::sync_project_remote_with_dict(
-            &state.work_root,
-            reload_req.version.as_deref(),
-            &state.dict,
-        ) {
+        let sync_result = match update_group {
+            Some(group) => crate::project_remote::sync_project_remote_group_with_dict(
+                &state.work_root,
+                group,
+                reload_req.version.as_deref(),
+                &state.dict,
+            ),
+            None => crate::project_remote::sync_project_remote_with_dict(
+                &state.work_root,
+                reload_req.version.as_deref(),
+                &state.dict,
+            ),
+        };
+        match sync_result {
             Ok(result) => {
                 info_ctrl!(
                     "admin api project update done request_id={} remote={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
@@ -762,6 +837,7 @@ async fn reload_response(
         snapshot: rollback_snapshot,
         runtime_snapshot,
         update_result: update_result.clone(),
+        group: update_group,
     });
 
     match state
@@ -803,6 +879,7 @@ async fn reload_response(
                         resolved_tag: update_result
                             .as_ref()
                             .map(|result| result.resolved_tag.clone()),
+                        group: update_result.as_ref().and_then(|r| r.group.clone()),
                         force_replaced: None,
                         warning: None,
                         error: None,
@@ -854,6 +931,7 @@ async fn reload_response(
                         resolved_tag: update_result
                             .as_ref()
                             .map(|result| result.resolved_tag.clone()),
+                        group: update_result.as_ref().and_then(|r| r.group.clone()),
                         force_replaced: None,
                         warning: rollback_updated_project(
                             &state.work_root,
@@ -898,6 +976,7 @@ async fn reload_response(
                             resolved_tag: update_result
                                 .as_ref()
                                 .map(|result| result.resolved_tag.clone()),
+                            group: update_result.as_ref().and_then(|r| r.group.clone()),
                             force_replaced: None,
                             warning: None,
                             error: None,
@@ -945,6 +1024,7 @@ fn map_runtime_response(
                         .and_then(|result| result.requested_version.clone()),
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
+                    group: update_result.and_then(|r| r.group.clone()),
                     force_replaced: Some(false),
                     warning: rollback_warning,
                     error: None,
@@ -969,6 +1049,7 @@ fn map_runtime_response(
                         .and_then(|result| result.requested_version.clone()),
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
+                    group: update_result.and_then(|r| r.group.clone()),
                     force_replaced: Some(true),
                     warning: rollback_warning.or_else(|| {
                         Some("graceful drain timed out, fallback to force replace".to_string())
@@ -996,6 +1077,7 @@ fn map_runtime_response(
                         .and_then(|result| result.requested_version.clone()),
                     current_version: update_result.map(|result| result.current_version.clone()),
                     resolved_tag: update_result.map(|result| result.resolved_tag.clone()),
+                    group: update_result.and_then(|r| r.group.clone()),
                     force_replaced: None,
                     warning: rollback_warning,
                     error: Some(err),
@@ -1012,20 +1094,75 @@ fn rollback_updated_project(
     remote_addr: SocketAddr,
     stage: &str,
 ) -> Option<String> {
-    let ctx = reload_ctx?;
-    let snapshot = ctx.snapshot.as_ref()?;
-    let runtime_snapshot = ctx.runtime_snapshot.as_ref()?;
-    let update_result = ctx.update_result.as_ref()?;
-    match rollback_project_and_runtime(work_root, snapshot, update_result.changed, runtime_snapshot)
-    {
+    let ctx = match reload_ctx {
+        Some(ctx) => ctx,
+        None => {
+            warn_ctrl!(
+                "admin api project rollback skipped (no context) request_id={} remote={} stage={}",
+                request_id,
+                remote_addr,
+                stage
+            );
+            return None;
+        }
+    };
+    let (snapshot, runtime_snapshot, changed, version) = match (
+        ctx.snapshot.as_ref(),
+        ctx.runtime_snapshot.as_ref(),
+        ctx.update_result.as_ref(),
+    ) {
+        (Some(s), Some(r), Some(u)) => (s, r, u.changed, u.current_version.as_str()),
+        (snap, rt, upd) => {
+            let mut missing = Vec::new();
+            if snap.is_none() {
+                missing.push("snapshot");
+            }
+            if rt.is_none() {
+                missing.push("runtime_snapshot");
+            }
+            if upd.is_none() {
+                missing.push("update_result");
+            }
+            warn_ctrl!(
+                "admin api project rollback missing components request_id={} remote={} stage={} missing={}",
+                request_id,
+                remote_addr,
+                stage,
+                missing.join(",")
+            );
+            // Attempt partial rollback with what we have
+            let mut warnings = Vec::new();
+            if let (Some(snapshot), Some(upd)) = (snap, upd) {
+                if let Err(err) = crate::project_remote::restore_project_remote_update(
+                    work_root,
+                    snapshot,
+                    upd.changed,
+                ) {
+                    warnings.push(format!("restore project failed: {}", err));
+                }
+            }
+            if let Some(rt) = rt {
+                if let Err(err) =
+                    crate::project_remote::restore_runtime_artifact_snapshot(work_root, rt)
+                {
+                    warnings.push(format!("restore runtime artifacts failed: {}", err));
+                }
+            }
+            if warnings.is_empty() {
+                return None;
+            }
+            return Some(warnings.join("; "));
+        }
+    };
+    match rollback_project_and_runtime(work_root, snapshot, changed, runtime_snapshot) {
         Ok(()) => {
             info_ctrl!(
                 "admin api project rollback done request_id={} remote={} stage={} target_version={} changed={}",
                 request_id,
                 remote_addr,
                 stage,
-                update_result.current_version,
-                update_result.changed
+                version,
+                changed
             );
             None
         }
@@ -1110,6 +1247,14 @@ async fn monitor_reload_result(
     }
 }
 
+fn read_project_version(work_root: &Path) -> RunResult<Option<serde_json::Value>> {
+    match crate::project_remote::current_project_group_versions(work_root)? {
+        Some(group_versions) => Ok(Some(group_versions)),
+        None => Ok(crate::project_remote::current_project_version(work_root)?
+            .map(serde_json::Value::String)),
+    }
+}
+
 fn map_send_error(
     request_id: &str,
     remote_addr: SocketAddr,
@@ -1134,6 +1279,7 @@ fn map_send_error(
                     requested_version: None,
                     current_version: None,
                     resolved_tag: None,
+                    group: None,
                     force_replaced: None,
                     warning: None,
                     error: None,
@@ -1265,8 +1411,8 @@ where
 {
     RunReason::from_conf()
         .to_err()
+        .with_source(source)
         .with_detail(detail.into())
-        .with_std_source(source)
 }
 
 fn default_wait() -> bool {
@@ -1323,6 +1469,34 @@ target = "*"
 key = "sink_stat"
 target = "*"
 "#;
+
+    fn generate_self_signed_cert(dir: &Path) -> (PathBuf, PathBuf) {
+        let cert_path = dir.join("cert.pem");
+        let key_path = dir.join("key.pem");
+        let status = std::process::Command::new("openssl")
+            .args([
+                "req",
+                "-x509",
+                "-newkey",
+                "rsa:2048",
+                "-keyout",
+                key_path.to_str().expect("key path is valid utf-8"),
+                "-out",
+                cert_path.to_str().expect("cert path is valid utf-8"),
+                "-days",
+                "365",
+                "-nodes",
+                "-subj",
+                "/CN=localhost",
+            ])
+            .status()
+            .expect("run openssl to generate self-signed cert");
+        assert!(
+            status.success(),
+            "openssl failed to generate self-signed cert"
+        );
+        (cert_path, key_path)
+    }
 
     fn write_test_work_root(dir: &Path, bind: &str, token_file: &str) {
         let conf_dir = dir.join("conf");
@@ -1475,7 +1649,10 @@ token_file = "{token_file}"
             .expect("start admin api")
             .expect("enabled");
 
-        let client = Client::new();
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
         let base = format!("http://{}", runtime.local_addr());
 
         let unauthorized = client
@@ -1510,21 +1687,147 @@ token_file = "{token_file}"
     }
 
     #[tokio::test]
-    async fn admin_api_rejects_non_loopback_without_tls() {
+    async fn admin_api_allows_non_loopback_without_tls() {
         let temp = tempdir().expect("tempdir");
-        write_test_work_root(temp.path(), "0.0.0.0:19090", "runtime/admin_api.token");
+        write_test_work_root(temp.path(), "0.0.0.0:0", "runtime/admin_api.token");
         write_token(temp.path(), "runtime/admin_api.token", 0o600);
 
         let dict = EnvDict::default();
-        let err = start_if_enabled(temp.path(), &dict, shared_control_handle())
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
-            .expect_err("should reject non-loopback without tls");
-        assert!(
-            err.to_string()
-                .contains("requires admin_api.tls.enabled=true"),
-            "unexpected error: {}",
-            err
+            .expect("non-loopback without TLS should start with a warning")
+            .expect("enabled");
+
+        runtime.shutdown().await;
+    }
+
+    fn write_test_work_root_with_tls(
+        dir: &Path,
+        bind: &str,
+        token_file: &str,
+        cert_file: &str,
+        key_file: &str,
+    ) {
+        let conf_dir = dir.join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(&format!(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "{bind}"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = true
+cert_file = "{cert_file}"
+key_file = "{key_file}"
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "{token_file}"
+"#
+        ));
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write config");
+    }
+
+    fn init_tls_crypto() {
+        use std::sync::Once;
+        static INIT: Once = Once::new();
+        INIT.call_once(|| {
+            rustls::crypto::ring::default_provider()
+                .install_default()
+                .expect("install rustls ring crypto provider");
+        });
+    }
+
+    #[tokio::test]
+    async fn admin_api_tls_accepts_https_requests() {
+        init_tls_crypto();
+        let temp = tempdir().expect("tempdir");
+        let (cert_path, key_path) = generate_self_signed_cert(temp.path());
+        write_test_work_root_with_tls(
+            temp.path(),
+            "127.0.0.1:0",
+            "runtime/admin_api.token",
+            &cert_path.to_string_lossy(),
+            &key_path.to_string_lossy(),
         );
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api with TLS")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .expect("build reqwest client with unsafe TLS");
+        let base = format!("https://{}", runtime.local_addr());
+
+        // Without bearer token -> 401
+        let unauthorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .send()
+            .await
+            .expect("send unauthorized HTTPS request");
+        assert_eq!(unauthorized.status(), StatusCode::UNAUTHORIZED);
+
+        // With bearer token -> 200
+        let authorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send authorized HTTPS request");
+        assert_eq!(authorized.status(), StatusCode::OK);
+        let body: serde_json::Value = authorized.json().await.expect("parse json");
+        assert_eq!(body["accepting_commands"], false);
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_tls_works_with_non_loopback() {
+        init_tls_crypto();
+        let temp = tempdir().expect("tempdir");
+        let (cert_path, key_path) = generate_self_signed_cert(temp.path());
+        write_test_work_root_with_tls(
+            temp.path(),
+            "0.0.0.0:0",
+            "runtime/admin_api.token",
+            &cert_path.to_string_lossy(),
+            &key_path.to_string_lossy(),
+        );
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("non-loopback with TLS should start successfully")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .danger_accept_invalid_certs(true)
+            .build()
+            .expect("build reqwest client with unsafe TLS");
+        let base = format!("https://{}", runtime.local_addr());
+
+        let response = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send HTTPS request to non-loopback TLS server");
+        assert_eq!(response.status(), StatusCode::OK);
+
+        runtime.shutdown().await;
     }
 
     #[tokio::test]
@@ -1539,7 +1842,10 @@ token_file = "{token_file}"
             .expect("start admin api")
             .expect("enabled");
 
-        let client = Client::new();
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
         let base = format!("http://{}", runtime.local_addr());
         let response = client
             .post(format!("{}/admin/v1/reloads/model", base))
@@ -1553,6 +1859,209 @@ token_file = "{token_file}"
         let body: serde_json::Value = response.json().await.expect("parse json");
         assert_eq!(body["result"], "invalid_request");
         assert_eq!(body["error"], "version requires update=true");
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_rejects_group_without_update() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
+        let base = format!("http://{}", runtime.local_addr());
+        let response = client
+            .post(format!("{}/admin/v1/reloads/model", base))
+            .bearer_auth("test-token")
+            .json(&serde_json::json!({"wait": false, "group": "models"}))
+            .send()
+            .await
+            .expect("send reload request");
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let body: serde_json::Value = response.json().await.expect("parse json");
+        assert_eq!(body["result"], "invalid_request");
+        assert_eq!(body["error"], "group requires update=true");
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_rejects_dual_update_without_group() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "127.0.0.1:0"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = false
+cert_file = ""
+key_file = ""
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.7"
+"#,
+        );
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write dual config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
+        let base = format!("http://{}", runtime.local_addr());
+
+        let response = client
+            .post(format!("{}/admin/v1/reloads/model", base))
+            .bearer_auth("test-token")
+            .json(&serde_json::json!({"wait": false, "update": true}))
+            .send()
+            .await
+            .expect("send reload request");
+
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+        let body: serde_json::Value = response.json().await.expect("parse json");
+        assert_eq!(body["result"], "invalid_request");
+        assert!(
+            body["error"]
+                .as_str()
+                .expect("error string")
+                .contains("group"),
+            "error should mention group: {}",
+            body["error"]
+        );
+
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_status_reports_per_group_versions_in_dual_mode() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        let mut base = BASE_TEST_WPARSE_CONF.to_string();
+        base.push_str(
+            r#"
+
+[admin_api]
+enabled = true
+bind = "127.0.0.1:0"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.tls]
+enabled = false
+cert_file = ""
+key_file = ""
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+
+[project_remote]
+enabled = true
+repo = ""
+
+[project_remote.models]
+repo = "https://github.com/wp-labs/wp-rule.git"
+init_version = "0.1.0"
+
+[project_remote.infra]
+repo = "https://github.com/wp-labs/editor-monitor-conf.git"
+init_version = "0.1.7"
+"#,
+        );
+        fs::write(conf_dir.join("wparse.toml"), base).expect("write dual config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        // Write dual state file
+        let run_dir = temp.path().join(".run");
+        fs::create_dir_all(&run_dir).expect("create .run dir");
+        let state_json = serde_json::json!({
+            "models": {
+                "version": "1.4.2",
+                "tag": "v1.4.2",
+                "revision": "abc123def456"
+            },
+            "infra": {
+                "version": "0.1.7",
+                "tag": "v0.1.7",
+                "revision": "def456abc123"
+            }
+        });
+        fs::write(
+            run_dir.join("project_remote_state.json"),
+            serde_json::to_vec(&state_json).expect("serialize state"),
+        )
+        .expect("write state");
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("start admin api")
+            .expect("enabled");
+
+        let client = Client::builder()
+            .no_proxy()
+            .build()
+            .expect("build reqwest client without proxy");
+        let base = format!("http://{}", runtime.local_addr());
+
+        let authorized = client
+            .get(format!("{}/admin/v1/runtime/status", base))
+            .bearer_auth("test-token")
+            .send()
+            .await
+            .expect("send authorized request");
+        assert_eq!(authorized.status(), StatusCode::OK);
+        let body: serde_json::Value = authorized.json().await.expect("parse json");
+        let pv = &body["project_version"];
+        assert!(
+            pv.is_object(),
+            "project_version should be object, got: {}",
+            pv
+        );
+        assert_eq!(pv["models"]["version"], "1.4.2");
+        assert_eq!(pv["models"]["tag"], "v1.4.2");
+        assert_eq!(pv["infra"]["version"], "0.1.7");
+        assert_eq!(pv["infra"]["tag"], "v0.1.7");
 
         runtime.shutdown().await;
     }

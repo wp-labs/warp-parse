@@ -1,7 +1,7 @@
 use orion_conf::ToStructError;
-use orion_error::UvsFrom;
 use orion_variate::EnvDict;
 use serde_json::json;
+use warp_parse::compat::UvsFrom;
 use wp_cli_core::{
     self as wlib,
     utils::validate::{validate_groups, validate_with_stats},
