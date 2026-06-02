@@ -6661,8 +6661,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors-labs"
-version = "0.1.7"
-source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.7#a9b5b6401890581791a4a54684acaa026ce88c91"
+version = "0.1.8"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.8#817508459dc080abfaede8b9ffaaba3ee13476cf"
 dependencies = [
  "async-trait",
  "bytes",
@@ -6675,6 +6675,7 @@ dependencies = [
  "orion_conf",
  "serde",
  "serde_json",
+ "socket2 0.6.4",
  "thiserror 2.0.18",
  "tokio",
  "wp-conf-base",
