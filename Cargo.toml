@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.25.1-E12" # @gxl:set(version)
+version = "0.25.1-E14" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -199,13 +199,13 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 
 wp-self-update =  "0.3"
 wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.4", optional = true }
-wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.6", optional = true, features = ["dmdb"] }
-# wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb"] }
+wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.8", optional = true, features = ["dmdb", "udp"] }
+# wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb", "udp"] }
 # @gxl:block(local_motor)
-#wp-engine = { path = "../wp-motor" }
-#wp-config = { path = "../wp-motor/crates/wp-config" }
-#wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
-#wp-proj       = { path = "../wp-motor/crates/wp-proj" }
+# wp-engine = { path = "../wp-motor" }
+# wp-config = { path = "../wp-motor/crates/wp-config" }
+# wp-cli-core   = { path = "../wp-motor/crates/wp-cli-core" }
+# wp-proj       = { path = "../wp-motor/crates/wp-proj" }
 # @gxl:end(local_motor)
 
 # wp-enterprise = { path = "../wp-enterprise" }
