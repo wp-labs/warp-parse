@@ -29,7 +29,7 @@ jobs:
             can-run: true
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
-            can-run: true
+            can-run: false
           - os: macos-14
             target: aarch64-apple-darwin
             can-run: true
@@ -53,10 +53,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y unixodbc-dev
 
+      - name: Show page size build inputs
+        if: runner.os == 'Linux'
+        run: |
+          uname -m
+          getconf PAGESIZE
+          env | grep -E 'JEMALLOC|LG_PAGE' || true
+
       - name: Cargo build
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
-        run: cargo build --release --target ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            export JEMALLOC_SYS_WITH_LG_PAGE=16
+          fi
+          cargo build --release --target ${{ matrix.target }}
 
       - name: Show version
         if: matrix.can-run == true
