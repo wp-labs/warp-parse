@@ -11,7 +11,8 @@ LABEL org.opencontainers.image.description="High-performance flow data parsing a
 LABEL org.opencontainers.image.licenses="ELv2"
 
 # 安装运行时依赖。
-# 其中 unixODBC 运行时用于 DMDB connector 在启动时通过 libloading 加载 libodbc.so。
+# 其中 unixODBC 运行时用于 DMDB connector 在启动时通过 libloading 加载 ODBC Driver Manager。
+# 达梦运行时还会按库名查找 `libodbc.so` / `libodbcinst.so`，这里在镜像内补齐无版本软链。
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     libssl3t64 \
@@ -24,6 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unixodbc \
     odbcinst \
     libltdl7 \
+    && ODBC_SO="$(find /usr/lib -path '*/libodbc.so.2' | head -n1)" \
+    && test -n "$ODBC_SO" \
+    && ln -sf "$(basename "$ODBC_SO")" "$(dirname "$ODBC_SO")/libodbc.so" \
+    && ODBCINST_SO="$(find /usr/lib -path '*/libodbcinst.so.2' | head -n1)" \
+    && test -n "$ODBCINST_SO" \
+    && ln -sf "$(basename "$ODBCINST_SO")" "$(dirname "$ODBCINST_SO")/libodbcinst.so" \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -r -s /bin/false wparse
 
