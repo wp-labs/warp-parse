@@ -30,7 +30,7 @@ jobs:
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
             can-run: true
-          - os: macos-14
+          - os: macos-15
             target: aarch64-apple-darwin
             can-run: true
     steps:
