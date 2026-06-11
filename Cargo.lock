@@ -1890,11 +1890,10 @@ dependencies = [
 
 [[package]]
 name = "getset"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9cf0fc11e47561d47397154977bc219f4cf809b2974facc3ccb3b89e2436f912"
+checksum = "6cf442baaabe4213ce7d1239afc26c039180b6456da2cededa316ae2c8a77a77"
 dependencies = [
- "proc-macro-error2",
  "proc-macro2",
  "quote",
  "syn",
@@ -5787,7 +5786,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.25.1-E19"
+version = "0.25.1-E20"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6660,14 +6659,13 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors-labs"
-version = "0.1.10"
-source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.10#9001fad60aea10b41c310d6e346527ad10c54447"
+version = "0.1.11"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.11#fd2a695f588ffad6f5d221b6bc8b0a9091d5d841"
 dependencies = [
  "async-trait",
  "bytes",
  "chrono",
  "educe",
- "encoding_rs",
  "hex",
  "libloading",
  "log",
