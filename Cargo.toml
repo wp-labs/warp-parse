@@ -121,7 +121,7 @@ plugin-suite = []
 
 [dependencies]
 # --- System and Platform ---
-sysinfo = "0.38"
+sysinfo = "0.39"
 libc = "0.2"
 tikv-jemallocator = "0.6"
 
