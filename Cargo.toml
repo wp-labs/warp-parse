@@ -71,7 +71,7 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs = "1.6"
+shadow-rs = "2.0"
 
 # ===========================================================================
 # Dev Dependencies
@@ -148,7 +148,7 @@ orion_conf = { version = "0.7", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
-time = "0.3"
+time = ">=0.3.0, <0.3.36"
 
 # --- CLI ---
 clap = { version = "4.5", features = ["derive"] }
@@ -186,16 +186,16 @@ wp-error = "0.10"
 # feats/oml_static.1
 
 
-wp-knowledge  =  "0.13"
+wp-knowledge  =  "0.14"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.1" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.1" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.1" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.1" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.2", optional = true }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.15.4", optional = true }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
