@@ -6404,8 +6404,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.15.5"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.15.5#78b7dfe1be062abb8be1debc486b61842cea5d34"
+version = "0.15.6"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.15.6#269bf62e18d15de357ea163ebe32633786b1d5a0"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -6449,9 +6449,9 @@ dependencies = [
 
 [[package]]
 name = "wp-core-connectors"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8223edd722fc8d147c410c9c2e40d7d7595ca2d2a97acda262e253a2cb2fc9a"
+checksum = "8f17c833d6dc16800274cdb20fbded28263f28b1f32bd7def3d990a1674fe700"
 dependencies = [
  "anyhow",
  "arrow",
