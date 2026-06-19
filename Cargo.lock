@@ -6489,9 +6489,9 @@ dependencies = [
 
 [[package]]
 name = "wp-core-connectors"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dad1e273cfc04eed55159e2df2104c38907d2f665ef8d746351e99d2c3789de7"
+checksum = "3ccc4b60f1d11217b083766d886511034d83642d0c1e5fb32fc8e708e1849a13"
 dependencies = [
  "anyhow",
  "arrow",
