@@ -10,9 +10,15 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.25.2 Unreleased]
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.23.2`。
-  - Generator 发送改为动态批量
-  - TCP sink 场景下 `wpgen` CPU 从 ~300% 降至 ~15%（实测）
+- **Dependencies**: 升级主要依赖
+  - `wp-motor`: `v1.22.4` → `v1.23.2`
+    - Generator 发送改为动态批量（`BatchSizePolicy`），TCP sink 下 `wpgen` CPU ~300% → ~15%
+    - 新增 Redis 知识库 Provider 支持（`knowdb.toml` → `[provider.redis]`）
+    - 移除独立 `arrow-file` / `arrow-ipc` sink 后端，统一到 file/tcp sink
+    - 升级 `shadow-rs` 1.5 → 2.0，`wp-core-connectors` 0.3.3 → 0.5
+    - 修复 `wproj init` 模板兼容性、`ip4_to_int` IPv6 处理等
+  - `wp-connectors`: `v0.14.2` → `v0.15.6`
+  - `wp-knowledge`: `v0.13.0` → `v0.14.2`
 
 ## [0.24.7] - 2026-05-26
 
