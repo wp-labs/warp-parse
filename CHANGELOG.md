@@ -10,9 +10,10 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.24.8 Unreleased]
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.5`。
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.6`。
   - Generator 发送改为动态批量：新增 `BatchSizePolicy`，预算 = `base_rate × EMA行长 × 100ms时间窗`，自适应 rate、数据大小、混合日志。
   - TCP sink 场景下 `wpgen` CPU 从 ~300% 降至 ~15%（实测），不再把 CPU 烧在逐行 `write()` syscall 上。
+  - 修复 `wp-core-connectors` crate 名称引用错误（连字符 → 下划线）。
 
 ## [0.24.7] - 2026-05-26
 

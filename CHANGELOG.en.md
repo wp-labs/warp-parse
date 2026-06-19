@@ -10,9 +10,10 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.24.8 Unreleased]
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.5`.
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.6`.
   - Generator send path now uses dynamic batch sizing via `BatchSizePolicy`: budget = `base_rate × EMA(line-length) × 100ms window`, auto-adapting to rate, data size, and mixed log line-length distributions.
   - `wpgen` CPU drops from ~300% to ~15% (measured) on TCP sink benchmarks, as per-line `write()` syscall overhead is eliminated.
+  - Fixed `wp-core-connectors` crate name references (hyphens → underscores).
 
 ## [0.24.7] - 2026-05-26
 
