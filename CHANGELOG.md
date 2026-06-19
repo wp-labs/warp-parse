@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.2 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.23.2`。
+  - Generator 发送改为动态批量
+  - TCP sink 场景下 `wpgen` CPU 从 ~300% 降至 ~15%（实测）
+
 ## [0.24.7] - 2026-05-26
 
 ### Changed

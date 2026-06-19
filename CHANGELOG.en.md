@@ -7,6 +7,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.2 Unreleased]
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.23.2`.
+  - Generator send path now uses dynamic batch sizing via `BatchSizePolicy` 
+  - `wpgen` CPU drops from ~300% to ~15% (measured) on TCP sink benchmarks 
+
 ## [0.24.7] - 2026-05-26
 
 ### Changed
