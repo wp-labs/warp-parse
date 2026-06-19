@@ -11,14 +11,20 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 - **Dependencies**: Upgraded major dependencies
-  - `wp-motor`: `v1.22.4` → `v1.23.2`
-    - Generator send path now uses dynamic batch sizing (`BatchSizePolicy`), `wpgen` CPU ~300% → ~15% on TCP sink
+  - `wp-motor`: `v1.22.6` → `v1.23.2`
     - Added Redis knowledge provider support (`knowdb.toml` → `[provider.redis]`)
     - Removed standalone `arrow-file` / `arrow-ipc` sink backends (unified into file/tcp sink)
     - Upgraded `shadow-rs` 1.5 → 2.0, `wp-core-connectors` 0.3.3 → 0.5
     - Fixed `wproj init` template compatibility, `ip4_to_int` IPv6 handling, etc.
   - `wp-connectors`: `v0.14.2` → `v0.15.6`
-  - `wp-knowledge`: `v0.13.0` → `v0.14.2` 
+  - `wp-knowledge`: `v0.13.0` → `v0.14.2`
+
+## [0.24.8] - 2026-06-19
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.6`
+  - Generator send path now uses dynamic batch sizing (`BatchSizePolicy`), `wpgen` CPU ~300% → ~15% on TCP sink
+  - Fixed `wp-core-connectors` crate name references (hyphens → underscores)
 
 ## [0.24.7] - 2026-05-26
 
