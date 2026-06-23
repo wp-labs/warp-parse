@@ -7,7 +7,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.8 Unreleased]
+## [0.24.9 Unreleased]
+
+### Added
+- **Source Rate Limit**: 同步上游 `wp-motor v1.22.7`，新增 source 侧全局输入限速；`performance.rate_limit_rps = 0` 表示自动限速，`> 0` 表示所有 source 共享固定 EPS 上限。
+- **Memory Profiles**: 新增统一内存 profile 支持，可通过 `WP_MEMORY_PROFILE=standard|low|throughput` 控制运行时队列、水位、批大小和网络/文件缓冲等内存相关参数。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.6` 到 `v1.22.7`。
+  - 默认 `performance.rate_limit_rps` 从固定值改为 `0` 自动限速。
+  - 自动限速根据 picker pending 水位、parser 背压和 RSS 增长保护动态调整输入速率。
+  - source 限速等待前移到进入 pending 之前，减少限速场景下 pending/RSS 先膨胀。
+  - benchmark `wparse.toml` 使用 `${RATE_LIMIT_RPS:0}`，benchmark 脚本默认用输入速率同步设置 wparse 限速。
+- **DebugView**: Debug 输出改为有界队列，队列满时记录丢弃计数并抽样告警，避免无界队列造成 RSS 增长。
+
+## [0.24.8] - 2026-06-19
 
 ### Changed
 - **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.6`。

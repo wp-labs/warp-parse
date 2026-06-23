@@ -7,7 +7,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.8 Unreleased]
+## [0.24.9 Unreleased]
+
+### Added
+- **Source Rate Limit**: Pulled in upstream `wp-motor v1.22.7` source-side global rate limiting. `performance.rate_limit_rps = 0` enables automatic input control, while `> 0` applies a fixed global EPS cap shared by all sources.
+- **Memory Profiles**: Added centralized memory profile support via `WP_MEMORY_PROFILE=standard|low|throughput`, covering runtime channels, watermarks, batch sizes, and network/file buffers.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.6` to `v1.22.7`.
+  - Default `performance.rate_limit_rps` changed from a fixed value to `0` automatic mode.
+  - Automatic source limiting adjusts input rate using picker pending watermarks, parser backpressure, and RSS growth protection.
+  - Source limiter waits before batches enter picker pending, reducing pending/RSS growth under rate limiting.
+  - Benchmark `wparse.toml` files now use `${RATE_LIMIT_RPS:0}`; benchmark scripts derive the wparse rate limit from the input speed by default.
+- **DebugView**: Debug output now uses a bounded channel and records dropped-line counts with sampled warnings when full, avoiding unbounded RSS growth.
+
+## [0.24.8] - 2026-06-19
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.6`.
