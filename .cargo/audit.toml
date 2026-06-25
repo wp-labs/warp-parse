@@ -3,4 +3,12 @@
 # Only reaches us indirectly via rustls → pkcs8 → rsa.
 # Admin API listens on loopback and TLS is disabled by default; real risk is low.
 # Next review: 2026-07-25
-ignore = ["RUSTSEC-2023-0071"]
+# RUSTSEC-2026-0183: git2 Remote::list null pointer (unsound)
+# RUSTSEC-2026-0184: git2 BlameHunk null pointer (unsound)
+# warp-parse does not use Remote::list() or Blame APIs; only Repository::clone,
+# tag_names, find_reference, symbolic_target, etc. Risk is minimal.
+# Fixed in git2 >= 0.21. Upgrade when dependency tree allows.
+# RUSTSEC-2026-0173: proc-macro-error2 unmaintained
+# Transitive dependency via jieba-rs -> include-flate -> include-flate-codegen.
+# Unmaintained but no known security issues.
+ignore = ["RUSTSEC-2023-0071", "RUSTSEC-2026-0183", "RUSTSEC-2026-0184", "RUSTSEC-2026-0173"]
