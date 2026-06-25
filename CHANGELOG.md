@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.24.11] - 2026-06-25
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.8` 到 `v1.22.9`，同步 release tag / origin head 解析修正，以及相关基础设施更新。
+- **Dependencies**: 升级 `wp-lang` 从 `0.3.3` 到 `0.3.5`，同步 `kvarr_raw`、`kvarr` 重复 key 惰性处理、parser-only 性能基准和 WPL 文档更新。
+- **Lockfile**: 刷新 `Cargo.lock` 中的传递依赖版本。
+
+### Fixed
+- **Project Remote**: 修复 `project_remote` 在解析本地 tag、origin URL 和 remote HEAD 目标时的健壮性，避免部分 Git 状态下误判或报错。
+
 [English](./CHANGELOG.en.md) | 中文
 
 All notable changes to this project will be documented in this file.
@@ -7,7 +17,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.9 Unreleased]
+## [0.24.10] - 2026-06-25
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.8` 到 `v1.22.9`，同步 sink 批处理成功路径 record id 开销基准和错误日志路径的轻量化调整。
+- **Dependencies**: 升级 `wp-lang` 从 `0.3.3` 到 `0.3.4`，同步 parser-only 性能基准集合、空 pipe 快路径和 quoted `chars` 解析热路径优化。
+
+## [0.24.9] - 2026-06-23
 
 ### Added
 - **Source Rate Limit**: 同步上游 `wp-motor v1.22.7`，新增 source 侧全局输入限速；`performance.rate_limit_rps = 0` 表示自动限速，`> 0` 表示所有 source 共享固定 EPS 上限。

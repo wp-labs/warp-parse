@@ -7,7 +7,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.24.9 Unreleased]
+## [0.24.11] - 2026-06-25
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, including release tag / origin head resolution fixes and related infrastructure updates.
+- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.5`, pulling in `kvarr_raw`, lazy duplicate handling for `kvarr`, parser-only performance guards, and WPL documentation updates.
+- **Lockfile**: Refreshed transitive dependency versions in `Cargo.lock`.
+
+### Fixed
+- **Project Remote**: Hardened local tag, origin URL, and remote HEAD resolution in `project_remote` to avoid false failures on some Git states.
+
+## [0.24.10] - 2026-06-25
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, pulling in the sink batch success-path record-id benchmark and lighter batch error logging path.
+- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.4`, pulling in parser-only performance guards, the empty-pipe fast path, and quoted `chars` parse hot-path optimizations.
+
+## [0.24.9] - 2026-06-23
 
 ### Added
 - **Source Rate Limit**: Pulled in upstream `wp-motor v1.22.7` source-side global rate limiting. `performance.rate_limit_rps = 0` enables automatic input control, while `> 0` applies a fixed global EPS cap shared by all sources.
