@@ -195,7 +195,7 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.15.6", optional = true }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.15.7", optional = true }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
