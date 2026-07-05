@@ -60,5 +60,18 @@ pub fn register_optional_connectors() {
         // HTTP
         register_source_factory(wp_connectors::http::HttpSourceFactory);
         register_sink_factory(wp_connectors::http::HttpSinkFactory);
+
+        wp_log::info_ctrl!(
+            "optional connector factories registered: Kafka, MySQL, PostgreSQL, ClickHouse, Elasticsearch, Prometheus, VictoriaLogs, VictoriaMetrics, Doris, HTTP, Count"
+        );
+    }
+}
+
+/// Return a comma-separated list of compiled-in optional connector features.
+pub fn features_list() -> &'static str {
+    if cfg!(feature = "wp-connectors") {
+        "community (kafka,mysql,postgres,clickhouse,elasticsearch,prometheus,victorialogs,victoriametrics,doris,http,count)"
+    } else {
+        "core"
     }
 }

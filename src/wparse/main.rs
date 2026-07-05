@@ -90,6 +90,7 @@ async fn do_main() -> RunResult<()> {
                 }
             } else {
                 println!("{}", warp_parse::build::CLAP_LONG_VERSION);
+                println!("features: {}", warp_parse::feats::features_list());
             }
         }
     }

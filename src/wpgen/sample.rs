@@ -96,7 +96,10 @@ pub async fn run(
     );
     // 默认从 ./models/wpl/ 搜索样本；用户可通过 --wpl 指定其他根目录
     let default_rule_root = "./models/wpl".to_string();
-    let rule_root = wpl_dir.unwrap_or(default_rule_root.as_str());
+    let config_wpl = resolved.conf.models.wpl.as_deref();
+    let rule_root = wpl_dir.or(config_wpl).unwrap_or(default_rule_root.as_str());
+    // 校验：rule_root 必须存在且包含至少一个 .dat 或 .wpl 文件
+    validate_wpl_dir(rule_root)?;
     // 诊断：打印关键参数与环境覆盖
     let wf_gen_batch = std::env::var("WF_GEN_BATCH").unwrap_or_else(|_| "(unset)".into());
     let wf_gen_unit = std::env::var("WF_GEN_UNIT_SIZE").unwrap_or_else(|_| "(unset)".into());
@@ -122,4 +125,82 @@ pub async fn run(
     // 明确提示任务完成
     info_ctrl!("wpgen.sample: completed");
     Ok(())
+}
+
+/// Validate that the WPL directory exists and contains at least one .dat or .wpl file.
+pub(crate) fn validate_wpl_dir(dir: &str) -> RunResult<()> {
+    let path = std::path::Path::new(dir);
+    if !path.is_dir() {
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!(
+                "[models].wpl \"{}\" directory not found\n  hint: check the wpl path in wpgen.toml [models] section, or use --wpl\n  at: conf/wpgen.toml",
+                dir
+            )));
+    }
+    let has_files = std::fs::read_dir(path).ok().is_some_and(|dir| {
+        dir.filter_map(|e| e.ok()).any(|e| {
+            e.path()
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .is_some_and(|ext| ext == "dat" || ext == "wpl")
+        })
+    });
+    if !has_files {
+        return Err(RunReason::from_conf()
+            .to_err()
+            .with_detail(format!(
+                "[models].wpl \"{}\" directory is empty (no .dat or .wpl files found)\n  hint: check the wpl path, or place sample.dat / parse.wpl in the directory\n  at: conf/wpgen.toml",
+                dir
+            )));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tmp_dir(prefix: &str) -> std::path::PathBuf {
+        let nanos = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let mut p = std::env::temp_dir();
+        p.push(format!("{}_{}", prefix, nanos));
+        std::fs::create_dir_all(&p).unwrap();
+        p
+    }
+
+    #[test]
+    fn validate_wpl_dir_valid_with_dat() {
+        let dir = tmp_dir("wpl_valid_dat");
+        std::fs::write(dir.join("sample.dat"), b"test").unwrap();
+        assert!(validate_wpl_dir(dir.to_str().unwrap()).is_ok());
+    }
+
+    #[test]
+    fn validate_wpl_dir_valid_with_wpl() {
+        let dir = tmp_dir("wpl_valid_wpl");
+        std::fs::write(dir.join("parse.wpl"), b"rule").unwrap();
+        assert!(validate_wpl_dir(dir.to_str().unwrap()).is_ok());
+    }
+
+    #[test]
+    fn validate_wpl_dir_not_found() {
+        assert!(validate_wpl_dir("./nonexistent_dir_12345").is_err());
+    }
+
+    #[test]
+    fn validate_wpl_dir_empty() {
+        let dir = tmp_dir("wpl_empty");
+        assert!(validate_wpl_dir(dir.to_str().unwrap()).is_err());
+    }
+
+    #[test]
+    fn validate_wpl_dir_no_matching_files() {
+        let dir = tmp_dir("wpl_no_match");
+        std::fs::write(dir.join("readme.txt"), b"not wpl").unwrap();
+        assert!(validate_wpl_dir(dir.to_str().unwrap()).is_err());
+    }
 }
