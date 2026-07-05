@@ -40,7 +40,7 @@ pub fn run_combined_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> 
         wlib::print_src_files_table(&report);
     } else {
         println!(
-            "no file sources found: missing topology/sources/wpsrc.toml or no enabled entries"
+            "no file sources found: check topology/sources/ for .toml files or no enabled entries"
         );
     }
     println!("\n== Sinks ==");
@@ -66,7 +66,7 @@ pub fn run_src_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> RunRe
         print_json(&obj)?;
     } else {
         eprintln!(
-            "no file sources found under {}/sources/wpsrc.toml; try --work-root 指向工程根目录",
+            "no file sources found under {}/sources/; try --work-root 指向工程根目录",
             stats.work_root
         );
     }

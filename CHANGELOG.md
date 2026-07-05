@@ -8,11 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.2 Unreleased]
+## [0.25.4] - 2026-07-05
 
 ### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.3` → `v1.23.4`
+  - `wpadm` 工具链（`data stat/validate/check`、`sources list/route`）支持目录式 source 格式（`wpsrc.toml` 不存在时自动扫描 `topology/sources/*.toml`）
+  - 修复 clippy `collapsible_if` / `unused_imports` 警告
+- **CLI**: 二进制 `wproj` → `wpadm`；`wproj` 作为向后兼容 symlink（`wproj → wpadm`）
+  - `Dockerfile` / `setup.sh` / `release.yml` 同步更新
+  - `_gal/work.gxl` 移除旧 `wproj` 二进制拷贝
 - **Dependencies**: 升级主要依赖
-  - `wp-motor`: `v1.22.6` → `v1.23.2`
+  - `wp-motor`: `v1.22.6` → `v1.23.4`
     - 新增 Redis 知识库 Provider 支持（`knowdb.toml` → `[provider.redis]`）
     - 移除独立 `arrow-file` / `arrow-ipc` sink 后端，统一到 file/tcp sink
     - 升级 `shadow-rs` 1.5 → 2.0，`wp-core-connectors` 0.3.3 → 0.5

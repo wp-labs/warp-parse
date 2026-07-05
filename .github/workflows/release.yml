@@ -101,7 +101,9 @@ jobs:
           cp -av target/${{ matrix.target }}/release/wparse artifacts/
           cp -av target/${{ matrix.target }}/release/wpgen artifacts/
           cp -av target/${{ matrix.target }}/release/wprescue artifacts/
-          cp -av target/${{ matrix.target }}/release/wproj artifacts/
+          cp -av target/${{ matrix.target }}/release/wpadm artifacts/
+          # backward-compat symlink: wproj → wpadm
+          ln -sf wpadm artifacts/wproj
           tar -czf "${ARTIFACT}.tar.gz" artifacts
 
       - name: Attest Build Provenance
