@@ -138,14 +138,7 @@ pub(crate) fn validate_wpl_dir(dir: &str) -> RunResult<()> {
                 dir
             )));
     }
-    let has_files = std::fs::read_dir(path).ok().is_some_and(|dir| {
-        dir.filter_map(|e| e.ok()).any(|e| {
-            e.path()
-                .extension()
-                .and_then(|ext| ext.to_str())
-                .is_some_and(|ext| ext == "dat" || ext == "wpl")
-        })
-    });
+    let has_files = has_wpl_files(path);
     if !has_files {
         return Err(RunReason::from_conf()
             .to_err()
@@ -155,6 +148,28 @@ pub(crate) fn validate_wpl_dir(dir: &str) -> RunResult<()> {
             )));
     }
     Ok(())
+}
+
+/// Recursively check if a directory contains at least one .dat or .wpl file.
+fn has_wpl_files(dir: &std::path::Path) -> bool {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return false;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            if has_wpl_files(&path) {
+                return true;
+            }
+        } else if path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .is_some_and(|ext| ext == "dat" || ext == "wpl")
+        {
+            return true;
+        }
+    }
+    false
 }
 
 #[cfg(test)]
@@ -202,5 +217,14 @@ mod tests {
         let dir = tmp_dir("wpl_no_match");
         std::fs::write(dir.join("readme.txt"), b"not wpl").unwrap();
         assert!(validate_wpl_dir(dir.to_str().unwrap()).is_err());
+    }
+
+    #[test]
+    fn validate_wpl_dir_valid_in_subdir() {
+        let dir = tmp_dir("wpl_subdir");
+        let sub = dir.join("example");
+        std::fs::create_dir_all(&sub).unwrap();
+        std::fs::write(sub.join("sample.dat"), b"test").unwrap();
+        assert!(validate_wpl_dir(dir.to_str().unwrap()).is_ok());
     }
 }
