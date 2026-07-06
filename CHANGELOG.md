@@ -17,6 +17,9 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **Dependencies**: 升级 `wp-motor` `v1.23.4` → `v1.23.5`
 
+### Fixed
+- **wpgen**: `validate_wpl_dir` 递归搜索子目录中的 `.wpl` 文件（之前只扫描顶层目录，嵌套的 WPL 规则不会被校验）
+
 
 ## [0.25.4] - 2026-07-05
 
