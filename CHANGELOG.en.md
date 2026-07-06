@@ -12,19 +12,10 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 - **wpgen/Config**: `wpgen.toml` now supports `[models]` section with `wpl` field to specify WPL rule/sample directory, matching `wparse.toml` semantics. Priority: `--wpl` CLI > `[models].wpl` > default `./models/wpl/`. Invalid/empty directory causes startup error.
-- **CLI/Version**: `wparse version` now prints compiled feature list (`features: community (...)` or `features: core`).
-- **CLI/Logging**: `register_builtin_factories()` and `register_optional_connectors()` now log registered factory lists at INFO level on startup.
 - **Connector/Validate**: `merge_params` / `merge_source_params` / `merge_params_with_allowlist` now perform parameter type validation (`json_type_label`). Config values with mismatched types (e.g. `port = "9801"` string overriding integer default) cause errors instead of silent fallback.
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` `v1.23.4` → `v1.23.5`
-  - `wpgen.toml` supports `[models]` section
-  - `register_builtin_factories()` logs factory list at startup
-  - Sink factory registration logging (built-in + optional)
-  - Parameter type validation (`REQ-connector-param-type-check` R1/R2)
-
-### Tests
-- **wpgen**: Added `validate_wpl_dir` unit tests (5 cases).
 
 ## [0.25.4] - 2026-07-05
 

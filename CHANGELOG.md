@@ -12,18 +12,11 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Added
 - **wpgen/Config**: `wpgen.toml` 新增 `[models]` 段，支持 `wpl` 字段指定 WPL 规则/样本目录。配置优先级：`--wpl` CLI > `[models].wpl` > 默认 `./models/wpl/`。`[models].wpl` 指向无效/空目录时启动报错。
-- **CLI/Version**: `wparse version` 输出已编译 feature 列表（`features: community (...)` 或 `features: core`）。
-- **CLI/Logging**: `register_builtin_factories()` 和 `register_optional_connectors()` 启动时通过 INFO 日志打印已注册的 factory 列表。
 - **Connector/Validate**: `merge_params` / `merge_source_params` / `merge_params_with_allowlist` 新增参数类型校验（`json_type_label`），配置项类型与 connector 默认值不一致时报错退出（如 `port = "9801"` 字符串覆盖整数默认值）。
 
 ### Changed
 - **Dependencies**: 升级 `wp-motor` `v1.23.4` → `v1.23.5`
-  - `wpgen.toml` 支持 `[models]` 段
-  - `register_builtin_factories()` 增加 factory 注册日志
-  - 参数类型校验（`REQ-connector-param-type-check` R1/R2）
 
-### Tests
-- **wpgen**: 新增 `validate_wpl_dir` 单元测试 5 例（dat/wpl 文件、目录不存在、空目录、无匹配文件）。
 
 ## [0.25.4] - 2026-07-05
 
