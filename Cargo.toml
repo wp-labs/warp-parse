@@ -40,7 +40,7 @@ path = "src/wpgen/main.rs"
 
 [[bin]]
 name = "wpadm"
-path = "src/wproj/main.rs"
+path = "src/wpadm/main.rs"
 
 [[bin]]
 name = "wprescue"
