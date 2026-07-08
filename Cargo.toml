@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.25.5" # @gxl:set(version)
+version = "0.25.6" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -195,7 +195,7 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.15.6", optional = true }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.15.8", optional = true }
 
 # @gxl:block(local_motor)
 #wp-engine = { path = "../wp-motor" }
