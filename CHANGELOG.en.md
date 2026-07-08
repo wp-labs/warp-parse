@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.25.6] - 2026-07-08
+
+### Changed
+- **Dependencies**: Upgraded `wp-connectors` `v0.15.6` → `v0.15.8`
+
 ## [0.25.5] - 2026-07-06
 
 ### Added
@@ -16,7 +21,6 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` `v1.23.4` → `v1.23.5`
-- **Dependencies**: Upgraded `wp-connectors` `v0.15.6` → `v0.15.8`
 
 ### Fixed
 - **wpgen**: `validate_wpl_dir` now recursively searches subdirectories for `.wpl` files (previously only scanned top-level, nested WPL rules were not validated)
