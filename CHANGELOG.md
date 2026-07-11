@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.7] - 2026-07-11
+
+### Added
+- **Sink/Metadata**: 同步 `wp-motor v1.23.6`，JSON/CSV sink_group 输出默认携带固定运行时元字段 `wp_stream_tag` 与 `wp_event_id`；新增组级 `sink_group.wp_meta_disable`，可按组关闭指定元字段，例如 `["wp_stream_tag", "wp_event_id"]`。
+- **Benchmarks**: 同步 `sink_wp_meta` 基准，覆盖元信息输出与禁用路径的性能。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.5` → `v1.23.6`。
+- **Sink/Runtime**: 运行时元信息在 `SinkDispatcher`/sink_group 边界统一处理；单所有者记录通过 `Arc::try_unwrap` 避免不必要的 `DataRecord` clone。
+- **Config/Sinks**: `stream_tag_field` 只属于 source 配置，sink/wpgen output 参数中会报错；`wp_meta_disable` 只属于 sink_group，传给 connector validate/build 的 sink spec 会过滤运行时元参数。
+
 ## [0.25.6] - 2026-07-08
 ### Changed
 - **Dependencies**: 升级 `wp-connectors` `v0.15.6` → `v0.15.8`

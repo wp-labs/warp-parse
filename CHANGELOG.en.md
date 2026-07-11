@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.25.7] - 2026-07-11
+
+### Added
+- **Sink/Metadata**: Synced `wp-motor v1.23.6`; JSON/CSV sink group output now emits fixed runtime metadata fields `wp_stream_tag` and `wp_event_id` by default. Added group-level `sink_group.wp_meta_disable` to hide selected metadata fields, for example `["wp_stream_tag", "wp_event_id"]`.
+- **Benchmarks**: Synced the `sink_wp_meta` benchmark coverage for metadata output and disable behavior.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.5` → `v1.23.6`.
+- **Sink/Runtime**: Runtime metadata injection now happens once at the `SinkDispatcher`/sink_group boundary; single-owner records use `Arc::try_unwrap` to avoid unnecessary `DataRecord` clones.
+- **Config/Sinks**: `stream_tag_field` is source-only and is rejected from sink/wpgen output params. `wp_meta_disable` is group-level only; connector-facing sink specs filter runtime-only metadata params before validate/build.
+
 ## [0.25.6] - 2026-07-08
 
 ### Changed
