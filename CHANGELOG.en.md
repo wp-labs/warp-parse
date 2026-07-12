@@ -19,6 +19,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Sink/Runtime**: Runtime metadata injection now happens once at the `SinkDispatcher`/sink_group boundary; single-owner records use `Arc::try_unwrap` to avoid unnecessary `DataRecord` clones.
 - **Config/Sinks**: `stream_tag_field` is source-only and is rejected from sink/wpgen output params. `wp_meta_disable` is group-level only; connector-facing sink specs filter runtime-only metadata params before validate/build.
 
+## [0.25.7] - 2026-07-08
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.6` → `v1.23.7`
+- **Dependencies**: Upgraded `wp-connectors` `v0.15.8` → `v0.17.0`
+
 ## [0.25.6] - 2026-07-08
 
 ### Changed

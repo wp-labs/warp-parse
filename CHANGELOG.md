@@ -19,6 +19,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Sink/Runtime**: 运行时元信息在 `SinkDispatcher`/sink_group 边界统一处理；单所有者记录通过 `Arc::try_unwrap` 避免不必要的 `DataRecord` clone。
 - **Config/Sinks**: `stream_tag_field` 只属于 source 配置，sink/wpgen output 参数中会报错；`wp_meta_disable` 只属于 sink_group，传给 connector validate/build 的 sink spec 会过滤运行时元参数。
 
+## [0.25.7] - 2026-07-08
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.6` → `v1.23.7`
+- **Dependencies**: 升级 `wp-connectors` `v0.15.8` → `v0.17.0`
+
 ## [0.25.6] - 2026-07-08
 ### Changed
 - **Dependencies**: 升级 `wp-connectors` `v0.15.6` → `v0.15.8`
