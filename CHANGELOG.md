@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.7] - 2026-07-11
+## [0.25.8] - 2026-07-11
 
 ### Added
 - **Sink/Metadata**: 同步 `wp-motor v1.23.6`，JSON/CSV sink_group 输出默认携带固定运行时元字段 `wp_stream_tag` 与 `wp_event_id`；新增组级 `sink_group.wp_meta_disable`，可按组关闭指定元字段，例如 `["wp_stream_tag", "wp_event_id"]`。
