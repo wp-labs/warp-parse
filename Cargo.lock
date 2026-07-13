@@ -6876,8 +6876,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors-labs"
-version = "0.1.11"
-source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.11#fd2a695f588ffad6f5d221b6bc8b0a9091d5d841"
+version = "0.1.12"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.12#851970ae6ef63ae7f34a8c86ca60cba1c3aa89c7"
 dependencies = [
  "async-trait",
  "bytes",
@@ -6894,7 +6894,7 @@ dependencies = [
  "thiserror 2.0.18",
  "tokio",
  "wp-conf-base",
- "wp-connector-api 0.10.1",
+ "wp-connector-api 0.11.2",
  "wp-data-fmt",
  "wp-log",
  "wp-model-core",

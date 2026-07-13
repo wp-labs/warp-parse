@@ -199,7 +199,7 @@ wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/w
 
 wp-self-update =  "0.3"
 wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.17.0", optional = true }
-wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.11", optional = true, features = ["dmdb", "udp"] }
+wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.12", optional = true, features = ["dmdb", "udp"] }
 # wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb", "udp"] }
 # @gxl:block(local_motor)
 # wp-engine = { path = "../wp-motor" }
