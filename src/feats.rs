@@ -59,9 +59,11 @@ pub fn register_optional_connectors() {
         // HTTP
         register_source_factory(wp_connectors::http::HttpSourceFactory);
         register_sink_factory(wp_connectors::http::HttpSinkFactory);
+        // UDP
+        register_sink_factory(wp_connectors::udp::UdpSinkFactory);
 
         wp_log::info_ctrl!(
-            "optional connector factories registered: Kafka, MySQL, PostgreSQL, ClickHouse, Elasticsearch, Prometheus, VictoriaLogs, VictoriaMetrics, Doris, HTTP, Count"
+            "optional connector factories registered: Kafka, MySQL, PostgreSQL, ClickHouse, Elasticsearch, Prometheus, VictoriaLogs, VictoriaMetrics, Doris, HTTP, Count, UDP"
         );
 
         #[cfg(feature = "wp-connectors-labs")]
@@ -72,9 +74,6 @@ pub fn register_optional_connectors() {
             register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
             register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
 
-            // UDP (experimental)
-            register_sink_factory(wp_connectors_labs::udp::UdpSinkFactory);
-
             wp_log::info_ctrl!("optional lab connector factories registered: dmdb");
         }
     }
@@ -84,13 +83,13 @@ pub fn register_optional_connectors() {
 pub fn features_list() -> String {
     let mut features = String::new();
     if cfg!(feature = "wp-connectors") {
-        features.push_str("community (kafka,mysql,postgres,clickhouse,elasticsearch,prometheus,victorialogs,victoriametrics,doris,http,count)  ");
+        features.push_str("community (kafka,mysql,postgres,clickhouse,elasticsearch,prometheus,victorialogs,victoriametrics,doris,http,count,udp)  ");
     } else {
         features.push_str("core  ");
     }
 
     if cfg!(feature = "wp-connectors-labs") {
-        features.push_str("labs (dmdb,udp)");
+        features.push_str("labs (dmdb)");
     }
     features
 }
