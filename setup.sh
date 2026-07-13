@@ -117,7 +117,7 @@ fi
 tar -xzf "$ARCHIVE_PATH" -C "$TMP_DIR"
 mkdir -p "$INSTALL_DIR"
 
-BINARIES="wparse wpgen wprescue wproj"
+BINARIES="wparse wpgen wprescue wpadm"
 INSTALLED=""
 for bin in $BINARIES; do
     BIN_PATH=$(find "$TMP_DIR" -maxdepth 3 -type f -name "$bin" | head -n 1)
@@ -134,5 +134,12 @@ fi
 
 printf '[warp-parse] installed binaries:%s\n' "$INSTALLED"
 printf '[warp-parse] location: %s\n' "$INSTALL_DIR"
-printf '\nEnsure %s is on your PATH, e.g.:\n  export PATH="%s":\\$PATH\n\n' "$INSTALL_DIR" "$INSTALL_DIR"
+
+# Backward-compat symlink: wproj -> wpadm
+if [ -f "$INSTALL_DIR/wpadm" ]; then
+    ln -sf wpadm "$INSTALL_DIR/wproj" 2>/dev/null || true
+    printf '[warp-parse] alias: wproj -> wpadm (backward-compat)\n'
+fi
+
+printf '\nEnsure %s is on your PATH, e.g.:\n  export PATH="%s":\$PATH\n\n' "$INSTALL_DIR" "$INSTALL_DIR"
 printf 'Optional env vars:\n  WARP_PARSE_VERSION=v0.13.0\n  WARP_PARSE_INSTALL_DIR=/usr/local/bin\n  WARP_PARSE_MANIFEST_URL=https://example.com/custom-manifest.json\n'

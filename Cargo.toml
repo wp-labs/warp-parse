@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.25.1-E20" # @gxl:set(version)
+version = "0.25.8" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -39,8 +39,8 @@ name = "wpgen"
 path = "src/wpgen/main.rs"
 
 [[bin]]
-name = "wproj"
-path = "src/wproj/main.rs"
+name = "wpadm"
+path = "src/wpadm/main.rs"
 
 [[bin]]
 name = "wprescue"
@@ -71,7 +71,7 @@ normal = ["ctor"]
 # ===========================================================================
 
 [build-dependencies]
-shadow-rs = "1.6"
+shadow-rs = "2.0"
 
 # ===========================================================================
 # Dev Dependencies
@@ -124,9 +124,9 @@ plugin-suite = []
 
 [dependencies]
 # --- System and Platform ---
-sysinfo = "0.38"
+sysinfo = "0.39"
 libc = "0.2"
-tikv-jemallocator = "0.6"
+tikv-jemallocator = "0.7"
 
 # --- Async Runtime ---
 tokio = { version = "1.48", features = ["full"] }
@@ -151,7 +151,7 @@ orion_conf = { version = "0.7", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
-time = "0.3"
+time = ">=0.3.0, <0.3.36"
 
 # --- CLI ---
 clap = { version = "4.5", features = ["derive"] }
@@ -189,16 +189,16 @@ wp-error = "0.10"
 # feats/oml_static.1
 
 
-wp-knowledge  =  "0.13"
+wp-knowledge  =  "0.14"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.22.4" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.7" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.7" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.7" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.23.7" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.3"
-wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.14.4", optional = true }
+wp-connectors = { git = "https://github.com/wp-labs/wp-connectors", tag = "v0.17.0", optional = true }
 wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.11", optional = true, features = ["dmdb", "udp"] }
 # wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb", "udp"] }
 # @gxl:block(local_motor)
@@ -209,3 +209,7 @@ wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git"
 # @gxl:end(local_motor)
 
 # wp-enterprise = { path = "../wp-enterprise" }
+
+# DEV-ONLY: use locally patched wp-core-connectors (adds data_format=arrow_framed
+# switch to TcpArrowSink) for streaming-case verification. Remove to revert to
+# the published 0.5.2.

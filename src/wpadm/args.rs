@@ -379,7 +379,7 @@ pub enum UpdateChannel {
 
 #[derive(Parser)]
 #[command(
-    name = "wproj",
+    name = "wpadm",
     about = "Warp Flow Engine 项目管理工具\n\nwproj 是 Warp Flow Engine 的官方命令行工具，提供完整的项目生命周期管理功能，包括：
 • 项目初始化和配置管理
 • 数据源的检查、统计和验证
