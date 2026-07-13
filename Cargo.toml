@@ -5,7 +5,7 @@
 # Binary applications for data parsing and processing:
 #   - wparse:   主解析引擎
 #   - wpgen:    规则生成工具
-#   - wproj:    项目管理工具
+#   - wpadm:    项目管理工具
 #   - wprescue: 数据恢复工具
 #
 # Feature flags:
