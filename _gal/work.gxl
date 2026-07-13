@@ -57,7 +57,7 @@ mod main  {
     gx.cmd (  "mkdir -p ${MAIN_HOME_BIN}" );
     gx.cmd (  "cp ${MAIN_BLD_BINS}/wparse ${MAIN_HOME_BIN}/"  );
     gx.cmd (  "cp ${MAIN_BLD_BINS}/wpgen ${MAIN_HOME_BIN}/"  );
-    gx.cmd (  "cp ${MAIN_BLD_BINS}/wproj ${MAIN_HOME_BIN}/"  );
+    gx.cmd (  "cp ${MAIN_BLD_BINS}/wpadm ${MAIN_HOME_BIN}/"  );
     gx.cmd (  "cp ${MAIN_BLD_BINS}/wprescue ${MAIN_HOME_BIN}/"  );
   }
 }

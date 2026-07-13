@@ -3,11 +3,11 @@ use crate::args::{
     ValidateCmd, ValidateSinkArgs,
 };
 use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
-use orion_conf::TomlIO;
+use orion_conf::{EnvTomlLoad, TomlIO};
 use orion_error::conversion::{ErrorWith, SourceErr, ToStructError};
-use orion_variate::EnvDict;
+use orion_variate::{EnvDict, EnvEvaluable};
 use warp_parse::compat::UvsFrom;
-use wp_config::sources::types::WarpSources;
+use wp_config::sources::types::{WarpSources, WpSource};
 use wp_engine::facade::config as constants;
 use wp_engine::facade::config::load_warp_engine_confs;
 use wp_error::{run_error::RunResult, RunReason};
@@ -58,25 +58,59 @@ async fn do_data_check(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     let (conf_manager, main_conf) = load_warp_engine_confs(args.work_root.as_str(), dict)?;
     log_init(main_conf.log_conf()).source_err(RunReason::from_conf(), "init log failed")?;
 
-    // 使用 WarpSources::load_toml 读取 wpsrc.toml 配置
-    let wpsrc_path = std::path::PathBuf::from(main_conf.src_conf_of(constants::WPSRC_TOML));
-    let sources_config = WarpSources::load_toml(&wpsrc_path)
-        .source_err(RunReason::from_conf(), "load wpsrc.toml failed")
-        .with_context(&wpsrc_path)
-        .doing("load wpsrc.toml")?;
+    let sources_dir = conf_manager.work_root().join(main_conf.src_root());
+    let wpsrc_path = sources_dir.join(constants::WPSRC_TOML);
 
-    // 使用 SourceConfigParser 验证配置并尝试构建（验证配置与依赖）
+    // Build WpSourcesConfig from either wpsrc.toml or directory-based format
+    let sources_config = if wpsrc_path.exists() {
+        WarpSources::load_toml(&wpsrc_path)
+            .source_err(RunReason::from_conf(), "load wpsrc.toml failed")
+            .with_context(&wpsrc_path)
+            .doing("load wpsrc.toml")?
+    } else {
+        // Scan directory for per-source .toml files (new format)
+        let mut sources = Vec::new();
+        let pattern = format!("{}/**/*.toml", sources_dir.display());
+        for entry in glob::glob(&pattern).map_err(|e| {
+            RunReason::from_conf()
+                .to_err()
+                .with_detail(format!("glob pattern failed: {}", e))
+        })? {
+            let path = entry.map_err(|e| {
+                RunReason::from_conf()
+                    .to_err()
+                    .with_detail(format!("glob iteration failed: {}", e))
+            })?;
+            if path.file_name().and_then(|n| n.to_str()) == Some(constants::WPSRC_TOML) {
+                continue;
+            }
+            let content = std::fs::read_to_string(&path)
+                .source_err(RunReason::from_conf(), "read source config")
+                .with_context(&path)
+                .doing("read source config")?;
+            let source: WpSource = WpSource::env_parse_toml(&content, dict)
+                .source_err(RunReason::from_conf(), "parse source config")
+                .with_context(&path)
+                .doing("parse source config")?
+                .env_eval(dict);
+            if source.enable.unwrap_or(true) {
+                sources.push(source);
+            }
+        }
+        WarpSources { sources }
+    };
+
+    // Use SourceConfigParser to validate and build
     let parser =
         wp_engine::sources::SourceConfigParser::new(conf_manager.work_root().to_path_buf());
     let config_str = toml::to_string_pretty(&sources_config)
         .map_err(|err| {
             RunReason::from_conf()
                 .to_err()
-                .with_detail("serialize wpsrc.toml failed")
+                .with_detail("serialize source config failed")
                 .with_source(err)
         })
-        .with_context(&wpsrc_path)
-        .doing("serialize wpsrc.toml")?;
+        .doing("serialize source config")?;
 
     match parser.parse_and_build_from(&config_str, dict).await {
         Ok((inits, _)) => println!("data source check ok! enabled: {}", inits.len()),

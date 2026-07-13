@@ -8,15 +8,16 @@ use wp_error::run_error::RunResult;
 
 use crate::args::WProjCli;
 mod handlers;
+
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
-    if let Err(e) = do_main().await {
-        diagnostics::print_run_error("wproj", &e);
+    if let Err(e) = wproj_main().await {
+        diagnostics::print_run_error("wpadm", &e);
         std::process::exit(diagnostics::exit_code_for(e.reason()));
     }
 }
 
-async fn do_main() -> RunResult<()> {
+pub async fn wproj_main() -> RunResult<()> {
     let (_pre_quiet, filtered_args) = split_quiet_args(env::args().collect());
     warp_parse::feats::register_for_runtime();
     let wcl = WProjCli::parse_from(&filtered_args);

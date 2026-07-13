@@ -12,12 +12,14 @@ use tikv_jemallocator::Jemalloc;
 static GLOBAL: Jemalloc = Jemalloc;
 use clap::Parser;
 
+use warp_parse::compat::UvsFrom;
 use warp_parse::{init_rustls_crypto_provider, load_sec_dict, log_build_info_once};
 
+use orion_error::conversion::ToStructError;
 use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpApp;
-use wp_error::run_error::RunResult;
+use wp_error::run_error::{RunReason, RunResult};
 mod cli;
 
 use crate::cli::WParseCLI;
@@ -66,6 +68,30 @@ async fn do_main() -> RunResult<()> {
             let mut app = WpApp::try_from(engine_args, env_dict)?;
             log_build_info_once();
             app.run_batch().await?;
+        }
+        WParseCLI::Version(args) => {
+            let ver = warp_parse::build::PKG_VERSION;
+            if let Some(target) = args.ge {
+                let current = semver::Version::parse(ver).map_err(|e| {
+                    RunReason::from_conf()
+                        .to_err()
+                        .with_detail(format!("invalid current version '{}': {}", ver, e))
+                })?;
+                let target = semver::Version::parse(&target).map_err(|e| {
+                    RunReason::from_conf()
+                        .to_err()
+                        .with_detail(format!("invalid target version '{}': {}", target, e))
+                })?;
+                if current >= target {
+                    println!("{} (>= {})", ver, target);
+                } else {
+                    eprintln!("{} (< {})", ver, target);
+                    std::process::exit(1);
+                }
+            } else {
+                println!("{}", warp_parse::build::CLAP_LONG_VERSION);
+                println!("features: {}", warp_parse::feats::features_list());
+            }
         }
     }
     Ok(())

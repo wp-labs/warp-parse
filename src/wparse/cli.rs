@@ -17,6 +17,17 @@ pub enum WParseCLI {
     /// Run engine in batch mode (alias of `work --batch`)
     #[command(name = "batch")]
     Batch(CliParseArgs),
+
+    /// Print version or check version constraint
+    #[command(name = "version")]
+    Version(VersionArgs),
+}
+
+#[derive(Args, Debug, Default, Clone)]
+pub struct VersionArgs {
+    /// Exit 0 if current version >= VERSION, exit 1 otherwise
+    #[clap(long = "ge", value_name = "VERSION")]
+    pub ge: Option<String>,
 }
 
 #[derive(Args, Debug, Default, Clone)]

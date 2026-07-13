@@ -290,7 +290,7 @@ fn spawn_wparse(work_root: &Path, subcmd: &str) -> Child {
 }
 
 fn run_wproj(work_root: &Path, args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_wproj"))
+    Command::new(env!("CARGO_BIN_EXE_wpadm"))
         .current_dir(work_root)
         .args(args)
         .output()
@@ -298,7 +298,7 @@ fn run_wproj(work_root: &Path, args: &[&str]) -> Output {
 }
 
 fn run_wproj_from_cwd(cwd: &Path, args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_wproj"))
+    Command::new(env!("CARGO_BIN_EXE_wpadm"))
         .current_dir(cwd)
         .args(args)
         .output()

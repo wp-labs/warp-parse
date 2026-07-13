@@ -59,17 +59,38 @@ pub fn register_optional_connectors() {
         // HTTP
         register_source_factory(wp_connectors::http::HttpSourceFactory);
         register_sink_factory(wp_connectors::http::HttpSinkFactory);
+
+        wp_log::info_ctrl!(
+            "optional connector factories registered: Kafka, MySQL, PostgreSQL, ClickHouse, Elasticsearch, Prometheus, VictoriaLogs, VictoriaMetrics, Doris, HTTP, Count"
+        );
+
+        #[cfg(feature = "wp-connectors-labs")]
+        {
+            use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
+
+            // Dmdb (达梦数据库, experimental)
+            register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
+            register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
+
+            // UDP (experimental)
+            register_sink_factory(wp_connectors_labs::udp::UdpSinkFactory);
+
+            wp_log::info_ctrl!("optional lab connector factories registered: dmdb");
+        }
+    }
+}
+
+/// Return a comma-separated list of compiled-in optional connector features.
+pub fn features_list() -> String {
+    let mut features = String::new();
+    if cfg!(feature = "wp-connectors") {
+        features.push_str("community (kafka,mysql,postgres,clickhouse,elasticsearch,prometheus,victorialogs,victoriametrics,doris,http,count)  ");
+    } else {
+        features.push_str("core  ");
     }
 
-    #[cfg(feature = "wp-connectors-labs")]
-    {
-        use wp_engine::connectors::registry::{register_sink_factory, register_source_factory};
-
-        // Dmdb (达梦数据库, experimental)
-        register_source_factory(wp_connectors_labs::dmdb::DmdbSourceFactory);
-        register_sink_factory(wp_connectors_labs::dmdb::DmdbSinkFactory);
-
-        // UDP (experimental)
-        register_sink_factory(wp_connectors_labs::udp::UdpSinkFactory);
+    if cfg!(feature = "wp-connectors-labs") {
+        features.push_str("labs (dmdb,udp)");
     }
+    features
 }
