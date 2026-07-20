@@ -148,7 +148,7 @@ orion_conf = { version = "0.7", features = ["yaml", "toml"] }
 
 # --- Time ---
 chrono = "0.4"
-time = ">=0.3.0, <0.3.36"
+time = ">=0.3.0, <0.3.54"
 
 # --- CLI ---
 clap = { version = "4.5", features = ["derive"] }
