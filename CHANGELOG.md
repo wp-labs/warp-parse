@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.9 Unreleased]
+
+### Added
+- **Parser/Event meta**: 同步 `wp-motor v1.23.8`，新增 `wp_event_md5` 字段（事件 payload 的 MD5 指纹），由配置项 `gen_event_md5` 控制（默认关，嵌在 `gen_msg_id` 下）；盖在主 record 与 `copy_event_parse` 旁路 record 上；可经 `wp_meta_disable` 关闭输出。
+- **Parser/copy_event_parse**: `copy_event_parse` 改为产出独立旁路 record，按目标 rule 的 `wpl_key` 路由到自己的 sink（原并入主 record）；支持跨包（`pkg/rule`）与同包裸名引用，裸名规范化为全路径以正确路由。
+- **Parser/`#[no_match]`**: 新增 `#[no_match]` 注解，声明 rule 不参与 `parse_event` 自动匹配但保留 sink 路由，供 `copy_event_parse` 旁路 record 经目标 pipeline 路由。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.7` → `v1.23.8`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-lang` → `0.4.3`。
+
 ## [0.25.8] - 2026-07-11
 
 ### Added
