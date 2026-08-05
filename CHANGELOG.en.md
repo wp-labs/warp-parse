@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.25.10 Unreleased]
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.8` → `v1.25.1` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), aligning dependency versions: `wp-error` `0.10` → `0.11`, `wp-knowledge` `0.14` → `0.15` (fixes the `RunReason` type-conversion compile error caused by coexisting `wp-error` versions).
+
 ## [0.25.7] - 2026-07-11
 
 ### Added

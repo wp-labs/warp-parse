@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.10 Unreleased]
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+  中文：升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+
 ## [0.25.9 Unreleased]
 
 ### Added
