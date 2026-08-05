@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.25.12 Unreleased]
+
+### Added
+- **OML nested objects & object arrays**: synced `wp-motor v1.25.3` (#346); `object { ... }` sub-values accept nested object literals; new `array { ... }` aggregate for object/value literal arrays; static blocks support nested object/array literals.
+
+### Fixed
+- **IPv4-mapped IPv6 parsing**: synced `wp-primitives 0.2.1`; fixes the WPL `ip` field mis-rejecting `::ffff:a.b.c.d` IPv4-mapped IPv6 addresses (previously such addresses fell into miss).
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.25.2` → `v1.25.3` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), `wp-primitives` → `0.2.1`.
+
+## [0.25.11 Unreleased]
+
+### Added
+- **OML intranet enrichment**: synced `wp-motor v1.25.2`; new `intranet_ip` (LAN/WAN), `access_direct` (access direction), `on_fail` (fallback) functions; pipe-source extension supports `access_direct(a,b) | on_fail('x')`. Intranet networks are managed as knowledge by wp-knowledge (`knowdb.toml [intranet_nets]`), checkable via `wproj check`.
+- **English short output**: `intranet_ip` → `LAN`/`WAN`, `access_direct` → `L2L`/`L2W`/`W2L`/`W2W` (L=LAN, W=WAN, 2=to).
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.25.1` → `v1.25.2` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`).
+
 ## [0.25.10 Unreleased]
 
 ### Changed
