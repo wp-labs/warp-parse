@@ -11,14 +11,10 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.25.12 Unreleased]
 
 ### Added
-- **OML 嵌套对象与对象数组**: 同步 `wp-motor v1.25.3`（#346），`object { ... }` 子值支持嵌套对象字面量；新增 `array { ... }` 聚合（对象/值字面量数组）；static 块支持嵌套对象/数组字面量。
 - **OML/Time 时间戳函数**: 同步 `wp-motor v1.25.4`，新增 `Time::from_ts`/`from_ts_ms`/`from_ts_us`（秒/毫秒/微秒时间戳 → 时间），与 `to_ts`/`to_ts_ms`/`to_ts_us` 互为逆操作；六个函数的 `zone` 参数可选（默认东8区），超 i32 范围或 `|zone| > 23` 解析期报错，非法 zone 原样透传。
 
-### Fixed
-- **IPv4-mapped IPv6 解析**: 同步 `wp-primitives 0.2.1`，修复 WPL `ip` 字段对 `::ffff:a.b.c.d` 形式 IPv4-mapped IPv6 地址误判解析失败的问题（此前此类地址会落入 miss）。
-
 ### Changed
-- **Dependencies**: 升级 `wp-motor` `v1.25.2` → `v1.25.4`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-primitives` → `0.2.1`。
+- **Dependencies**: 升级 `wp-motor` `v1.25.3` → `v1.25.4`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）。
 
 ## [0.25.11 Unreleased]
 
@@ -26,9 +22,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **OML 内网富化**: 同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
   中文：同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
 - **英文简写输出**: `intranet_ip` → `LAN`/`WAN`，`access_direct` → `L2L`/`L2W`/`W2L`/`W2W`（L=LAN、W=WAN、2=to）。
+- **OML 嵌套对象与对象数组**: 同步 `wp-motor v1.25.3`（#346），`object { ... }` 子值支持嵌套对象字面量；新增 `array { ... }` 聚合（对象/值字面量数组）；static 块支持嵌套对象/数组字面量。
+
+### Fixed
+- **IPv4-mapped IPv6 解析**: 同步 `wp-primitives 0.2.1`，修复 WPL `ip` 字段对 `::ffff:a.b.c.d` 形式 IPv4-mapped IPv6 地址误判解析失败的问题（此前此类地址会落入 miss）。
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` `v1.25.1` → `v1.25.2`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）。
+- **Dependencies**: 升级 `wp-motor` `v1.25.1` → `v1.25.3`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-primitives` → `0.2.1`。
 
 ## [0.25.10 Unreleased]
 
