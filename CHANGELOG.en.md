@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.25.13 Unreleased]
+
+### Fixed
+- **`time_timestamp` parses `0` as Unix epoch**: fix `time_timestamp` field type rejecting the digit `0` (the parser required fixed 10/13/16-digit lengths). `0` now parses as Unix epoch (`1970-01-01 00:00:00 UTC`); 1–9 digit integers parse as seconds; 10/13/16-digit second/millisecond/microsecond behavior is unchanged; 11–12 digit values now fail cleanly instead of partially consuming.
+
 ## [0.25.12 Unreleased]
 
 ### Added

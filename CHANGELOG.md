@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.13 Unreleased]
+
+### Fixed
+- **`time_timestamp` 解析数字 `0` 为 Unix epoch**：修复 `time_timestamp` 字段类型拒绝数字 `0` 的问题（解析器原要求固定 10/13/16 位长度）；`0` 现解析为 Unix epoch（`1970-01-01 00:00:00 UTC`）；1–9 位整数按秒解析；10/13/16 位秒/毫秒/微秒行为不变；11–12 位值现在干净地失败而非部分消费。
+
 ## [0.25.12 Unreleased]
 
 ### Added
