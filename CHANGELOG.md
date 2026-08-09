@@ -13,7 +13,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **`time_timestamp` 解析数字 `0` 为 Unix epoch**：修复 `time_timestamp` 字段类型拒绝数字 `0` 的问题（解析器原要求固定 10/13/16 位长度）；`0` 现解析为 Unix epoch（`1970-01-01 00:00:00 UTC`）；1–9 位整数按秒解析；10/13/16 位秒/毫秒/微秒行为不变；11–12 位值现在干净地失败而非部分消费。
 
-## [0.25.12 Unreleased]
+## [0.25.12] - 2026-08-08
 
 ### Added
 - **OML/Time 时间戳函数**: 同步 `wp-motor v1.25.4`，新增 `Time::from_ts`/`from_ts_ms`/`from_ts_us`（秒/毫秒/微秒时间戳 → 时间），与 `to_ts`/`to_ts_ms`/`to_ts_us` 互为逆操作；六个函数的 `zone` 参数可选（默认东8区），超 i32 范围或 `|zone| > 23` 解析期报错，非法 zone 原样透传。
@@ -21,7 +21,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **Dependencies**: 升级 `wp-motor` `v1.25.3` → `v1.25.4`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）。
 
-## [0.25.11 Unreleased]
+## [0.25.11] - 2026-08-05
 
 ### Added
 - **OML 内网富化**: 同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
@@ -35,13 +35,13 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **Dependencies**: 升级 `wp-motor` `v1.25.1` → `v1.25.3`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-primitives` → `0.2.1`。
 
-## [0.25.10 Unreleased]
+## [0.25.10] - 2026-08-05
 
 ### Changed
 - **Dependencies**: 升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
   中文：升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
 
-## [0.25.9 Unreleased]
+## [0.25.9] - 2026-07-31
 
 ### Added
 - **Parser/Event meta**: 同步 `wp-motor v1.23.8`，新增 `wp_event_md5` 字段（事件 payload 的 MD5 指纹），由配置项 `gen_event_md5` 控制（默认关，嵌在 `gen_msg_id` 下）；盖在主 record 与 `copy_event_parse` 旁路 record 上；可经 `wp_meta_disable` 关闭输出。

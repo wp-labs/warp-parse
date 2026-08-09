@@ -13,7 +13,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **`time_timestamp` parses `0` as Unix epoch**: fix `time_timestamp` field type rejecting the digit `0` (the parser required fixed 10/13/16-digit lengths). `0` now parses as Unix epoch (`1970-01-01 00:00:00 UTC`); 1–9 digit integers parse as seconds; 10/13/16-digit second/millisecond/microsecond behavior is unchanged; 11–12 digit values now fail cleanly instead of partially consuming.
 
-## [0.25.12 Unreleased]
+## [0.25.12] - 2026-08-08
 
 ### Added
 - **OML/Time timestamp functions**: synced `wp-motor v1.25.4`; new `Time::from_ts`/`from_ts_ms`/`from_ts_us` (seconds/millis/micros → time), inverse of `to_ts`/`to_ts_ms`/`to_ts_us`; all six functions accept an optional `zone` (default UTC+8), with out-of-i32-range or `|zone| > 23` rejected at parse time and invalid zones falling through unchanged.
@@ -21,7 +21,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` `v1.25.3` → `v1.25.4` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`).
 
-## [0.25.11 Unreleased]
+## [0.25.11] - 2026-08-05
 
 ### Added
 - **OML intranet enrichment**: synced `wp-motor v1.25.2`; new `intranet_ip` (LAN/WAN), `access_direct` (access direction), `on_fail` (fallback) functions; pipe-source extension supports `access_direct(a,b) | on_fail('x')`. Intranet networks are managed as knowledge by wp-knowledge (`knowdb.toml [intranet_nets]`), checkable via `wproj check`.
@@ -34,7 +34,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` `v1.25.1` → `v1.25.3` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), `wp-primitives` → `0.2.1`.
 
-## [0.25.10 Unreleased]
+## [0.25.10] - 2026-08-05
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` `v1.23.8` → `v1.25.1` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), aligning dependency versions: `wp-error` `0.10` → `0.11`, `wp-knowledge` `0.14` → `0.15` (fixes the `RunReason` type-conversion compile error caused by coexisting `wp-error` versions).
