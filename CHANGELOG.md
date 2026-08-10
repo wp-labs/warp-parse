@@ -8,7 +8,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.13 Unreleased]
+## [0.25.14 latest]
+
+### Fixed
+- **OML 嵌套 object 成员静默丢弃**：修复嵌套 `object` 成员解析失败时该成员及其后兄弟字段被静默丢弃、加载仍成功的问题；`oml_map()` 校验 body 完整消费，非法成员使整个 OML 校验失败；新增 `pipe` 成员支持（`NestedAccessor::Pipe`）；目标列表容忍逗号前后空白
+- **OML read/take 参数静默丢弃**：修复 `read(...)`/`take(...)` 括号内非法参数被静默忽略的问题；现校验括号内完整消费，存在剩余内容时整体 OML 校验失败
+
+## [0.25.13] - 2026-08-09
 
 ### Fixed
 - **`time_timestamp` 解析数字 `0` 为 Unix epoch**：修复 `time_timestamp` 字段类型拒绝数字 `0` 的问题（解析器原要求固定 10/13/16 位长度）；`0` 现解析为 Unix epoch（`1970-01-01 00:00:00 UTC`）；1–9 位整数按秒解析；10/13/16 位秒/毫秒/微秒行为不变；11–12 位值现在干净地失败而非部分消费。
