@@ -8,7 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.14 latest]
+## [0.25.15 latest]
+
+### Changed
+- **错误提示增强**：同步 `wp-motor v1.25.7`——OML/配置加载失败时从泛化 "配置错误" 改进为定位到具体文件与解析错误（`IntoRunError` 保留 Syntax/NotFound/Other 内层详情为 detail）；OML 解析错误渲染为 `file:`/`error:`/`at:` 结构化展示，去掉误导性的操作名 location 与泛化 cause
+
+### Dependencies
+- 升级 `wp-motor` `v1.25.5` → `v1.25.7`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）
+
+## [0.25.14] - 2026-08-10
 
 ### Fixed
 - **OML 嵌套 object 成员静默丢弃**：修复嵌套 `object` 成员解析失败时该成员及其后兄弟字段被静默丢弃、加载仍成功的问题；`oml_map()` 校验 body 完整消费，非法成员使整个 OML 校验失败；新增 `pipe` 成员支持（`NestedAccessor::Pipe`）；目标列表容忍逗号前后空白

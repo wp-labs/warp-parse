@@ -8,7 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.25.14 latest]
+## [0.25.15 latest]
+
+### Changed
+- **Error reporting enhancement**: synced `wp-motor v1.25.7` — OML/config load failures now point to the concrete file and parse error instead of a generic "配置错误" (`IntoRunError` keeps the inner `Syntax`/`NotFound`/`Other` message as detail); OML parse errors render as structured `file:`/`error:`/`at:` lines, dropping the misleading operation-name location and generic cause.
+
+### Dependencies
+- Upgraded `wp-motor` `v1.25.5` → `v1.25.7` (`wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`).
+
+## [0.25.14] - 2026-08-10
 
 ### Fixed
 - **OML nested object member silent drop**: fix nested `object` members (and following siblings) being silently dropped on parse failure while load still succeeded; `oml_map()` now verifies the body is fully consumed so an invalid member fails the whole OML; adds `pipe` member support (`NestedAccessor::Pipe`); target-list parsing tolerates whitespace around commas.
