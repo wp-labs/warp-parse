@@ -8,7 +8,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.15 latest]
+## [0.25.16 latest]
+
+### Added
+- **多 SQL provider 支持**：同步 `wp-motor v1.25.8` 与 `wp-knowledge 0.16`——`knowdb.toml` 支持 `[[provider.sqldb]]` 配置多个 PostgreSQL/MySQL 数据库（每个可配 `name`，无前缀查询走默认库）；OML 查询通过 `from <provider>.<schema>.<table>` 前缀路由到指定库；`uses_external_provider_only` 识别新版 `[provider.sqldb]`/`[[provider.sqldb]]`/`[provider.redis]` 配置格式。
+
+
+## [0.25.15]
 
 ### Changed
 - **错误提示增强**：同步 `wp-motor v1.25.7`——OML/配置加载失败时从泛化 "配置错误" 改进为定位到具体文件与解析错误（`IntoRunError` 保留 Syntax/NotFound/Other 内层详情为 detail）；OML 解析错误渲染为 `file:`/`error:`/`at:` 结构化展示，去掉误导性的操作名 location 与泛化 cause
