@@ -106,7 +106,7 @@ cargo build --no-default-features --features core --release
 ./target/release/wpgen --help
 
 # Run the project manager
-./target/release/wproj --help
+./target/release/wpadm --help
 
 # Run the recovery tool
 ./target/release/wprescue --help
@@ -475,7 +475,7 @@ cargo build --no-default-features --features core --release
 ./target/release/wpgen --help
 
 # 运行项目管理工具
-./target/release/wproj --help
+./target/release/wpadm --help
 
 # 运行恢复工具
 ./target/release/wprescue --help

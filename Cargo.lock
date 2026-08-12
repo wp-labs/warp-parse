@@ -2798,6 +2798,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libloading"
+version = "0.8.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7c4b02199fee7c5d21a5ae7d8cfa79a6ef5bb2fc834d6e9058e89c825efdc55"
+dependencies = [
+ "cfg-if",
+ "windows-link",
+]
+
+[[package]]
 name = "libm"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3180,9 +3190,9 @@ checksum = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9"
 
 [[package]]
 name = "num-integer"
-version = "0.1.46"
+version = "0.1.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7969661fd2958a5cb096e56c8e1ad0444ac2bbcd0061bd28660485a44879858f"
+checksum = "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b"
 dependencies = [
  "num-traits",
 ]
@@ -4504,9 +4514,9 @@ checksum = "f87165f0995f63a9fbeea62b64d10b4d9d8e78ec6d7d51fb2125fda7bb36788f"
 
 [[package]]
 name = "rustls-webpki"
-version = "0.103.13"
+version = "0.103.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61c429a8649f110dddef65e2a5ad240f747e85f7758a6bccc7e5777bd33f756e"
+checksum = "0527518605e68109d875e248ea259b6758801cf165e4b2c2733ae3b51f12535a"
 dependencies = [
  "aws-lc-rs",
  "ring",
@@ -5991,7 +6001,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.25.15"
+version = "0.25.15-E1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6028,6 +6038,7 @@ dependencies = [
  "wp-config",
  "wp-connector-api",
  "wp-connectors",
+ "wp-connectors-labs",
  "wp-engine",
  "wp-error",
  "wp-knowledge",
@@ -6685,6 +6696,32 @@ dependencies = [
  "wp-model-core",
  "wp-parse-api",
  "wp-specs",
+]
+
+[[package]]
+name = "wp-connectors-labs"
+version = "0.1.13"
+source = "git+https://github.com/wp-labs/wp-connectors-labs.git?tag=v0.1.13#87a2cf0288d7658cbda40ea351a7c62cec5a9419"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "chrono",
+ "educe 0.6.0",
+ "hex",
+ "libloading",
+ "log",
+ "orion-error",
+ "orion_conf",
+ "serde",
+ "serde_json",
+ "socket2 0.6.5",
+ "thiserror 2.0.20",
+ "tokio",
+ "wp-conf-base",
+ "wp-connector-api",
+ "wp-data-fmt",
+ "wp-log",
+ "wp-model-core",
 ]
 
 [[package]]
