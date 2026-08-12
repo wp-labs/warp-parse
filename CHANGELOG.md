@@ -8,6 +8,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.15 latest]
+
+### Changed
+- **错误提示增强**：同步 `wp-motor v1.25.7`——OML/配置加载失败时从泛化 "配置错误" 改进为定位到具体文件与解析错误（`IntoRunError` 保留 Syntax/NotFound/Other 内层详情为 detail）；OML 解析错误渲染为 `file:`/`error:`/`at:` 结构化展示，去掉误导性的操作名 location 与泛化 cause
+
+### Dependencies
+- 升级 `wp-motor` `v1.25.5` → `v1.25.7`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）
+
+## [0.25.14] - 2026-08-10
+
+### Fixed
+- **OML 嵌套 object 成员静默丢弃**：修复嵌套 `object` 成员解析失败时该成员及其后兄弟字段被静默丢弃、加载仍成功的问题；`oml_map()` 校验 body 完整消费，非法成员使整个 OML 校验失败；新增 `pipe` 成员支持（`NestedAccessor::Pipe`）；目标列表容忍逗号前后空白
+- **OML read/take 参数静默丢弃**：修复 `read(...)`/`take(...)` 括号内非法参数被静默忽略的问题；现校验括号内完整消费，存在剩余内容时整体 OML 校验失败
+
+## [0.25.13] - 2026-08-09
+
+### Fixed
+- **`time_timestamp` 解析数字 `0` 为 Unix epoch**：修复 `time_timestamp` 字段类型拒绝数字 `0` 的问题（解析器原要求固定 10/13/16 位长度）；`0` 现解析为 Unix epoch（`1970-01-01 00:00:00 UTC`）；1–9 位整数按秒解析；10/13/16 位秒/毫秒/微秒行为不变；11–12 位值现在干净地失败而非部分消费。
+
+## [0.25.12] - 2026-08-08
+
+### Added
+- **OML/Time 时间戳函数**: 同步 `wp-motor v1.25.4`，新增 `Time::from_ts`/`from_ts_ms`/`from_ts_us`（秒/毫秒/微秒时间戳 → 时间），与 `to_ts`/`to_ts_ms`/`to_ts_us` 互为逆操作；六个函数的 `zone` 参数可选（默认东8区），超 i32 范围或 `|zone| > 23` 解析期报错，非法 zone 原样透传。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.25.3` → `v1.25.4`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`）。
+
+## [0.25.11] - 2026-08-05
+
+### Added
+- **OML 内网富化**: 同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
+  中文：同步 `wp-motor v1.25.2`，新增 `intranet_ip`（判内/外）、`access_direct`（访问方向）、`on_fail`（失败兜底）函数；管道源扩展支持 `access_direct(a,b) | on_fail('x')`。内网网段作为知识由 wp-knowledge 管理（`knowdb.toml [intranet_nets]` 节），`wproj check` 可校验。
+- **英文简写输出**: `intranet_ip` → `LAN`/`WAN`，`access_direct` → `L2L`/`L2W`/`W2L`/`W2W`（L=LAN、W=WAN、2=to）。
+- **OML 嵌套对象与对象数组**: 同步 `wp-motor v1.25.3`（#346），`object { ... }` 子值支持嵌套对象字面量；新增 `array { ... }` 聚合（对象/值字面量数组）；static 块支持嵌套对象/数组字面量。
+
+### Fixed
+- **IPv4-mapped IPv6 解析**: 同步 `wp-primitives 0.2.1`，修复 WPL `ip` 字段对 `::ffff:a.b.c.d` 形式 IPv4-mapped IPv6 地址误判解析失败的问题（此前此类地址会落入 miss）。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.25.1` → `v1.25.3`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-primitives` → `0.2.1`。
+
+## [0.25.10] - 2026-08-05
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+  中文：升级 `wp-motor` `v1.23.8` → `v1.25.1`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），对齐依赖版本：`wp-error` `0.10` → `0.11`、`wp-knowledge` `0.14` → `0.15`（修复因 `wp-error` 双版本共存导致的 `RunReason` 类型转换编译错误）。
+
+## [0.25.9] - 2026-07-31
+
+### Added
+- **Parser/Event meta**: 同步 `wp-motor v1.23.8`，新增 `wp_event_md5` 字段（事件 payload 的 MD5 指纹），由配置项 `gen_event_md5` 控制（默认关，嵌在 `gen_msg_id` 下）；盖在主 record 与 `copy_event_parse` 旁路 record 上；可经 `wp_meta_disable` 关闭输出。
+- **Parser/copy_event_parse**: `copy_event_parse` 改为产出独立旁路 record，按目标 rule 的 `wpl_key` 路由到自己的 sink（原并入主 record）；支持跨包（`pkg/rule`）与同包裸名引用，裸名规范化为全路径以正确路由。
+- **Parser/`#[no_match]`**: 新增 `#[no_match]` 注解，声明 rule 不参与 `parse_event` 自动匹配但保留 sink 路由，供 `copy_event_parse` 旁路 record 经目标 pipeline 路由。
+
+### Changed
+- **Dependencies**: 升级 `wp-motor` `v1.23.7` → `v1.23.8`（含 `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`），`wp-lang` → `0.4.3`。
+
 ## [0.25.8] - 2026-07-11
 
 ### Added
