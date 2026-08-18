@@ -77,4 +77,6 @@ jobs:
         run: |
           export PATH="$PWD/target/release:$PATH"
           cd /tmp/wp-examples/core
+          # 管理命令已由 wproj 更名为 wpadm，集成脚本直接使用新名称。
+          perl -pi -e 's/\bwproj\b/wpadm/g' run_all.sh
           bash run_all.sh
