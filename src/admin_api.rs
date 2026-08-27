@@ -190,13 +190,6 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
         None
     };
 
-    if !bind.ip().is_loopback() && tls.is_none() {
-        return Err(admin_api_validation_err(format!(
-            "non-loopback admin_api.bind '{}' requires admin_api.tls.enabled=true",
-            bind
-        )));
-    }
-
     Ok(Some(ResolvedAdminApiConfig {
         bind,
         request_timeout: Duration::from_millis(admin_api.request_timeout_ms),
