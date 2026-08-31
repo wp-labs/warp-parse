@@ -189,7 +189,7 @@ wp-error = "0.11"
 # feats/oml_static.1
 
 
-wp-knowledge  =  "0.15"
+wp-knowledge  =  "0.16"
 # @gxl:block(remote_motor)
 wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.25.8" }
 wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.25.8" }
