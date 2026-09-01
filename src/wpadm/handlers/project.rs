@@ -180,7 +180,7 @@ mod tests {
             .unwrap()
             .as_nanos();
         let rnd: u64 = rng().next_u64();
-        base.join(format!("wproj_project_{}_{}", ts, rnd))
+        base.join(format!("wpadm_project_{}_{}", ts, rnd))
             .to_string_lossy()
             .to_string()
     }
@@ -342,7 +342,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn wproj_project_init_full_ok() {
+    async fn wpadm_project_init_full_ok() {
         let work = uniq_tmp_dir();
         init_project(
             ProjectInitArgs {
@@ -409,7 +409,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn wproj_project_init_remote_defaults_to_latest_release() {
+    async fn wpadm_project_init_remote_defaults_to_latest_release() {
         let current_exe = std::env::current_exe().expect("current exe");
         let status = std::process::Command::new(current_exe)
             .env("WP_REMOTE_INIT_SUBPROCESS", "1")
@@ -435,7 +435,7 @@ mod tests {
 
     #[tokio::test]
     #[serial]
-    async fn wproj_project_init_remote_defaults_to_remote_head_when_release_tags_are_missing() {
+    async fn wpadm_project_init_remote_defaults_to_remote_head_when_release_tags_are_missing() {
         let current_exe = std::env::current_exe().expect("current exe");
         let status = std::process::Command::new(current_exe)
             .env("WP_REMOTE_INIT_SUBPROCESS", "1")

@@ -99,11 +99,11 @@ mod tests {
     use orion_variate::EnvDict;
 
     #[test]
-    fn wproj_stat_src_file_runs() {
+    fn wpadm_stat_src_file_runs() {
         let work_root = std::path::Path::new("usecase/core/getting_started");
         if !work_root.exists() {
             eprintln!(
-                "skip wproj_stat_src_file_runs: sample work_root {:?} 不存在",
+                "skip wpadm_stat_src_file_runs: sample work_root {:?} 不存在",
                 work_root
             );
             return;
@@ -123,11 +123,11 @@ mod tests {
     }
 
     #[test]
-    fn wproj_stat_sink_file_runs() {
+    fn wpadm_stat_sink_file_runs() {
         let work_root = std::path::Path::new("usecase/core/getting_started");
         if !work_root.exists() {
             eprintln!(
-                "skip wproj_stat_sink_file_runs: sample work_root {:?} 不存在",
+                "skip wpadm_stat_sink_file_runs: sample work_root {:?} 不存在",
                 work_root
             );
             return;

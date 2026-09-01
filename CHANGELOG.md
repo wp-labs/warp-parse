@@ -8,7 +8,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.16 latest]
+## [0.25.17 latest]
+
+### Changed
+- **wproj 统一为 wpadm**：命令行工具统一改名为 `wpadm`——`WProj` → `Wpadm`、`WProjCli` → `WpadmCli`、`wproj_main` → `wpadm_main`，环境变量 `WPROJ_SELF_UPDATE_ROOT` → `WPADM_SELF_UPDATE_ROOT`，帮助文本、日志输出与测试命名同步。
+
+## [0.25.16]
 
 ### Added
 - **多 SQL provider 支持**：同步 `wp-motor v1.25.8` 与 `wp-knowledge 0.16`——`knowdb.toml` 支持 `[[provider.sqldb]]` 配置多个 PostgreSQL/MySQL 数据库（每个可配 `name`，无前缀查询走默认库）；OML 查询通过 `from <provider>.<schema>.<table>` 前缀路由到指定库；`uses_external_provider_only` 识别新版 `[provider.sqldb]`/`[[provider.sqldb]]`/`[provider.redis]` 配置格式。

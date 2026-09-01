@@ -12,7 +12,7 @@ use warp_parse::build::CLAP_LONG_VERSION;
 // defaults moved to crate::consts
 
 #[derive(Subcommand)]
-pub enum WProj {
+pub enum Wpadm {
     /// 规则工具：解析规则的管理和调试 | Rule tools: management and debugging of parsing rules
     ///
     /// 提供解析规则（WPL）的验证、分析和调试功能，包括：
@@ -380,7 +380,7 @@ pub enum UpdateChannel {
 #[derive(Parser)]
 #[command(
     name = "wpadm",
-    about = "Warp Flow Engine 项目管理工具\n\nwproj 是 Warp Flow Engine 的官方命令行工具，提供完整的项目生命周期管理功能，包括：
+    about = "Warp Flow Engine 项目管理工具\n\nwpadm 是 Warp Flow Engine 的官方命令行工具，提供完整的项目生命周期管理功能，包括：
 • 项目初始化和配置管理
 • 数据源的检查、统计和验证
 • 模型（规则/源/汇）的管理和监控
@@ -388,7 +388,7 @@ pub enum UpdateChannel {
 
 Warp Flow Engine Project Management Tool
 
-wproj is the official CLI tool for Warp Flow Engine, providing comprehensive project lifecycle management:
+wpadm is the official CLI tool for Warp Flow Engine, providing comprehensive project lifecycle management:
 • Project initialization and configuration management
 • Data source checking, statistics, and validation
 • Model (rules/sources/sinks) management and monitoring
@@ -399,9 +399,9 @@ wproj is the official CLI tool for Warp Flow Engine, providing comprehensive pro
         WP_LANG=<locale>  设置提示语言: en_US.UTF-8 (English) / zh_CN.UTF-8 (中文, 默认); fallback 到 LANG\n  \
         NO_COLOR=1        禁用彩色输出\n  \
         UPDATE_BASE_URL=<url>  覆盖自动更新基础 URL\n  \
-        WPROJ_SELF_UPDATE_ROOT=<path>  覆盖自动更新本地根目录",
+        WPADM_SELF_UPDATE_ROOT=<path>  覆盖自动更新本地根目录",
 )]
-pub struct WProjCli {
+pub struct WpadmCli {
     /// 安静模式，减少输出信息 | Quiet mode with reduced output
     #[clap(
         short = 'q',
@@ -409,11 +409,11 @@ pub struct WProjCli {
         action,
         help = "安静模式，减少输出信息 | Quiet mode with reduced output"
     )]
-    // 说明：-q/--quiet 在 apps/wproj/main.rs 中于 clap 解析前被提前消费
+    // 说明：-q/--quiet 在 apps/wpadm/main.rs 中于 clap 解析前被提前消费
     //（通过 wp_cli_core::split_quiet_args 过滤），此处保留仅用于 help 展示与向后兼容。
     pub quiet: bool,
     #[command(subcommand)]
-    pub cmd: WProj,
+    pub cmd: Wpadm,
 }
 
 #[derive(Subcommand, Debug)]
@@ -914,28 +914,28 @@ pub struct AnalyseArgs {
 
 #[cfg(test)]
 mod tests {
-    use super::{ProjectInitArgs, WProj, WProjCli};
+    use super::{ProjectInitArgs, Wpadm, WpadmCli};
     use clap::Parser;
 
     fn parse_init(args: &[&str]) -> ProjectInitArgs {
-        let cli = WProjCli::try_parse_from(args).expect("parse cli");
+        let cli = WpadmCli::try_parse_from(args).expect("parse cli");
         match cli.cmd {
-            WProj::Init(args) => args,
+            Wpadm::Init(args) => args,
             _ => panic!("expected init command"),
         }
     }
 
     #[test]
     fn init_accepts_repo_as_primary_remote_arg() {
-        let args = parse_init(&["wproj", "init", "--repo", "https://example.com/repo.git"]);
+        let args = parse_init(&["wpadm", "init", "--repo", "https://example.com/repo.git"]);
         assert_eq!(args.repo.as_deref(), Some("https://example.com/repo.git"));
         assert_eq!(args.mode, None);
     }
 
     #[test]
     fn init_rejects_repo_and_mode_together() {
-        let err = match WProjCli::try_parse_from([
-            "wproj",
+        let err = match WpadmCli::try_parse_from([
+            "wpadm",
             "init",
             "--repo",
             "https://example.com/repo.git",
@@ -952,8 +952,8 @@ mod tests {
 
     #[test]
     fn init_rejects_removed_remote_arg() {
-        let err = match WProjCli::try_parse_from([
-            "wproj",
+        let err = match WpadmCli::try_parse_from([
+            "wpadm",
             "init",
             "--remote",
             "https://example.com/repo.git",
@@ -967,7 +967,7 @@ mod tests {
 
     #[test]
     fn init_rejects_version_without_repo() {
-        let err = match WProjCli::try_parse_from(["wproj", "init", "--version", "1.4.2"]) {
+        let err = match WpadmCli::try_parse_from(["wpadm", "init", "--version", "1.4.2"]) {
             Ok(_) => panic!("version should require repo"),
             Err(err) => err,
         };

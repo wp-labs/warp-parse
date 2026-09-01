@@ -1,5 +1,5 @@
 use crate::args::{
-    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, WProj, WProjCli,
+    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, Wpadm, WpadmCli,
 };
 use crate::handlers::conf::run_conf_update;
 use crate::handlers::engine::{run_engine_reload, run_engine_status};
@@ -15,23 +15,23 @@ use orion_variate::EnvDict;
 use warp_parse::load_sec_dict;
 use wp_error::run_error::RunResult;
 
-pub async fn dispatch_cli(cli: WProjCli) -> RunResult<()> {
+pub async fn dispatch_cli(cli: WpadmCli) -> RunResult<()> {
     match cli.cmd {
-        WProj::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
-        WProj::Engine(sub) => dispatch_engine_cmd(sub).await?,
-        WProj::Conf(sub) => dispatch_conf_cmd(sub).await?,
+        Wpadm::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
+        Wpadm::Engine(sub) => dispatch_engine_cmd(sub).await?,
+        Wpadm::Conf(sub) => dispatch_conf_cmd(sub).await?,
         other => {
             let dict = load_sec_dict()?;
             match other {
-                WProj::Rule(sub) => dispatch_rule_cmd(sub, &dict)?,
-                WProj::Init(args) => project::init_project(args, &dict).await?,
-                WProj::Check(args) => project::check_project(args, &dict)?,
-                WProj::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
-                WProj::Model(sub) => dispatch_model_cmd(sub, &dict).await?,
-                WProj::Rescue(sub) => dispatch_rescue_cmd(sub)?,
-                WProj::SelfUpdate(_) => unreachable!("self command handled above"),
-                WProj::Engine(_) => unreachable!("engine command handled above"),
-                WProj::Conf(_) => unreachable!("conf command handled above"),
+                Wpadm::Rule(sub) => dispatch_rule_cmd(sub, &dict)?,
+                Wpadm::Init(args) => project::init_project(args, &dict).await?,
+                Wpadm::Check(args) => project::check_project(args, &dict)?,
+                Wpadm::Data(sub) => data::dispatch_data_cmd(sub, &dict).await?,
+                Wpadm::Model(sub) => dispatch_model_cmd(sub, &dict).await?,
+                Wpadm::Rescue(sub) => dispatch_rescue_cmd(sub)?,
+                Wpadm::SelfUpdate(_) => unreachable!("self command handled above"),
+                Wpadm::Engine(_) => unreachable!("engine command handled above"),
+                Wpadm::Conf(_) => unreachable!("conf command handled above"),
             }
         }
     }
@@ -94,7 +94,7 @@ pub fn dispatch_validate_cmd(sub: ValidateCmd, dict: &EnvDict) -> RunResult<()> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::args::{SelfCheckArgs, SelfSourceArgs, WProjCli};
+    use crate::args::{SelfCheckArgs, SelfSourceArgs, WpadmCli};
     use serial_test::serial;
     use std::path::PathBuf;
 
@@ -155,9 +155,9 @@ mod tests {
         std::fs::write(&manifest_path, body).expect("write manifest");
 
         // intentionally do not create .warp_parse/sec_key.toml
-        let cli = WProjCli {
+        let cli = WpadmCli {
             quiet: true,
-            cmd: WProj::SelfUpdate(SelfCmd::Check(SelfCheckArgs {
+            cmd: Wpadm::SelfUpdate(SelfCmd::Check(SelfCheckArgs {
                 source: SelfSourceArgs {
                     channel: crate::args::UpdateChannel::Stable,
                     updates_base_url: None,

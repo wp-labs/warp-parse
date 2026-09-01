@@ -6,21 +6,21 @@ use wp_cli_core::split_quiet_args;
 use wp_engine::facade::diagnostics;
 use wp_error::run_error::RunResult;
 
-use crate::args::WProjCli;
+use crate::args::WpadmCli;
 mod handlers;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
-    if let Err(e) = wproj_main().await {
+    if let Err(e) = wpadm_main().await {
         diagnostics::print_run_error("wpadm", &e);
         std::process::exit(diagnostics::exit_code_for(e.reason()));
     }
 }
 
-pub async fn wproj_main() -> RunResult<()> {
+pub async fn wpadm_main() -> RunResult<()> {
     let (_pre_quiet, filtered_args) = split_quiet_args(env::args().collect());
     warp_parse::feats::register_for_runtime();
-    let wcl = WProjCli::parse_from(&filtered_args);
+    let wcl = WpadmCli::parse_from(&filtered_args);
     handlers::cli::dispatch_cli(wcl).await
 }
 // Banner is centralized in wp-cli-utils

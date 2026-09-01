@@ -1,6 +1,6 @@
 // App-level registration of external connectors and features.
 // This module provides unified registration functions that can be reused
-// across multiple binary targets (wparse, wpgen, wproj, wprescue).
+// across multiple binary targets (wparse, wpgen, wpadm, wprescue).
 //
 // By keeping these registrations out of the core library, we avoid
 // feature-coupling the core with optional extension crates.
