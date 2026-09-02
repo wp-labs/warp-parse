@@ -8,7 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.17 latest]
+## [0.25.18 latest]
+
+### Added
+- **OML SQL 支持 `limit` / `order by`**：同步 `wp-motor v1.25.10`——`select ... where <cond> order by <col> [asc|desc] limit <N>` 支持在条件末尾追加 `order by` 与 `limit` 子句（`limit` 值仅允许数字字面量，`order by` 列按白名单校验 `ident [asc|desc]`，与 select body 一致防任意 SQL 透传）；覆盖 ip4_between / in / like / 通用条件四条求值路径，参数注入（`read()`/`take()`）不受影响。
+
+### Dependencies
+- 升级 `wp-motor` `v1.25.9` → `v1.25.10`
+
+## [0.25.17]
 
 ### Changed
 - **wproj 统一为 wpadm**：命令行工具统一改名为 `wpadm`——`WProj` → `Wpadm`、`WProjCli` → `WpadmCli`、`wproj_main` → `wpadm_main`，环境变量 `WPROJ_SELF_UPDATE_ROOT` → `WPADM_SELF_UPDATE_ROOT`，帮助文本、日志输出与测试命名同步。
