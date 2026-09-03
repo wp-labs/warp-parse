@@ -8,7 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.18 latest]
+## [0.25.19 latest]
+
+### Added
+- **PostgreSQL 连接池 `postgres_session` 连接级 session 初始化**：同步 `wp-knowledge v0.16.1`——`[provider.sqldb.postgres_session]` 子配置经 SQLx `after_connect` 对池中每条新连接（含空闲回收补建、断线重连）逐条下发 `SET`（`plan_cache_mode` / `jit` / `application_name`），用于稳定执行计划（如 IP 地理查询锁定 generic plan）；启动时经同一连接池 `current_setting` 自检，不一致报错并定位到具体参数。
+
+### Dependencies
+- 升级 `wp-knowledge` `v0.16.0` → `v0.16.1`
+
+## [0.25.18]
 
 ### Added
 - **OML SQL 支持 `limit` / `order by`**：同步 `wp-motor v1.25.10`——`select ... where <cond> order by <col> [asc|desc] limit <N>` 支持在条件末尾追加 `order by` 与 `limit` 子句（`limit` 值仅允许数字字面量，`order by` 列按白名单校验 `ident [asc|desc]`，与 select body 一致防任意 SQL 透传）；覆盖 ip4_between / in / like / 通用条件四条求值路径，参数注入（`read()`/`take()`）不受影响。
