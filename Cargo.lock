@@ -2254,7 +2254,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -3959,7 +3959,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "thiserror 2.0.20",
  "tokio",
  "tracing",
@@ -3998,7 +3998,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "tracing",
  "windows-sys 0.61.2",
 ]
@@ -6579,8 +6579,8 @@ dependencies = [
 
 [[package]]
 name = "wp-connectors"
-version = "0.19.0"
-source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.19.0#f653ced8f0d49a94aebf45a3b9dec9221c597184"
+version = "0.19.1"
+source = "git+https://github.com/wp-labs/wp-connectors?tag=v0.19.1#c806fe33a1ab76897ee3aa481386a15afdc6ca03"
 dependencies = [
  "actix-web",
  "anyhow",
