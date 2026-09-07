@@ -8,7 +8,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.20 latest]
+## [0.25.21 latest]
+
+### Added
+- **OML 新增 `intranet_replace` 管道函数**：同步 `wp-motor v1.25.11` —— 内网 IP 脱敏替换：内网地址替换为同族占位地址（IPv4 → `192.0.2.1`，IPv6 → `2001:db8::1`，可用 `intranet_replace('1.2.3.4')` 显式指定），公网原样透传；仅支持 `ip` 类型输入（Chars 由字段 `: ip` 声明自动转 IP），显式替换值仅对同族输入生效（跨族 → Ignore + 诊断）。
+
+### Fixed
+- **OML 字符串→IP 自动转换支持 IPv6**：`chars` 字段转 IP 由仅 IPv4 扩展为 IPv4/IPv6（压缩/完整/大写/IPv4-mapped），空/非法输入不再以字符串原样透传（返回空 IP + ParseFail 诊断），打通 chars → IPv6 → `ip_to_biguint` 链路（关联 warp-parse#358）。
+
+### Dependencies
+- 升级 `wp-motor` `v1.25.10` → `v1.25.11`
+
+## [0.25.20]
 
 ### Changed
 - **Kafka Source 批量接收**：接入 `wp-connectors v0.20.0` —— `recv_impl` 批量凑批后返回
