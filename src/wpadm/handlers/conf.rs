@@ -51,7 +51,7 @@ pub async fn run_conf_update_from_repo(
 ) -> RunResult<()> {
     let work_root = resolve_work_root(work_root)?;
     info_ctrl!(
-        "wproj conf update bootstrap source work_root={} requested_version={} repo={}",
+        "wpadm conf update bootstrap source work_root={} requested_version={} repo={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         repo_url
@@ -84,7 +84,7 @@ where
     ) -> RunResult<project_remote::ProjectRemoteUpdateResult>,
 {
     info_ctrl!(
-        "wproj conf update start work_root={} requested_version={} json={} group={}",
+        "wpadm conf update start work_root={} requested_version={} json={} group={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         json,
@@ -101,7 +101,7 @@ where
     let dict = warp_parse::load_sec_dict()?;
     let result = sync_fn(&work_root, requested_version, &dict, group)?;
     info_ctrl!(
-        "wproj conf update synced work_root={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
+        "wpadm conf update synced work_root={} requested_version={} current_version={} resolved_tag={} from_revision={} to_revision={} changed={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         result.current_version,
@@ -113,7 +113,7 @@ where
 
     let check_result = async {
         info_ctrl!(
-            "wproj conf update validate start work_root={} version={}",
+            "wpadm conf update validate start work_root={} version={}",
             work_root.display(),
             result.current_version
         );
@@ -124,7 +124,7 @@ where
 
     if let Err(check_err) = check_result {
         warn_ctrl!(
-            "wproj conf update validate failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
+            "wpadm conf update validate failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
             work_root.display(),
             requested_version.unwrap_or("(auto)"),
             result.current_version,
@@ -137,7 +137,7 @@ where
             result.changed,
         ) {
             warn_ctrl!(
-                "wproj conf update rollback failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
+                "wpadm conf update rollback failed work_root={} requested_version={} current_version={} resolved_tag={} error={}",
                 work_root.display(),
                 requested_version.unwrap_or("(auto)"),
                 result.current_version,
@@ -150,7 +150,7 @@ where
             )));
         }
         info_ctrl!(
-            "wproj conf update rollback done work_root={} requested_version={} reverted_from_version={} resolved_tag={} changed={}",
+            "wpadm conf update rollback done work_root={} requested_version={} reverted_from_version={} resolved_tag={} changed={}",
             work_root.display(),
             requested_version.unwrap_or("(auto)"),
             result.current_version,
@@ -163,7 +163,7 @@ where
         )));
     }
     info_ctrl!(
-        "wproj conf update validate passed work_root={} requested_version={} current_version={} resolved_tag={}",
+        "wpadm conf update validate passed work_root={} requested_version={} current_version={} resolved_tag={}",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         result.current_version,
@@ -172,7 +172,7 @@ where
 
     if json {
         info_ctrl!(
-            "wproj conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=true",
+            "wpadm conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=true",
             work_root.display(),
             requested_version.unwrap_or("(auto)"),
             result.current_version,
@@ -182,7 +182,7 @@ where
     }
 
     info_ctrl!(
-        "wproj conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=false",
+        "wpadm conf update done work_root={} requested_version={} current_version={} resolved_tag={} json=false",
         work_root.display(),
         requested_version.unwrap_or("(auto)"),
         result.current_version,

@@ -56,7 +56,7 @@ pub fn clean_knowdb(a: &KnowdbCleanArgs) -> RunResult<()> {
     }
     if rep.removed_authority_cache {
         let auth = wr.join(".run").join("authority.sqlite");
-        println!("wproj removed '{}'", auth.display());
+        println!("wpadm removed '{}'", auth.display());
     }
     Ok(())
 }

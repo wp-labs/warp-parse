@@ -43,6 +43,16 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
 
+      - name: Install native dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: brew install unixodbc
+
+      - name: Install native dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unixodbc-dev
+
       - name: Cargo build
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
@@ -91,7 +101,9 @@ jobs:
           cp -av target/${{ matrix.target }}/release/wparse artifacts/
           cp -av target/${{ matrix.target }}/release/wpgen artifacts/
           cp -av target/${{ matrix.target }}/release/wprescue artifacts/
-          cp -av target/${{ matrix.target }}/release/wproj artifacts/
+          cp -av target/${{ matrix.target }}/release/wpadm artifacts/
+          # backward-compat symlink: wproj → wpadm
+          ln -sf wpadm artifacts/wproj
           tar -czf "${ARTIFACT}.tar.gz" artifacts
 
       - name: Attest Build Provenance

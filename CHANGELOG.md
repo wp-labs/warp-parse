@@ -1,5 +1,35 @@
 # Changelog
 
+
+[English](./CHANGELOG.en.md) | 中文
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.26.0]（稳定版，收敛自 0.25.4–0.25.22 系列）
+
+### Added
+- **OML 内网富化与 IP 脱敏**：`intranet_ip`（内/外）、`access_direct`（访问方向 L2L/L2W/W2L/W2W）、`intranet_replace`（内网 IP 脱敏：同族占位或显式替换值）、`on_fail` 兑底；内网网段由 `knowdb.toml [intranet_nets]` 知识化配置。
+- **OML 时间与数据组织**：`Time::to_ts/from_ts` 六函数（秒/毫秒/微秒，`zone` 可选）；嵌套 `object {}`、`array {}` 聚合、`static` 块支持嵌套对象/数组。
+- **OML SQL 增强**：`select` 支持 `order by`/`limit`；`from <provider>.<schema>.<table>` 多 SQL provider（PostgreSQL/MySQL）路由；PostgreSQL `postgres_session` 连接级初始化以稳定执行计划。
+- **Parser**：`wp_event_md5` 事件指纹字段（可配/可关）；`copy_event_parse` 产出独立旁路 record 并按目标 rule 路由到自己的 sink；`#[no_match]` 规则声明。
+- **Sink**：JSON/CSV 输出默认携带 `wp_stream_tag`/`wp_event_id` 运行时元字段，支持组级 `wp_meta_disable`。
+- **CLI 与工程**：`wproj` 统一更名 `wpadm`（保留兼容）；`wpgen` 支持 `[models].wpl` 目录配置、connector 参数类型校验。
+
+### Changed
+- **吞吐与解析提速**：Kafka Source 批量接收（wp-connectors v0.20）；TCP 源读取吞吐修复（v0.8.3 → v0.8.4，约 19.4 万/s → 50.6 万/s）；不限速（rate=0）自动限速收敛提速（parse_to_blackhole 短压 30 万行 ~5.5s → ~1.5s）。
+- **错误提示结构化**：OML/配置加载失败定位到具体文件与解析位置。
+- **依赖升级**：`wp-motor` v1.22.6 → v1.25.14、`wp-knowledge` v0.13 → v0.16.3、`wp-connectors` v0.14 → v0.20、`wp-core-connectors` v0.3.3 → v0.8.4、`wp-lang`/`wp-primitives` 同步升级。
+
+### Fixed
+- 字符串→IP 自动转换支持 IPv6，空/非法输入不再以字符串透传（wp-labs/warp-parse#358）；字段缺失/空值等正常缺失不再刷告警与解析诊断（wp-labs/warp-parse#360）。
+- `ip_to_biguint` 结果作 SQL 参数时本地缓存可命中，相同查询不再重复访问数据库（wp-labs/warp-parse#359）。
+- OML 嵌套 `object` / `read` / `take` 非法参数不再静默丢弃（加载即报错）；`time_timestamp` 数字 `0` 正确解析为 Unix epoch；WPL `ip` 支持 IPv4-mapped IPv6 解析。
+
+> 演进过程见 0.25.4–0.25.22 各版本 tag。
+
 ## [0.24.11] - 2026-06-25
 
 ### Changed
@@ -9,13 +39,6 @@
 
 ### Fixed
 - **Project Remote**: 修复 `project_remote` 在解析本地 tag、origin URL 和 remote HEAD 目标时的健壮性，避免部分 Git 状态下误判或报错。
-
-[English](./CHANGELOG.en.md) | 中文
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.24.10] - 2026-06-25
 
@@ -40,9 +63,9 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.24.8] - 2026-06-19
 
 ### Changed
-- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.6`。
-  - Generator 发送改为动态批量
-  - TCP sink 场景下 `wpgen` CPU 从 ~300% 降至 ~15%（实测）
+- **Dependencies**: 升级 `wp-motor` 从 `v1.22.4` 到 `v1.22.6`
+  - Generator 发送改为动态批量（`BatchSizePolicy`），TCP sink 下 `wpgen` CPU ~300% → ~15%
+  - 修复 `wp-core-connectors` crate 名称引用错误（连字符 → 下划线）
 
 ## [0.24.7] - 2026-05-26
 

@@ -67,11 +67,11 @@ mod tests {
     use orion_variate::EnvDict;
 
     #[test]
-    fn wproj_validate_sink_file_runs() {
+    fn wpadm_validate_sink_file_runs() {
         let work_root = std::path::Path::new("usecase/core/getting_started");
         if !work_root.exists() {
             eprintln!(
-                "skip wproj_validate_sink_file_runs: sample work_root {:?} 不存在",
+                "skip wpadm_validate_sink_file_runs: sample work_root {:?} 不存在",
                 work_root
             );
             return;

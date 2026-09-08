@@ -24,8 +24,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy pre-built binaries (provided via build context, arch-specific)
 COPY ${TARGETARCH}/wparse /usr/local/bin/
 COPY ${TARGETARCH}/wpgen /usr/local/bin/
-COPY ${TARGETARCH}/wproj /usr/local/bin/
+COPY ${TARGETARCH}/wpadm /usr/local/bin/
 COPY ${TARGETARCH}/wprescue /usr/local/bin/
+
+# Backward-compat symlink: wproj → wpadm
+RUN ln -sf /usr/local/bin/wpadm /usr/local/bin/wproj
 
 # Create data directory
 RUN mkdir -p /data && chown wparse:wparse /data

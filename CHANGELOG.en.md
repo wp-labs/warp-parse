@@ -7,42 +7,147 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [0.25.16 latest]
+
+### Added
+- **Multiple SQL provider support**: synced `wp-motor v1.25.8` and `wp-knowledge 0.16` — `knowdb.toml` supports multiple PostgreSQL/MySQL databases via `[[provider.sqldb]]` (each with an optional `name`; unprefixed queries hit the default DB); OML queries route to a specific DB via the `from <provider>.<schema>.<table>` prefix; `uses_external_provider_only` recognizes the new `[provider.sqldb]` / `[[provider.sqldb]]` / `[provider.redis]` config formats.
+
+### Dependencies
+- Upgraded `wp-motor` `v1.25.7` → `v1.25.8` (multi-SQL-provider routing + new-format probe).
+- `wp-knowledge`: switched to local path (published `0.16.0`, includes multiple SQL provider support).
+
+## [0.25.15]
+
+### Changed
+- **Error reporting enhancement**: synced `wp-motor v1.25.7` — OML/config load failures now point to the concrete file and parse error instead of a generic "配置错误" (`IntoRunError` keeps the inner `Syntax`/`NotFound`/`Other` message as detail); OML parse errors render as structured `file:`/`error:`/`at:` lines, dropping the misleading operation-name location and generic cause.
+
+
+## [0.25.14] - 2026-08-10
+
+### Fixed
+- **OML nested object member silent drop**: fix nested `object` members (and following siblings) being silently dropped on parse failure while load still succeeded; `oml_map()` now verifies the body is fully consumed so an invalid member fails the whole OML; adds `pipe` member support (`NestedAccessor::Pipe`); target-list parsing tolerates whitespace around commas.
+- **OML read/take arg silent drop**: fix invalid args inside `read(...)`/`take(...)` being silently ignored; the paren scope is now verified fully consumed and leftover content fails the whole OML.
+
+## [0.25.13] - 2026-08-09
+
+### Fixed
+- **`time_timestamp` parses `0` as Unix epoch**: fix `time_timestamp` field type rejecting the digit `0` (the parser required fixed 10/13/16-digit lengths). `0` now parses as Unix epoch (`1970-01-01 00:00:00 UTC`); 1–9 digit integers parse as seconds; 10/13/16-digit second/millisecond/microsecond behavior is unchanged; 11–12 digit values now fail cleanly instead of partially consuming.
+
+## [0.25.12] - 2026-08-08
+
+### Added
+- **OML/Time timestamp functions**: synced `wp-motor v1.25.4`; new `Time::from_ts`/`from_ts_ms`/`from_ts_us` (seconds/millis/micros → time), inverse of `to_ts`/`to_ts_ms`/`to_ts_us`; all six functions accept an optional `zone` (default UTC+8), with out-of-i32-range or `|zone| > 23` rejected at parse time and invalid zones falling through unchanged.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.25.3` → `v1.25.4` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`).
+
+## [0.25.11] - 2026-08-05
+
+### Added
+- **OML intranet enrichment**: synced `wp-motor v1.25.2`; new `intranet_ip` (LAN/WAN), `access_direct` (access direction), `on_fail` (fallback) functions; pipe-source extension supports `access_direct(a,b) | on_fail('x')`. Intranet networks are managed as knowledge by wp-knowledge (`knowdb.toml [intranet_nets]`), checkable via `wproj check`.
+- **English short output**: `intranet_ip` → `LAN`/`WAN`, `access_direct` → `L2L`/`L2W`/`W2L`/`W2W` (L=LAN, W=WAN, 2=to).
+- **OML nested objects & object arrays**: synced `wp-motor v1.25.3` (#346); `object { ... }` sub-values accept nested object literals; new `array { ... }` aggregate for object/value literal arrays; static blocks support nested object/array literals.
+
+### Fixed
+- **IPv4-mapped IPv6 parsing**: synced `wp-primitives 0.2.1`; fixes the WPL `ip` field mis-rejecting `::ffff:a.b.c.d` IPv4-mapped IPv6 addresses (previously such addresses fell into miss).
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.25.1` → `v1.25.3` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), `wp-primitives` → `0.2.1`.
+
+## [0.25.10] - 2026-08-05
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.8` → `v1.25.1` (incl. `wp-engine`/`wp-config`/`wp-cli-core`/`wp-proj`), aligning dependency versions: `wp-error` `0.10` → `0.11`, `wp-knowledge` `0.14` → `0.15` (fixes the `RunReason` type-conversion compile error caused by coexisting `wp-error` versions).
+
+## [0.25.7] - 2026-07-11
+
+### Added
+- **Sink/Metadata**: Synced `wp-motor v1.23.6`; JSON/CSV sink group output now emits fixed runtime metadata fields `wp_stream_tag` and `wp_event_id` by default. Added group-level `sink_group.wp_meta_disable` to hide selected metadata fields, for example `["wp_stream_tag", "wp_event_id"]`.
+- **Benchmarks**: Synced the `sink_wp_meta` benchmark coverage for metadata output and disable behavior.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.5` → `v1.23.6`.
+- **Sink/Runtime**: Runtime metadata injection now happens once at the `SinkDispatcher`/sink_group boundary; single-owner records use `Arc::try_unwrap` to avoid unnecessary `DataRecord` clones.
+- **Config/Sinks**: `stream_tag_field` is source-only and is rejected from sink/wpgen output params. `wp_meta_disable` is group-level only; connector-facing sink specs filter runtime-only metadata params before validate/build.
+
+## [0.25.7] - 2026-07-08
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.6` → `v1.23.7`
+- **Dependencies**: Upgraded `wp-connectors` `v0.15.8` → `v0.17.0`
+
+## [0.25.6] - 2026-07-08
+
+### Changed
+- **Dependencies**: Upgraded `wp-connectors` `v0.15.6` → `v0.15.8`
+
+## [0.25.5] - 2026-07-06
+
+### Added
+- **wpgen/Config**: `wpgen.toml` now supports `[models]` section with `wpl` field to specify WPL rule/sample directory, matching `wparse.toml` semantics. Priority: `--wpl` CLI > `[models].wpl` > default `./models/wpl/`. Invalid/empty directory causes startup error.
+- **Connector/Validate**: `merge_params` / `merge_source_params` / `merge_params_with_allowlist` now perform parameter type validation (`json_type_label`). Config values with mismatched types (e.g. `port = "9801"` string overriding integer default) cause errors instead of silent fallback.
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.4` → `v1.23.5`
+
+### Fixed
+- **wpgen**: `validate_wpl_dir` now recursively searches subdirectories for `.wpl` files (previously only scanned top-level, nested WPL rules were not validated)
+
+## [0.25.4] - 2026-07-05
+
+### Changed
+- **Dependencies**: Upgraded `wp-motor` `v1.23.3` → `v1.23.4`
+  - `wpadm` toolchain (`data stat/validate/check`, `sources list/route`) supports directory-based source format (auto-scan `topology/sources/*.toml` when `wpsrc.toml` is absent)
+  - Fixed clippy `collapsible_if` / `unused_imports` warnings
+- **CLI**: Binary renamed `wproj` → `wpadm`; `wproj` kept as backward-compat symlink (`wproj → wpadm`)
+  - `Dockerfile` / `setup.sh` / `release.yml` updated accordingly
+  - `_gal/work.gxl` removed old `wproj` binary copy
+- **Dependencies**: Upgraded major dependencies
+  - `wp-motor`: `v1.22.6` → `v1.23.4`
+    - Added Redis Knowledge Provider support (`knowdb.toml` → `[provider.redis]`)
+    - Removed standalone `arrow-file` / `arrow-ipc` sink backends, unified into file/tcp sink
+    - Upgraded `shadow-rs` 1.5 → 2.0, `wp-core-connectors` 0.3.3 → 0.5
+    - Fixed `wproj init` template compatibility, `ip4_to_int` IPv6 handling, etc.
+  - `wp-connectors`: `v0.14.2` → `v0.15.6`
+  - `wp-knowledge`: `v0.13.0` → `v0.14.2`
+
 ## [0.24.11] - 2026-06-25
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, including release tag / origin head resolution fixes and related infrastructure updates.
-- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.5`, pulling in `kvarr_raw`, lazy duplicate handling for `kvarr`, parser-only performance guards, and WPL documentation updates.
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, syncing release tag / origin head resolution fixes and infrastructure updates.
+- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.5`, syncing `kvarr_raw`, `kvarr` duplicate key lazy handling, parser-only performance benchmarks, and WPL doc updates.
 - **Lockfile**: Refreshed transitive dependency versions in `Cargo.lock`.
 
 ### Fixed
-- **Project Remote**: Hardened local tag, origin URL, and remote HEAD resolution in `project_remote` to avoid false failures on some Git states.
+- **Project Remote**: Fixed robustness in `project_remote` when resolving local tags, origin URLs, and remote HEAD targets, avoiding misjudgments or errors in certain Git states.
 
 ## [0.24.10] - 2026-06-25
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, pulling in the sink batch success-path record-id benchmark and lighter batch error logging path.
-- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.4`, pulling in parser-only performance guards, the empty-pipe fast path, and quoted `chars` parse hot-path optimizations.
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.8` to `v1.22.9`, syncing sink batch success-path record ID overhead benchmarks and lightweight error log path adjustments.
+- **Dependencies**: Upgraded `wp-lang` from `0.3.3` to `0.3.4`, syncing parser-only performance benchmark suite, empty pipe fast path, and quoted `chars` parse hot-path optimization.
 
 ## [0.24.9] - 2026-06-23
 
 ### Added
-- **Source Rate Limit**: Pulled in upstream `wp-motor v1.22.7` source-side global rate limiting. `performance.rate_limit_rps = 0` enables automatic input control, while `> 0` applies a fixed global EPS cap shared by all sources.
-- **Memory Profiles**: Added centralized memory profile support via `WP_MEMORY_PROFILE=standard|low|throughput`, covering runtime channels, watermarks, batch sizes, and network/file buffers.
+- **Source Rate Limit**: Synced upstream `wp-motor v1.22.7`, adding global source-side input rate limiting; `performance.rate_limit_rps = 0` enables auto rate-limiting, `> 0` sets a shared fixed EPS cap for all sources.
+- **Memory Profiles**: Added unified memory profile support, controllable via `WP_MEMORY_PROFILE=standard|low|throughput` to tune runtime queues, watermarks, batch sizes, and network/file buffer memory parameters.
 
 ### Changed
 - **Dependencies**: Upgraded `wp-motor` from `v1.22.6` to `v1.22.7`.
-  - Default `performance.rate_limit_rps` changed from a fixed value to `0` automatic mode.
-  - Automatic source limiting adjusts input rate using picker pending watermarks, parser backpressure, and RSS growth protection.
-  - Source limiter waits before batches enter picker pending, reducing pending/RSS growth under rate limiting.
-  - Benchmark `wparse.toml` files now use `${RATE_LIMIT_RPS:0}`; benchmark scripts derive the wparse rate limit from the input speed by default.
-- **DebugView**: Debug output now uses a bounded channel and records dropped-line counts with sampled warnings when full, avoiding unbounded RSS growth.
+  - Default `performance.rate_limit_rps` changed from fixed value to `0` (auto).
+  - Auto rate-limiting dynamically adjusts input rate based on picker pending watermark, parser backpressure, and RSS growth protection.
+  - Source rate-limiting wait moved before entering pending, reducing pending/RSS inflation under rate-limited scenarios.
+  - Benchmark `wparse.toml` uses `${RATE_LIMIT_RPS:0}`, benchmark scripts default to syncing wparse rate limit with input rate.
+- **DebugView**: Debug output changed to bounded queue; records drop count and sample alerts when full, avoiding unbounded queue RSS growth.
 
 ## [0.24.8] - 2026-06-19
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.6`.
-  - Generator send path now uses dynamic batch sizing via `BatchSizePolicy` 
-  - `wpgen` CPU drops from ~300% to ~15% (measured) on TCP sink benchmarks 
+- **Dependencies**: Upgraded `wp-motor` from `v1.22.4` to `v1.22.6`
+  - Generator send path now uses dynamic batch sizing (`BatchSizePolicy`), `wpgen` CPU ~300% → ~15% on TCP sink
+  - Fixed `wp-core-connectors` crate name references (hyphens → underscores)
 
 ## [0.24.7] - 2026-05-26
 

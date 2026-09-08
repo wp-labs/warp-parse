@@ -13,7 +13,7 @@ use wp_self_update::{
 const DEFAULT_SELF_UPDATE_BASE_URL: &str =
     "https://raw.githubusercontent.com/wp-labs/wp-install/refs/heads/main/updates";
 const SELF_UPDATE_BASE_URL_ENV: &str = "UPDATE_BASE_URL";
-const SELF_UPDATE_ROOT_ENV: &str = "WPROJ_SELF_UPDATE_ROOT";
+const SELF_UPDATE_ROOT_ENV: &str = "WPADM_SELF_UPDATE_ROOT";
 
 pub async fn run_self_check(args: SelfCheckArgs) -> RunResult<()> {
     let report = check(CheckRequest {

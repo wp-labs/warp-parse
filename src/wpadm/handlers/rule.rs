@@ -24,7 +24,7 @@ mod tests {
     use crate::format::print_json;
 
     #[test]
-    fn wproj_rule_handlers_json_ok_shape() {
+    fn wpadm_rule_handlers_json_ok_shape() {
         let obj = serde_json::json!({"ok": true, "action": "verify"});
         // ensure print_json handles simple objects
         let _ = print_json(&obj);

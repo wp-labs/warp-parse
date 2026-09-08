@@ -11,6 +11,8 @@ use wp_error::{run_error::RunReason, RunResult};
 use wp_log::conf::log_init;
 use wp_proj::wpgen::load_wpgen_resolved;
 
+use super::sample::validate_wpl_dir;
+
 #[derive(Debug, Clone, Copy)]
 pub struct RuleRunOpts {
     pub stat_print: bool,
@@ -90,7 +92,10 @@ pub async fn run(
         .conv_err()?
         .rule_root()
         .to_string();
-    let rule_root = wpl_dir.unwrap_or(default_rule_root.as_str());
+    let config_wpl = rt.conf.models.wpl.as_deref();
+    let rule_root = wpl_dir.or(config_wpl).unwrap_or(default_rule_root.as_str());
+    // 校验：rule_root 必须存在且包含至少一个 .dat 或 .wpl 文件
+    validate_wpl_dir(rule_root)?;
     let wf_gen_batch = std::env::var("WF_GEN_BATCH").unwrap_or_else(|_| "(unset)".into());
     let wf_gen_unit = std::env::var("WF_GEN_UNIT_SIZE").unwrap_or_else(|_| "(unset)".into());
     wp_log::info_ctrl!(

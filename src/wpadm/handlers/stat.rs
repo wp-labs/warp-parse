@@ -40,7 +40,7 @@ pub fn run_combined_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> 
         wlib::print_src_files_table(&report);
     } else {
         println!(
-            "no file sources found: missing topology/sources/wpsrc.toml or no enabled entries"
+            "no file sources found: check topology/sources/ for .toml files or no enabled entries"
         );
     }
     println!("\n== Sinks ==");
@@ -66,7 +66,7 @@ pub fn run_src_stat(args: &crate::args::CommonFiltArgs, dict: &EnvDict) -> RunRe
         print_json(&obj)?;
     } else {
         eprintln!(
-            "no file sources found under {}/sources/wpsrc.toml; try --work-root 指向工程根目录",
+            "no file sources found under {}/sources/; try --work-root 指向工程根目录",
             stats.work_root
         );
     }
@@ -99,11 +99,11 @@ mod tests {
     use orion_variate::EnvDict;
 
     #[test]
-    fn wproj_stat_src_file_runs() {
+    fn wpadm_stat_src_file_runs() {
         let work_root = std::path::Path::new("usecase/core/getting_started");
         if !work_root.exists() {
             eprintln!(
-                "skip wproj_stat_src_file_runs: sample work_root {:?} 不存在",
+                "skip wpadm_stat_src_file_runs: sample work_root {:?} 不存在",
                 work_root
             );
             return;
@@ -123,11 +123,11 @@ mod tests {
     }
 
     #[test]
-    fn wproj_stat_sink_file_runs() {
+    fn wpadm_stat_sink_file_runs() {
         let work_root = std::path::Path::new("usecase/core/getting_started");
         if !work_root.exists() {
             eprintln!(
-                "skip wproj_stat_sink_file_runs: sample work_root {:?} 不存在",
+                "skip wpadm_stat_sink_file_runs: sample work_root {:?} 不存在",
                 work_root
             );
             return;
