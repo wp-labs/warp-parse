@@ -8,7 +8,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.25.21 latest]
+## [0.25.22 latest]
+
+### Changed
+- **不限速（rate=0）生成/接收吞吐显著提升**：同步 `wp-motor v1.25.14` —— 源端自动限速不再保守拖慢突发流量，parse_to_blackhole 短压 30 万行由 ~5.5s 降至 ~1.5s；自我保护（内存水位/背压）仍生效。
+
+### Fixed
+- **OML 字段缺失/空值不再刷告警与解析诊断**：同步 `wp-motor v1.25.14`（关联 warp-parse#360）——正常缺失可放心用 `on_fail` 兑底，非空非法输入仍会报错。
+- **`ip_to_biguint` 结果作 SQL 参数时本地缓存可命中**：同步 `wp-knowledge v0.16.3`（关联 warp-parse#359）——相同查询不再重复访问数据库。
+
+### Dependencies
+- 升级 `wp-motor` `v1.25.11` → `v1.25.14`
+- 升级 `wp-knowledge` `v0.16.1` → `v0.16.3`
+
+## [0.25.21]
 
 ### Added
 - **OML 新增 `intranet_replace` 管道函数**：同步 `wp-motor v1.25.11` —— 内网 IP 脱敏替换：内网地址替换为同族占位地址（IPv4 → `192.0.2.1`，IPv6 → `2001:db8::1`，可用 `intranet_replace('1.2.3.4')` 显式指定），公网原样透传；仅支持 `ip` 类型输入（Chars 由字段 `: ip` 声明自动转 IP），显式替换值仅对同族输入生效（跨族 → Ignore + 诊断）。
