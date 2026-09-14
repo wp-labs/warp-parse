@@ -5975,7 +5975,7 @@ dependencies = [
 
 [[package]]
 name = "warp-parse"
-version = "0.25.22"
+version = "0.26.0"
 dependencies = [
  "anyhow",
  "chrono",
@@ -6014,7 +6014,7 @@ dependencies = [
  "wp-connectors",
  "wp-engine",
  "wp-error",
- "wp-knowledge",
+ "wp-knowledge 0.17.0",
  "wp-log",
  "wp-proj",
  "wp-self-update",
@@ -6517,7 +6517,7 @@ dependencies = [
  "toml",
  "walkdir",
  "wp-config",
- "wp-knowledge",
+ "wp-knowledge 0.16.3",
 ]
 
 [[package]]
@@ -6581,7 +6581,7 @@ dependencies = [
  "wp-connector-api",
  "wp-data-utils",
  "wp-error",
- "wp-knowledge",
+ "wp-knowledge 0.16.3",
  "wp-lang",
  "wp-log",
  "wp-model-core",
@@ -6805,7 +6805,7 @@ dependencies = [
  "wp-data-fmt",
  "wp-data-utils",
  "wp-error",
- "wp-knowledge",
+ "wp-knowledge 0.16.3",
  "wp-lang",
  "wp-log",
  "wp-model-core",
@@ -6840,6 +6840,41 @@ name = "wp-knowledge"
 version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b8024b0362695ad53f6b323796d69b9116eb4ab661661fae2ca5330202a9134"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "chrono",
+ "csv",
+ "derive_more",
+ "enum_dispatch",
+ "futures",
+ "ipnet",
+ "lazy_static",
+ "log",
+ "lru",
+ "num-bigint 0.4.8",
+ "once_cell",
+ "orion-error",
+ "orion-variate",
+ "orion_conf",
+ "r2d2",
+ "r2d2_sqlite",
+ "redis",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sqlx 0.8.6",
+ "tokio",
+ "toml",
+ "wp-log",
+ "wp-model-core",
+]
+
+[[package]]
+name = "wp-knowledge"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10ec71abc9ed0fbcf049865d372c51c7af2716c42f23c96808faeec93963f660"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -6999,7 +7034,7 @@ dependencies = [
  "wp-data-fmt",
  "wp-data-utils",
  "wp-error",
- "wp-knowledge",
+ "wp-knowledge 0.16.3",
  "wp-lang",
  "wp-log",
  "wp-model-core",
@@ -7053,7 +7088,7 @@ dependencies = [
  "wp-data-utils",
  "wp-engine",
  "wp-error",
- "wp-knowledge",
+ "wp-knowledge 0.16.3",
  "wp-lang",
  "wp-log",
  "wp-oml",
