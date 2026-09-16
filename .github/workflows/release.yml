@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["v*.*.*"]
+    tags: ["exp-v*.*.*"]
 
 env:
   REGISTRY: ghcr.io
@@ -179,6 +179,7 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
+            type=raw,value={{tag}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -281,7 +282,7 @@ jobs:
 
             ### Quick Install Script
             ```bash
-            curl -sSf https://get.warpparse.ai/inst-x.sh | bash -s -- wparse ${{ steps.branch.outputs.branch }}
+            curl -fsSL https://raw.githubusercontent.com/wp-labs/warp-parse/${{ steps.branch.outputs.branch }}/scripts/install.sh | bash
             ```
 
             ### Docker Image
@@ -363,9 +364,11 @@ jobs:
       - name: Build assets map and validate
         run: |
           set -euo pipefail
-          jq -c '
+          REPO="${{ github.event.repository.name }}"
+          jq -c --arg prefix "${REPO}-" '
             [ .assets[]
-              | select(.name | test("^warp-parse-v[^/]+-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
+              | select(.name | startswith($prefix))
+              | select(.name | test("-(aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$"))
               | {
                   key: (.name | capture("-(?<target>aarch64-apple-darwin|aarch64-unknown-linux-gnu|x86_64-unknown-linux-gnu)\\.tar\\.gz$").target),
                   value: {
@@ -376,9 +379,9 @@ jobs:
             ] | from_entries
           ' /tmp/release.json > /tmp/assets.json
 
-          jq -e '
+          jq -e --arg release_url_prefix "https://github.com/${GITHUB_REPOSITORY}/releases/download/" '
             (keys | sort) == ["aarch64-apple-darwin","aarch64-unknown-linux-gnu","x86_64-unknown-linux-gnu"] and
-            (to_entries | all(.value.url | startswith("https://github.com/wp-labs/warp-parse/releases/download/"))) and
+            (to_entries | all(.value.url | startswith($release_url_prefix))) and
             (to_entries | all(.value.sha256 | test("^[0-9a-f]{64}$")))
           ' /tmp/assets.json >/dev/null
 
@@ -400,8 +403,8 @@ jobs:
           fi
 
           cd wp-install
-          MANIFEST="updates/${CHANNEL}/manifest.json"
-          HISTORY="updates/${CHANNEL}/versions/${TAG}.json"
+          MANIFEST="updates-exp/${CHANNEL}/manifest.json"
+          HISTORY="updates-exp/${CHANNEL}/versions/${TAG}.json"
           mkdir -p "$(dirname "$MANIFEST")" "$(dirname "$HISTORY")"
 
           jq -n \
@@ -428,7 +431,7 @@ jobs:
           cd wp-install
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add updates
+          git add updates-exp
           if git diff --cached --quiet; then
             echo "no manifest changes"
             exit 0

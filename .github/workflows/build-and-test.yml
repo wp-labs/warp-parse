@@ -53,6 +53,13 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Prepare CLI compatibility alias
+        run: |
+          # wpadm 是项目管理工具的新名称；集成用例仍使用旧入口 wproj。
+          ln -sf wpadm target/release/wproj
+          test -x target/release/wpadm
+          test -x target/release/wproj
+
       - name: Determine wp-examples branch
         id: examples-branch
         run: |
