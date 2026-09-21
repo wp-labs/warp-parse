@@ -165,7 +165,7 @@ mod tests {
 
     use super::*;
     use git2::{Repository, Signature};
-    use rand::{rng, RngCore};
+    use rand::{rng, Rng};
     use serial_test::serial;
     use std::path::PathBuf;
     use std::time::{SystemTime, UNIX_EPOCH};
