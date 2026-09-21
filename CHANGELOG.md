@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.0]
+
+### ⚠️ BREAKING CHANGES
+- **同步 `wp-motor` 1.27.0**：整数类型改名 `Value::Digit` → `Value::Int`、`DataType::Digit` → `DataType::Int`（serde wire 标签 `"digit"` → `"int"`、`Field::from_digit` → `from_int`）；OML/条件表达式的类型渲染随之改为 `int`（如 `cpu_free : digit` → `cpu_free : int`）。解析仍接受 `digit`，WPL 规则仍以 `digit` 呈现。
+
+### Added
+- **`wparse daemon` 单实例保护**：启动对 `<work-root>/.run/.lock` 取 `flock`，同一 work-root 的第二实例拒绝启动（wp-labs/warp-parse#365）。
+
+### Changed
+- **依赖升级**：`wp-motor` v1.26.0 → v1.27.0、`wp-knowledge` 0.16 → 0.18、`wp-error` 0.11 → 0.12、`wp-connectors` v0.20 → v0.21、`wp-connector-api` 0.12 → 0.13、`git2` 0.20 → 0.21、`rand` 0.9 → 0.10、`serial_test` 3.2 → 4.0。
+
 ## [0.26.0]（稳定版，收敛自 0.25.4–0.25.22 系列）
 
 ### Added
