@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.27.1]
+
+### Added
+- **TCP 连接器 TLS 与压缩/加密**：随 `wp-motor` 1.27.0（`wp-core-connectors` 0.8 → 0.9），`tcp_src`/`tcp_sink` 支持 TLS；`tcp`/`file` 连接器支持 `compression`（gzip/zstd）+ `encryption`（aes-256-gcm/sm4-gcm，含国密 SM4-GCM）。
+
 ## [0.27.0]
 
 ### ⚠️ BREAKING CHANGES
