@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.0]
+
+### Changed
+- **升级到 orion-error 0.9 世代**：`orion-error` 0.8 → 0.9、`orion_conf` 0.7 → 0.8、`orion-sec` 0.6 → 0.7、`orion-variate` 0.13 → 0.14。
+- **依赖升级**：`wp-motor` v1.27.0 → v1.28.0、`wp-connectors` v0.21.0 → v0.22.0、`wp-connector-api` 0.13 → 0.14、`wp-parse-api` 0.12 → 0.13、`wp-conf-base` 0.6 → 0.7、`wp-log` 0.4 → 0.5、`wp-error` 0.12 → 0.13、`wp-knowledge` 0.18 → 0.19、`wp-self-update` 0.3 → 0.4。
+
+### Fixed
+- **`wproj check` 的 OML 校验升级为整文件严格解析**：随 `wp-motor` 1.28.0，OML 组件对每个 `.oml` 文件走官方解析器全量解析并做完整消费检查 —— 跨行语法错误、缺失 `name`、以及多余的尾随内容（如误入文件末尾的 `def label_for(...)`）都会被报出并定位到 `文件:行:列`；「模型重名」「未声明 rule」由硬失败降级为告警，与真正的语法错误区分（wp-labs/warp-parse#366）。
+
 ## [0.27.1]
 
 ### Added

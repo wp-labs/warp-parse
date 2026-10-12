@@ -89,9 +89,9 @@
 | 文件发现 | `find_conf_files()` 找 `model.oml` | — |
 | 目录/文件缺失 | 无 OML 目录或无 `.oml` 文件 → "OML 文件缺失"，视为通过 | — |
 | 非空检查 | `ErrorHandler::check_file_not_empty()` | Error |
-| 结构解析 | `fetch_oml_data()` 解析所有 OML 文件 | Error |
+| **全文件语法解析** ★P2 | 先屏蔽注释，再用 `oml_parse_raw()` 解析**整个**文件；任何尾部或无法识别的内容（如误入的 `def label_for(...)`）都会失败，并报出 `路径:行:列` 及解析原因 | Error |
 | **模型名唯一性** ★P2 | 检测多个 OML 文件中重复的 `name : <model-name>` | Warning |
-| **空 rule pattern** ★P3 | 检测空的 `rule :` 声明 | Warning |
+| **缺失 rule pattern** ★P3 | OML 模型未声明任何 `rule :`，将永远不会匹配到 WPL 规则 | Warning |
 
 ## 7. SemanticDict — `{knowledge_root}/semantic_dict.toml`
 
@@ -143,13 +143,13 @@
 |---|------|---------|
 | 1 | **WPL 字段类型语义校验** | `WplField::validate()` 使用 `panic!` 而非返回错误，在 check 路径调用可能导致进程崩溃 |
 | 2 | **WPL Sample 数据校验** | 需要运行时引擎（`WplEngine`）加载管道上下文，涉及 tokio 异步运行时和完整的 pipeline 初始化 |
-| 3 | **OML 结构解析（oml_parse_raw）** | 核心解析函数 `oml_parse_raw` 是 `async` 的，check 路径是同步的，需要引入 tokio runtime 或重构解析层 |
 | 4 | **WPL-OML 规则交叉引用** | OML 模型的 `rule : /path/*` 与 WPL 规则路径的匹配发生在运行时（`SinkDispatcher::get_match_oml`），check 时需要同时加载两套完整的规则体系并执行匹配逻辑 |
 | 5 | **Connectors 反向交叉引用** | 需要修改 `Connectors::check()` 签名以接受 Engine config，并在 check 路径中加载 source 配置和 sink 路由配置来验证 connector 引用有效性。涉及跨组件依赖注入 |
 | 6 | **Sink OML pattern 存在性验证** | Sink 路由中的 `oml = ["pattern"]` 需要匹配已加载的 OML 模型名，当前匹配逻辑在运行时 dispatcher 中，迁移到 check 需要加载完整的 OML 模型和路由配置 |
 
+> 项目 #3（OML 结构解析）已实现：OML 组件会对每个文件全量调用正式解析器 `oml_parse_raw()`，并在同步 check 路径中通过 `futures_lite::future::block_on` 桥接（在已有 tokio runtime 中也安全）。
+
 ### 改进优先级建议
 
 - **P2（建议下阶段实现）**: #5 Connectors 反向交叉引用 — 风险可控，build 层已有解析逻辑，只需整合到 check 流程
-- **P3（需设计评审）**: #3 OML 结构解析 — 可考虑将 `oml_parse_raw` 改为同步或提供同步包装函数
 - **P4（需架构变更）**: #1 #2 #4 #6 — 需要在 check 路径中引入运行时组件或重构核心解析 API
