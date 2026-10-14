@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.1]
+
+### Fixed
+- **修复 TCP 源队头阻塞（wp-labs/warp-parse#367）**：随 `wp-core-connectors` 0.10.0 → 0.10.2，某条连接上的半帧/长记录不再阻塞其它连接的读取；同时带上错误隔离、长度前缀上限/溢出、EOF 尾行、acceptor 解耦等健壮性修复。
+
+### Changed
+- **依赖更新**：刷新 `Cargo.lock`（含 `wp-core-connectors` 0.10.2 及若干传递依赖版本更新）。
+
 ## [0.29.0]
 
 ### Changed
