@@ -89,9 +89,9 @@
 | File discovery | `find_conf_files()` for `model.oml` | — |
 | Dir/file absence | No OML dir or no `.oml` files → "OML files missing", treated as pass | — |
 | Non-empty check | `ErrorHandler::check_file_not_empty()` | Error |
-| Structure parse | `fetch_oml_data()` parses all OML files | Error |
+| **Full-file syntax parse** ★P2 | Comments are masked, then `oml_parse_raw()` parses the **entire** file; any trailing or unrecognized content (e.g. a stray `def label_for(...)`) fails with `path:line:col` and the parser reason | Error |
 | **Model name uniqueness** ★P2 | Detects duplicate `name : <model-name>` across OML files | Warning |
-| **Empty rule pattern** ★P3 | Detects empty `rule :` declarations | Warning |
+| **Missing rule patterns** ★P3 | OML model declares no `rule :` pattern and will never match a WPL rule | Warning |
 
 ## 7. SemanticDict — `{knowledge_root}/semantic_dict.toml`
 
@@ -143,13 +143,16 @@ The following items carry higher technical risk and are documented for future re
 |---|------|------|
 | 1 | **WPL field type semantic validation** | `WplField::validate()` uses `panic!` instead of returning errors; calling it from the check path could crash the process |
 | 2 | **WPL Sample data validation** | Requires the runtime engine (`WplEngine`) to load pipeline context, involving tokio async runtime and full pipeline initialization |
-| 3 | **OML structure parsing (oml_parse_raw)** | Core parser `oml_parse_raw` is async; the check path is sync. Requires introducing a tokio runtime or refactoring the parser layer |
 | 4 | **WPL-OML rule cross-references** | OML `rule : /path/*` matching against WPL rule paths happens at runtime (`SinkDispatcher::get_match_oml`); check would need both full rule sets loaded and match logic executed |
 | 5 | **Connectors reverse cross-references** | Requires modifying `Connectors::check()` signature to accept Engine config, and loading source config + sink route config in the check path to verify connector reference validity. Involves cross-component dependency injection |
 | 6 | **Sink OML pattern existence validation** | Sink route `oml = ["pattern"]` entries must match loaded OML model names; current matching logic lives in the runtime dispatcher. Migrating to check requires loading full OML models and route configs |
 
+> Item #3 (OML structure parsing) is now implemented: the OML component runs the
+> official `oml_parse_raw()` parser over each whole file, bridged into the sync
+> check path with `futures_lite::future::block_on` (safe inside an existing tokio
+> runtime).
+
 ### Priority Recommendations
 
 - **P2 (recommended next phase)**: #5 Connectors reverse cross-references — risk is manageable; build layer already has parsing logic, only needs integration into the check flow
-- **P3 (design review needed)**: #3 OML structure parsing — consider making `oml_parse_raw` synchronous or providing a sync wrapper
 - **P4 (architecture change needed)**: #1 #2 #4 #6 — require introducing runtime components into the check path or refactoring core parsing APIs

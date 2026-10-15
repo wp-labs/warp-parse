@@ -8,6 +8,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.29.1]
+
+### Fixed
+- **修复 TCP 源队头阻塞（wp-labs/warp-parse#367）**：随 `wp-core-connectors` 0.10.0 → 0.10.2，某条连接上的半帧/长记录不再阻塞其它连接的读取；同时带上错误隔离、长度前缀上限/溢出、EOF 尾行、acceptor 解耦等健壮性修复。
+
+### Changed
+- **依赖更新**：刷新 `Cargo.lock`（含 `wp-core-connectors` 0.10.2 及若干传递依赖版本更新）。
+
+## [0.29.0]
+
+### Changed
+- **依赖升级**：`wp-motor` v1.28.0 → v1.29.0、`wp-connectors` v0.22.0 → v0.23.0；二者又随 `wp-specs` 0.12 → 0.13（`ParamMap` 升级到 `wp-connector-api` 0.14），依赖图中不再同时存在两份 `wp-connector-api`（0.13 + 0.14）。
+
+## [0.28.0]
+
+### Changed
+- **升级到 orion-error 0.9 世代**：`orion-error` 0.8 → 0.9、`orion_conf` 0.7 → 0.8、`orion-sec` 0.6 → 0.7、`orion-variate` 0.13 → 0.14。
+- **依赖升级**：`wp-motor` v1.27.0 → v1.28.0、`wp-connectors` v0.21.0 → v0.22.0、`wp-connector-api` 0.13 → 0.14、`wp-parse-api` 0.12 → 0.13、`wp-conf-base` 0.6 → 0.7、`wp-log` 0.4 → 0.5、`wp-error` 0.12 → 0.13、`wp-knowledge` 0.18 → 0.19、`wp-self-update` 0.3 → 0.4。
+
+### Fixed
+- **`wproj check` 的 OML 校验升级为整文件严格解析**：随 `wp-motor` 1.28.0，OML 组件对每个 `.oml` 文件走官方解析器全量解析并做完整消费检查 —— 跨行语法错误、缺失 `name`、以及多余的尾随内容（如误入文件末尾的 `def label_for(...)`）都会被报出并定位到 `文件:行:列`；「模型重名」「未声明 rule」由硬失败降级为告警，与真正的语法错误区分（wp-labs/warp-parse#366）。
+
+## [0.27.1]
+
+### Added
+- **TCP 连接器 TLS 与压缩/加密**：随 `wp-motor` 1.27.0（`wp-core-connectors` 0.8 → 0.9），`tcp_src`/`tcp_sink` 支持 TLS；`tcp`/`file` 连接器支持 `compression`（gzip/zstd）+ `encryption`（aes-256-gcm/sm4-gcm，含国密 SM4-GCM）。
+
+## [0.27.0]
+
+### ⚠️ BREAKING CHANGES
+- **同步 `wp-motor` 1.27.0**：整数类型改名 `Value::Digit` → `Value::Int`、`DataType::Digit` → `DataType::Int`（serde wire 标签 `"digit"` → `"int"`、`Field::from_digit` → `from_int`）；OML/条件表达式的类型渲染随之改为 `int`（如 `cpu_free : digit` → `cpu_free : int`）。解析仍接受 `digit`，WPL 规则仍以 `digit` 呈现。
+
+### Added
+- **`wparse daemon` 单实例保护**：启动对 `<work-root>/.run/.lock` 取 `flock`，同一 work-root 的第二实例拒绝启动（wp-labs/warp-parse#365）。
+
+### Changed
+- **依赖升级**：`wp-motor` v1.26.0 → v1.27.0、`wp-knowledge` 0.16 → 0.18、`wp-error` 0.11 → 0.12、`wp-connectors` v0.20 → v0.21、`wp-connector-api` 0.12 → 0.13、`git2` 0.20 → 0.21、`rand` 0.9 → 0.10、`serial_test` 3.2 → 4.0。
+
 ## [0.26.0]（稳定版，收敛自 0.25.4–0.25.22 系列）
 
 ### Added
