@@ -25,7 +25,7 @@ Warp Parse is a high-performance Rust ETL engine built for observability, securi
 - **🚀 Extreme throughput:** EPS (Events Per Second) significantly surpasses Vector across multiple scenarios, with 2~6x performance advantages in core scenarios like fixed rate and large logs (see [Performance Report](https://github.com/wp-labs/wp-examples/tree/main/benchmark/report)).
 - **📝 Readable rules:** Self-developed WPL (Parse DSL) + OML (Transform DSL) offer far superior readability and maintainability compared to regular expressions and Lua scripts.
 - **🔌 Unified connectors:** Built on standardized `wp-connector-api` interface design, enabling community developers to rapidly extend multi-source log connector ecosystem.
-- **🛠️ Ops friendly:** Single binary deployment with full configuration-based management; includes `wproj`, `wpgen`, `wprescue` tool suite to reduce operational costs.
+- **🛠️ Ops friendly:** Single binary deployment with full configuration-based management; includes `wpadm`, `wpgen`, `wprescue` tool suite to reduce operational costs.
 - **🧠 Knowledge transformation:** Built-in in-memory database supports real-time SQL queries for log data field enrichment and correlation analysis.
 - **🎯 Data routing:** Flexible routing based on rule engine and transformation models, supporting multi-path data replication, precise filtering, and target distribution.
 
@@ -54,8 +54,8 @@ curl -sSf https://get.warpparse.ai/inst-x.sh | bash -s -- wp-skills
 Warp Parse currently supports runtime admin operations in daemon mode only.
 
 - Usage guide: [docs/ENGINE_ADMIN_USAGE.md](docs/ENGINE_ADMIN_USAGE.md)
-- Status query: `cargo run --bin wproj -- engine status --work-root .`
-- Reload trigger: `cargo run --bin wproj -- engine reload --work-root . --reason "manual reload"`
+- Status query: `cargo run --bin wpadm -- engine status --work-root .`
+- Reload trigger: `cargo run --bin wpadm -- engine reload --work-root . --reason "manual reload"`
 
 To enable the admin API, configure `[admin_api]` in `conf/wparse.toml`, create `${HOME}/.warp_parse/admin_api.token`, and start:
 
@@ -102,7 +102,7 @@ For details, please refer to the [LICENSE](LICENSE) file in the repository root.
 - **🚀 极致吞吐：** 多场景下 EPS（事件处理速率）全面超越 Vector，固定速率/大日志等核心场景性能优势达 2~6 倍（详见[性能测试报告](https://github.com/wp-labs/wp-examples/tree/main/benchmark/report)）。
 - **📝 规则易编写：** 自研 WPL（解析 DSL）+ OML（转换 DSL），可读性、可维护性远超正则表达式与 Lua 脚本。
 - **🔌 连接器统一：** 基于 `wp-connector-api` 标准化接口设计，支持社区开发者快速扩展多源日志连接器生态。
-- **🛠️ 运维友好：** 单二进制文件部署，全配置化管理；配套 `wproj`、`wpgen`、`wprescue` 工具套件，降低运维成本。
+- **🛠️ 运维友好：** 单二进制文件部署，全配置化管理；配套 `wpadm`、`wpgen`、`wprescue` 工具套件，降低运维成本。
 - **🧠 知识转换：** 内置内存数据库支持 SQL 实时查询，实现日志数据字段富化与关联分析。
 - **🎯 数据路由：** 基于规则引擎与转换模型的灵活路由，支持多路数据复制、精准过滤与目标分发。
 
