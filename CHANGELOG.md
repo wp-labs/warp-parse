@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.30.0] - 2026-10-17
+
+### Added
+- **OML 内联脱敏**：随 `wp-motor` 1.30.0 引入 `mask` / `hash` / `tokenize` / `remove`，直接写在赋值 pipe 中，所有 sink 只会看到脱敏后的数据。
+  - `mask(kind)` 支持 IP、手机号、身份证、邮箱、域名、姓名、地址、公司、密钥消息与文本；`mask(ip)` 映射到保留地址池，输出仍是合法 IP，可继续 join / group by。
+  - `hash([algo])` 提供同值同结果的 HMAC（SHA-256/SHA-1/MD5）；`tokenize()` 生成可逆令牌（还原由独立工具完成）；`remove` 直接删除字段。
+  - 支持 `object { ... }` 内部与批量目标（如 `*_mail : chars = read() | mask(mail)`），`fmt` / `match` / `select` 等表达式也可直接接 pipe。
+- **零配置脱敏密钥**：`mask` / `hash` 使用 `pii_salt`，`tokenize` 使用 `pii_key`，从 `.warp_parse/sec_key.toml` 的 `sec_pii_salt` / `sec_pii_key` 加载；OML 与 `wparse.toml` 均无需密钥配置。
+
+### Changed
+- **依赖升级**：`wp-motor` v1.29.0 → v1.30.0（`wp-engine` / `wp-config` / `wp-oml` / `wp-cli-core` / `wp-proj` 同步）。
+- 脱敏失败一律 fail-closed：密钥缺失或为空、类型不匹配时不输出原值；`mask(ip)` 无密钥时只有显式 `allow_unsalted:true` 才允许开发期降级。
+
 ## [0.29.1]
 
 ### Fixed
