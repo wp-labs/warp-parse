@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.31.1] - 2026-10-21
+
+### Fixed
+- **解析失败的事件被归因到兜底规则**：`wp-motor` 的 `parse_event` 在 `Err` 分支上每条 `DataError` 都无条件覆盖候选，因此一次全部失败的事件几乎总是被归到排在最后的 `#[late]` 兜底规则上，`missed_packets` 里报告的 `depth` 也退化成 `1`。现在按「已消费比例」归因到真正走得最远的那条规则，同进度时保留命中率更高的先到候选。
+  - 同一次改动也删掉了死代码 `MultiParser::hit_count_sort()` / `WplPipeline.access_cnt`。
+
+### Dependencies
+- 升级 `wp-motor` `v1.31.0` → `v1.32.0`（比例化 Miss 归因）。
+- `wp-lang` `0.8.1` → `0.8.2`（新增 `WplEvaluator::proc_ref_progress` / `ParseProgress`）。
+
 ## [0.31.0] - 2026-10-20
 
 ### Added
