@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.31.0] - 2026-10-20
+
+### Added
+- **实例级全局 tag**：启动时读取 `WP_GLOBAL_TAGS`（`owner_id=team-a,env=prod` 或 JSON），盖到所有解析成功的数据上。
+  - 新增 `<work_root>/.env` / `<work_root>/.warp_parse/.env` 加载（进程环境变量优先，`.env` 不覆盖）。
+  - 新增 `warp_parse::load_instance_env()`；`wparse` 在构建 `WpApp` 前加载。
+
+### Changed
+- **依赖 `wp-motor` 新版本**：`WP_GLOBAL_TAGS` 的实际盖戳逻辑在 `wp-engine` 内，`warp-parse` 代码本身不直接引用新 API；要生效需使用包含该功能的 `wp-motor` 版本（建议将 `wp-engine` / `wp-config` / `wp-cli-core` / `wp-proj` 的 git tag 一并升级）。
+
 ## [0.30.0] - 2026-10-17
 
 ### Added

@@ -43,10 +43,20 @@ async fn do_main() -> RunResult<()> {
     let (_quiet, filtered_args) = split_quiet_args(argv);
     register_extension();
     let cmd = WParseCLI::parse_from(&filtered_args);
+    // 实例级环境文件：多个 wparse 共享 wparse.toml，但各自 work_root 下的 .env 独立。
+    let instance_root = match &cmd {
+        WParseCLI::Daemon(args) | WParseCLI::Batch(args) => Some(
+            wp_engine::facade::args::resolve_run_work_root(&args.work_root)?,
+        ),
+        _ => None,
+    };
+    if let Some(root) = instance_root.as_deref() {
+        warp_parse::load_instance_env(Path::new(root))?;
+    }
     let env_dict = load_sec_dict()?;
     match cmd {
         WParseCLI::Daemon(args) => {
-            let work_root = wp_engine::facade::args::resolve_run_work_root(&args.work_root)?;
+            let work_root = instance_root.expect("daemon work root resolved");
             let engine_args: wp_engine::facade::args::ParseArgs = args.into();
 
             let mut app = WpApp::try_from(engine_args, env_dict.clone())?;
