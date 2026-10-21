@@ -21,12 +21,16 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [0.31.0] - 2026-10-20
 
 ### Added
+- **`#[late]` 兜底规则分层排序**（随 `wp-motor v1.31.0`）：标了 `#[late]` 的规则仍参与 `parse_event` 自动匹配，但**固定排在普通规则之后**；命中率排序改为分层键 `(late, hit_cnt desc, index asc)` —— 层内仍按命中次数降序，但**不能跨层提升**。
+  - 解决兜底规则（如 `(chars\0)`）因命中面广、命中数涨高后被提升到具体规则之前、抢走事件的问题。
+  - 装配期（`MultiParser::new`）先做一次固定分层，避免首个 `OPTIMIZE_TIMES` 窗口前受文件声明顺序影响。
+  - 与 `#[no_match]` 同时声明时 `no_match` 优先（规则完全不自动匹配）。
 - **实例级全局 tag**：启动时读取 `WP_GLOBAL_TAGS`（`owner_id=team-a,env=prod` 或 JSON），盖到所有解析成功的数据上。
   - 新增 `<work_root>/.env` / `<work_root>/.warp_parse/.env` 加载（进程环境变量优先，`.env` 不覆盖）。
   - 新增 `warp_parse::load_instance_env()`；`wparse` 在构建 `WpApp` 前加载。
 
 ### Changed
-- **依赖 `wp-motor` 新版本**：`WP_GLOBAL_TAGS` 的实际盖戳逻辑在 `wp-engine` 内，`warp-parse` 代码本身不直接引用新 API；要生效需使用包含该功能的 `wp-motor` 版本（建议将 `wp-engine` / `wp-config` / `wp-cli-core` / `wp-proj` 的 git tag 一并升级）。
+- **依赖 `wp-motor v1.31.0`**：`wp-engine` / `wp-config` / `wp-cli-core` / `wp-proj` 同步到 `v1.31.0`。`#[late]` 与 `WP_GLOBAL_TAGS` 的实现都在 `wp-engine` 内，`warp-parse` 代码本身不直接引用新 API；要生效需使用该版本（或将上述 git tag 一并升级）。
 
 ## [0.30.0] - 2026-10-17
 
