@@ -8,7 +8,104 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [0.25.16 latest]
+## [0.31.1] - 2026-10-21
+
+### Fixed
+- **Failed events were attributed to the catch-all rule**: in `wp-motor`'s `parse_event`, every `DataError` on the `Err` branch overwrote the candidate unconditionally, so an event that failed everywhere was almost always attributed to the trailing `#[late]` catch-all, and the `depth` reported in `missed_packets` degraded to `1`. Attribution now uses the consumed ratio and picks the rule that actually got furthest; on equal progress the earlier candidate with the higher hit rate wins.
+  - The same change removed the dead code `MultiParser::hit_count_sort()` / `WplPipeline.access_cnt`.
+
+### Dependencies
+- Upgraded `wp-motor` `v1.31.0` → `v1.32.0` (ratio-based miss attribution).
+- `wp-lang` `0.8.1` → `0.8.2` (adds `WplEvaluator::proc_ref_progress` / `ParseProgress`).
+
+## [0.31.0] - 2026-10-20
+
+### Added
+- **`#[late]` tiering for catch-all rules** (via `wp-motor v1.31.0`): rules annotated `#[late]` still take part in `parse_event` auto-matching, but are **always ordered after normal rules**; the ordering key becomes `(late, hit_cnt desc, index asc)` — within the late tier it is still hit-count descending, but a high hit count can no longer promote a rule across tiers.
+  - Fixes catch-all rules (e.g. `(chars\0)`) being promoted ahead of specific rules once their hit count grows, so they stop stealing events.
+  - Assembly (`MultiParser::new`) performs a fixed tier split up front, so file declaration order no longer matters before the first `OPTIMIZE_TIMES` window.
+  - When declared together with `#[no_match]`, `no_match` wins (the rule is never auto-matched).
+- **Instance-level global tags**: reads `WP_GLOBAL_TAGS` at startup (`owner_id=team-a,env=prod` or JSON) and stamps them onto every successfully parsed record.
+  - Adds `<work_root>/.env` / `<work_root>/.warp_parse/.env` loading (process env wins; `.env` never overrides).
+  - Adds `warp_parse::load_instance_env()`; `wparse` loads it before building `WpApp`.
+
+### Changed
+- **Dependency `wp-motor v1.31.0`**: `wp-engine` / `wp-config` / `wp-cli-core` / `wp-proj` are aligned on `v1.31.0`. Both `#[late]` and `WP_GLOBAL_TAGS` are implemented inside `wp-engine`; `warp-parse` itself does not call the new APIs, so the feature requires this version (or bumping those git tags together).
+
+## [0.30.0] - 2026-10-17
+
+### Added
+- **Inline OML masking**: `mask` / `hash` / `tokenize` / `remove` arrive with `wp-motor` 1.30.0 and are written directly in assignment pipes, so every sink only ever sees masked data.
+  - `mask(kind)` supports IP, mobile, ID card, e-mail, domain, name, address, company, key/message and free text; `mask(ip)` maps to a reserved address pool, so the output is still a valid IP and can keep being joined / grouped by.
+  - `hash([algo])` gives same-in/same-out HMAC (SHA-256/SHA-1/MD5); `tokenize()` produces a reversible token (reversal is done by a separate tool); `remove` drops the field.
+  - Works inside `object { ... }` and on batch targets (e.g. `*_mail : chars = read() | mask(mail)`); `fmt` / `match` / `select` expressions also accept pipes.
+- **Zero-config masking keys**: `mask` / `hash` use `pii_salt`, `tokenize` uses `pii_key`, loaded from `.warp_parse/sec_key.toml` (`sec_pii_salt` / `sec_pii_key`); neither the OML nor `wparse.toml` needs any key configuration.
+
+### Changed
+- **Dependencies**: `wp-motor` v1.29.0 → v1.30.0 (`wp-engine` / `wp-config` / `wp-oml` / `wp-cli-core` / `wp-proj` in sync).
+- Masking is fail-closed: on a missing/empty key or a type mismatch no original value is emitted; `mask(ip)` only allows a development-time downgrade with an explicit `allow_unsalted:true`.
+
+## [0.29.1] - 2026-10-14
+
+### Fixed
+- **TCP source head-of-line blocking (wp-labs/warp-parse#367)**: via `wp-core-connectors` 0.10.0 → 0.10.2, a half frame or a long record on one connection no longer blocks reads on the others; the change also bundles error isolation, length-prefix caps/overflow, EOF trailing-line handling and acceptor decoupling.
+
+### Changed
+- **Dependencies**: refreshed `Cargo.lock` (`wp-core-connectors` 0.10.2 plus several transitive updates).
+
+## [0.29.0] - 2026-10-12
+
+### Changed
+- **Dependencies**: `wp-motor` v1.28.0 → v1.29.0 and `wp-connectors` v0.22.0 → v0.23.0; both move to `wp-specs` 0.12 → 0.13 (`ParamMap` upgraded to `wp-connector-api` 0.14), so the dependency graph no longer carries two `wp-connector-api` versions (0.13 + 0.14).
+
+## [0.28.0] - 2026-10-12
+
+### Changed
+- **Moved to the `orion-error` 0.9 generation**: `orion-error` 0.8 → 0.9, `orion_conf` 0.7 → 0.8, `orion-sec` 0.6 → 0.7, `orion-variate` 0.13 → 0.14.
+- **Dependencies**: `wp-motor` v1.27.0 → v1.28.0, `wp-connectors` v0.21.0 → v0.22.0, `wp-connector-api` 0.13 → 0.14, `wp-parse-api` 0.12 → 0.13, `wp-conf-base` 0.6 → 0.7, `wp-log` 0.4 → 0.5, `wp-error` 0.12 → 0.13, `wp-knowledge` 0.18 → 0.19, `wp-self-update` 0.3 → 0.4.
+
+### Fixed
+- **`wproj check` now validates OML as a whole file**: via `wp-motor` 1.28.0, the OML component runs every `.oml` file through the official parser with a full-consumption check — multi-line syntax errors, a missing `name`, and trailing content (e.g. a stray `def label_for(...)` at the end of a file) are all reported with `file:line:column`; “duplicate model name” and “undeclared rule” are downgraded from hard failures to warnings so they stay distinguishable from real syntax errors (wp-labs/warp-parse#366).
+
+## [0.27.1] - 2026-09-26
+
+### Added
+- **TCP connector TLS and compression/encryption**: via `wp-motor` 1.27.0 (`wp-core-connectors` 0.8 → 0.9), `tcp_src` / `tcp_sink` support TLS; the `tcp` / `file` connectors support `compression` (gzip/zstd) + `encryption` (aes-256-gcm / sm4-gcm, including Chinese SM4-GCM).
+
+## [0.27.0] - 2026-09-22
+
+### ⚠️ BREAKING CHANGES
+- **Syncs `wp-motor` 1.27.0**: the integer type is renamed `Value::Digit` → `Value::Int` and `DataType::Digit` → `DataType::Int` (serde wire tag `"digit"` → `"int"`, `Field::from_digit` → `from_int`); OML/condition type rendering follows and becomes `int` (e.g. `cpu_free : digit` → `cpu_free : int`). Parsing still accepts `digit`, and WPL rules still render `digit`.
+
+### Added
+- **`wparse daemon` single-instance protection**: takes a `flock` on `<work-root>/.run/.lock` at startup, so a second instance on the same work root refuses to start (wp-labs/warp-parse#365).
+
+### Changed
+- **Dependencies**: `wp-motor` v1.26.0 → v1.27.0, `wp-knowledge` 0.16 → 0.18, `wp-error` 0.11 → 0.12, `wp-connectors` v0.20 → v0.21, `wp-connector-api` 0.12 → 0.13, `git2` 0.20 → 0.21, `rand` 0.9 → 0.10, `serial_test` 3.2 → 4.0.
+
+## [0.26.0] - 2026-09-08 (stable, consolidated from the 0.25.4–0.25.22 series)
+
+### Added
+- **OML intranet enrichment and IP masking**: `intranet_ip` (LAN/WAN), `access_direct` (access direction L2L/L2W/W2L/W2W), `intranet_replace` (mask intranet IPs with a same-family placeholder or an explicit value) and `on_fail` fallback; intranet networks are configured as knowledge in `knowdb.toml [intranet_nets]`.
+- **OML time and data organisation**: the six `Time::to_ts` / `from_ts` functions (seconds/millis/micros, optional `zone`); nested `object {}`, `array {}` aggregation, and `static` blocks supporting nested objects/arrays.
+- **OML SQL enhancements**: `select` supports `order by` / `limit`; `from <provider>.<schema>.<table>` routes across multiple SQL providers (PostgreSQL/MySQL); PostgreSQL `postgres_session` performs connection-level initialisation to stabilise execution plans.
+- **Parser**: `wp_event_md5` event-fingerprint field (configurable / can be disabled); `copy_event_parse` emits an independent side record routed to its own sink by target rule; `#[no_match]` rule declaration.
+- **Sink**: JSON/CSV output carries the `wp_stream_tag` / `wp_event_id` runtime metadata fields by default, with group-level `wp_meta_disable`.
+- **CLI and project**: `wproj` renamed to `wpadm` (backward-compatible alias kept); `wpgen` supports `[models].wpl` directory configuration and connector parameter type validation.
+
+### Changed
+- **Throughput and parsing speed-ups**: Kafka Source batch receive (wp-connectors v0.20); TCP source read throughput fix (v0.8.3 → v0.8.4, ~194k/s → ~506k/s); auto rate-limit convergence at rate=0 (parse_to_blackhole short run of 300k lines ~5.5s → ~1.5s).
+- **Structured error messages**: OML/config load failures point at the concrete file and parse position.
+- **Dependencies**: `wp-motor` v1.22.6 → v1.25.14, `wp-knowledge` v0.13 → v0.16.3, `wp-connectors` v0.14 → v0.20, `wp-core-connectors` v0.3.3 → v0.8.4, `wp-lang` / `wp-primitives` in sync.
+
+### Fixed
+- String → IP auto-conversion supports IPv6, and empty/invalid input is no longer passed through as a string (wp-labs/warp-parse#358); normal missing fields / empty values no longer spam warnings and parse diagnostics (wp-labs/warp-parse#360).
+- `ip_to_biguint` results used as SQL parameters now hit the local cache, so identical queries no longer revisit the database (wp-labs/warp-parse#359).
+- Invalid arguments to nested `object` / `read` / `take` in OML are no longer silently dropped (they fail at load time); `time_timestamp` parses the number `0` as Unix epoch; WPL `ip` supports IPv4-mapped IPv6 parsing.
+
+> See the 0.25.4–0.25.22 tags for the incremental history.
+
+## [0.25.16] - 2026-08-12
 
 ### Added
 - **Multiple SQL provider support**: synced `wp-motor v1.25.8` and `wp-knowledge 0.16` — `knowdb.toml` supports multiple PostgreSQL/MySQL databases via `[[provider.sqldb]]` (each with an optional `name`; unprefixed queries hit the default DB); OML queries route to a specific DB via the `from <provider>.<schema>.<table>` prefix; `uses_external_provider_only` recognizes the new `[provider.sqldb]` / `[[provider.sqldb]]` / `[provider.redis]` config formats.
@@ -17,7 +114,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Upgraded `wp-motor` `v1.25.7` → `v1.25.8` (multi-SQL-provider routing + new-format probe).
 - `wp-knowledge`: switched to local path (published `0.16.0`, includes multiple SQL provider support).
 
-## [0.25.15]
+## [0.25.15] - 2026-08-11
 
 ### Changed
 - **Error reporting enhancement**: synced `wp-motor v1.25.7` — OML/config load failures now point to the concrete file and parse error instead of a generic "配置错误" (`IntoRunError` keeps the inner `Syntax`/`NotFound`/`Other` message as detail); OML parse errors render as structured `file:`/`error:`/`at:` lines, dropping the misleading operation-name location and generic cause.
@@ -67,15 +164,10 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Benchmarks**: Synced the `sink_wp_meta` benchmark coverage for metadata output and disable behavior.
 
 ### Changed
-- **Dependencies**: Upgraded `wp-motor` `v1.23.5` → `v1.23.6`.
+- **Dependencies**: Upgraded `wp-motor` `v1.23.5` → `v1.23.6`, then `v1.23.6` → `v1.23.7`.
+- **Dependencies**: Upgraded `wp-connectors` `v0.15.8` → `v0.17.0`.
 - **Sink/Runtime**: Runtime metadata injection now happens once at the `SinkDispatcher`/sink_group boundary; single-owner records use `Arc::try_unwrap` to avoid unnecessary `DataRecord` clones.
 - **Config/Sinks**: `stream_tag_field` is source-only and is rejected from sink/wpgen output params. `wp_meta_disable` is group-level only; connector-facing sink specs filter runtime-only metadata params before validate/build.
-
-## [0.25.7] - 2026-07-08
-
-### Changed
-- **Dependencies**: Upgraded `wp-motor` `v1.23.6` → `v1.23.7`
-- **Dependencies**: Upgraded `wp-connectors` `v0.15.8` → `v0.17.0`
 
 ## [0.25.6] - 2026-07-08
 
@@ -221,7 +313,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **OML/SQL Parser**: Pulled in upstream fixes for SQL parameter parsing around `group_concat(...)`, `string_agg(...)`, `IN (...)`, `take(field)`, and `__temp_var`.
 - Fixed runtime stability issues in certain scenarios.
 
-## [0.22.5 ]
+## [0.22.5] - 2026-04-26
 
 ### Changed
 - **wproj/Check**: Significantly improved validation depth and breadth — added `wpgen` config checks (`output.connect`, `rule_root`, `sample_pattern`, `logging.file_path`); semantic-dict now validates empty words / duplicates / empty categories; missing source/sink directories, source files, and GLOB mismatches downgraded to warnings.
@@ -294,18 +386,18 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **Project Init Admin Token Path**: Fixed `wproj init` so that when the generated skeleton already contains `[admin_api]`, it normalizes the token path to project-local `runtime/admin_api.token` instead of preserving legacy `${HOME}/.warp_parse/admin_api.token`.
 
-## [0.20.2]
+## [0.20.2] - 2026-03-20
 
 ### Fixed
 - **orion-sec**: Updated `orion-sec` to keep `sec_key` handling consistent.
 
-## [0.20.1]
+## [0.20.1] - 2026-03-16
 
 ### Fixed
 - **Event ID**: Pulled in upstream `wp-motor` fixes to unify `wp_event_id` generation and avoid duplicate IDs after runtime restarts.
 - **Kafka Source**: Pulled in the upstream `wp-connectors` fix so Kafka source events use the shared `wp_event_id` generator instead of a process-local counter.
 
-## [0.20.0]
+## [0.20.0] - 2026-03-12
 
 ### Added
 - Added HTTP sink support.

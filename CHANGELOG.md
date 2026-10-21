@@ -8,7 +8,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.29.1]
+## [0.31.1] - 2026-10-21
+
+### Fixed
+- **解析失败的事件被归因到兜底规则**：`wp-motor` 的 `parse_event` 在 `Err` 分支上每条 `DataError` 都无条件覆盖候选，因此一次全部失败的事件几乎总是被归到排在最后的 `#[late]` 兜底规则上，`missed_packets` 里报告的 `depth` 也退化成 `1`。现在按「已消费比例」归因到真正走得最远的那条规则，同进度时保留命中率更高的先到候选。
+  - 同一次改动也删掉了死代码 `MultiParser::hit_count_sort()` / `WplPipeline.access_cnt`。
+
+### Dependencies
+- 升级 `wp-motor` `v1.31.0` → `v1.32.0`（比例化 Miss 归因）。
+- `wp-lang` `0.8.1` → `0.8.2`（新增 `WplEvaluator::proc_ref_progress` / `ParseProgress`）。
+
+## [0.31.0] - 2026-10-20
+
+### Added
+- **`#[late]` 兜底规则分层排序**（随 `wp-motor v1.31.0`）：标了 `#[late]` 的规则仍参与 `parse_event` 自动匹配，但**固定排在普通规则之后**；命中率排序改为分层键 `(late, hit_cnt desc, index asc)` —— 层内仍按命中次数降序，但**不能跨层提升**。
+  - 解决兜底规则（如 `(chars\0)`）因命中面广、命中数涨高后被提升到具体规则之前、抢走事件的问题。
+  - 装配期（`MultiParser::new`）先做一次固定分层，避免首个 `OPTIMIZE_TIMES` 窗口前受文件声明顺序影响。
+  - 与 `#[no_match]` 同时声明时 `no_match` 优先（规则完全不自动匹配）。
+- **实例级全局 tag**：启动时读取 `WP_GLOBAL_TAGS`（`owner_id=team-a,env=prod` 或 JSON），盖到所有解析成功的数据上。
+  - 新增 `<work_root>/.env` / `<work_root>/.warp_parse/.env` 加载（进程环境变量优先，`.env` 不覆盖）。
+  - 新增 `warp_parse::load_instance_env()`；`wparse` 在构建 `WpApp` 前加载。
+
+### Changed
+- **依赖 `wp-motor v1.31.0`**：`wp-engine` / `wp-config` / `wp-cli-core` / `wp-proj` 同步到 `v1.31.0`。`#[late]` 与 `WP_GLOBAL_TAGS` 的实现都在 `wp-engine` 内，`warp-parse` 代码本身不直接引用新 API；要生效需使用该版本（或将上述 git tag 一并升级）。
+
+## [0.30.0] - 2026-10-17
+
+### Added
+- **OML 内联脱敏**：随 `wp-motor` 1.30.0 引入 `mask` / `hash` / `tokenize` / `remove`，直接写在赋值 pipe 中，所有 sink 只会看到脱敏后的数据。
+  - `mask(kind)` 支持 IP、手机号、身份证、邮箱、域名、姓名、地址、公司、密钥消息与文本；`mask(ip)` 映射到保留地址池，输出仍是合法 IP，可继续 join / group by。
+  - `hash([algo])` 提供同值同结果的 HMAC（SHA-256/SHA-1/MD5）；`tokenize()` 生成可逆令牌（还原由独立工具完成）；`remove` 直接删除字段。
+  - 支持 `object { ... }` 内部与批量目标（如 `*_mail : chars = read() | mask(mail)`），`fmt` / `match` / `select` 等表达式也可直接接 pipe。
+- **零配置脱敏密钥**：`mask` / `hash` 使用 `pii_salt`，`tokenize` 使用 `pii_key`，从 `.warp_parse/sec_key.toml` 的 `sec_pii_salt` / `sec_pii_key` 加载；OML 与 `wparse.toml` 均无需密钥配置。
+
+### Changed
+- **依赖升级**：`wp-motor` v1.29.0 → v1.30.0（`wp-engine` / `wp-config` / `wp-oml` / `wp-cli-core` / `wp-proj` 同步）。
+- 脱敏失败一律 fail-closed：密钥缺失或为空、类型不匹配时不输出原值；`mask(ip)` 无密钥时只有显式 `allow_unsalted:true` 才允许开发期降级。
+
+## [0.29.1] - 2026-10-14
 
 ### Fixed
 - **修复 TCP 源队头阻塞（wp-labs/warp-parse#367）**：随 `wp-core-connectors` 0.10.0 → 0.10.2，某条连接上的半帧/长记录不再阻塞其它连接的读取；同时带上错误隔离、长度前缀上限/溢出、EOF 尾行、acceptor 解耦等健壮性修复。
@@ -16,12 +53,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **依赖更新**：刷新 `Cargo.lock`（含 `wp-core-connectors` 0.10.2 及若干传递依赖版本更新）。
 
-## [0.29.0]
+## [0.29.0] - 2026-10-12
 
 ### Changed
 - **依赖升级**：`wp-motor` v1.28.0 → v1.29.0、`wp-connectors` v0.22.0 → v0.23.0；二者又随 `wp-specs` 0.12 → 0.13（`ParamMap` 升级到 `wp-connector-api` 0.14），依赖图中不再同时存在两份 `wp-connector-api`（0.13 + 0.14）。
 
-## [0.28.0]
+## [0.28.0] - 2026-10-12
 
 ### Changed
 - **升级到 orion-error 0.9 世代**：`orion-error` 0.8 → 0.9、`orion_conf` 0.7 → 0.8、`orion-sec` 0.6 → 0.7、`orion-variate` 0.13 → 0.14。
@@ -30,12 +67,12 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 - **`wproj check` 的 OML 校验升级为整文件严格解析**：随 `wp-motor` 1.28.0，OML 组件对每个 `.oml` 文件走官方解析器全量解析并做完整消费检查 —— 跨行语法错误、缺失 `name`、以及多余的尾随内容（如误入文件末尾的 `def label_for(...)`）都会被报出并定位到 `文件:行:列`；「模型重名」「未声明 rule」由硬失败降级为告警，与真正的语法错误区分（wp-labs/warp-parse#366）。
 
-## [0.27.1]
+## [0.27.1] - 2026-09-26
 
 ### Added
 - **TCP 连接器 TLS 与压缩/加密**：随 `wp-motor` 1.27.0（`wp-core-connectors` 0.8 → 0.9），`tcp_src`/`tcp_sink` 支持 TLS；`tcp`/`file` 连接器支持 `compression`（gzip/zstd）+ `encryption`（aes-256-gcm/sm4-gcm，含国密 SM4-GCM）。
 
-## [0.27.0]
+## [0.27.0] - 2026-09-22
 
 ### ⚠️ BREAKING CHANGES
 - **同步 `wp-motor` 1.27.0**：整数类型改名 `Value::Digit` → `Value::Int`、`DataType::Digit` → `DataType::Int`（serde wire 标签 `"digit"` → `"int"`、`Field::from_digit` → `from_int`）；OML/条件表达式的类型渲染随之改为 `int`（如 `cpu_free : digit` → `cpu_free : int`）。解析仍接受 `digit`，WPL 规则仍以 `digit` 呈现。
@@ -46,7 +83,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Changed
 - **依赖升级**：`wp-motor` v1.26.0 → v1.27.0、`wp-knowledge` 0.16 → 0.18、`wp-error` 0.11 → 0.12、`wp-connectors` v0.20 → v0.21、`wp-connector-api` 0.12 → 0.13、`git2` 0.20 → 0.21、`rand` 0.9 → 0.10、`serial_test` 3.2 → 4.0。
 
-## [0.26.0]（稳定版，收敛自 0.25.4–0.25.22 系列）
+## [0.26.0] - 2026-09-08（稳定版，收敛自 0.25.4–0.25.22 系列）
 
 ### Added
 - **OML 内网富化与 IP 脱敏**：`intranet_ip`（内/外）、`access_direct`（访问方向 L2L/L2W/W2L/W2W）、`intranet_replace`（内网 IP 脱敏：同族占位或显式替换值）、`on_fail` 兑底；内网网段由 `knowdb.toml [intranet_nets]` 知识化配置。
@@ -177,7 +214,7 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **OML/SQL Parser**: 同步上游修复，增强 `group_concat(...)`、`string_agg(...)`、`IN (...)`、`take(field)` 与 `__temp_var` 等 SQL 参数解析场景。
 - 修复部分场景下运行时稳定性问题。
 
-## [0.22.5 ]
+## [0.22.5] - 2026-04-26
 
 ### Changed
 - **wproj/Check**: 大幅提升检查深度与广度 — 新增 `wpgen` 配置检查（`output.connect` 引用、`rule_root` 路径、`sample_pattern`、`logging.file_path`）；语义词典新增空词/重复词/空类别校验；source/sink 目录缺失、source 文件/GLOB 不匹配等降级为 warning，避免临时状态误判。
@@ -250,18 +287,18 @@ and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - **Project Init Admin Token Path**: 修复 `wproj init` 在骨架已包含 `[admin_api]` 时未规范 token 路径的问题；当前会统一收敛为项目内 `runtime/admin_api.token`，避免遗留 `${HOME}/.warp_parse/admin_api.token`。
 
 
-## [0.20.2 ]
+## [0.20.2] - 2026-03-20
 
 ### Fixed
 - ** update orion-sec , sec_key 保持一致
 
-## [0.20.1 ]
+## [0.20.1] - 2026-03-16
 
 ### Fixed
 - **Event ID**: 同步上游 `wp-motor` 修复，统一 `wp_event_id` 生成逻辑，并避免运行时重启后回退到进程内种子导致的重复 ID。
 - **Kafka Source**: 同步上游 `wp-connectors` 修复，Kafka source 改用共享 `wp_event_id` 生成器，不再使用进程内自增序列。
 
-## [0.20.0]
+## [0.20.0] - 2026-03-12
 
 ### Added
 - 新增支持 HTTP Sink。
