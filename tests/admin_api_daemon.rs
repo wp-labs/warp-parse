@@ -552,12 +552,12 @@ fn checkout_tag(work_root: &Path, tag: &str) {
         .revparse_single(&format!("refs/tags/{tag}"))
         .expect("find tag");
     let commit = obj.peel_to_commit().expect("peel commit");
-    repo.checkout_tree(
-        commit.as_object(),
-        Some(git2::build::CheckoutBuilder::new().force()),
-    )
-    .expect("checkout tag");
     repo.set_head_detached(commit.id()).expect("detach head");
+    // `checkout_tree(force)` may skip files that were removed from the working
+    // tree while the index still matches; a hard reset reliably restores the
+    // whole tree (and still keeps untracked files such as wparse.local.toml).
+    repo.reset(commit.as_object(), git2::ResetType::Hard, None)
+        .expect("reset to tag");
 }
 
 #[tokio::test]

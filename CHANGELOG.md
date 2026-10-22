@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.1-alpha] - 2026-10-22
+
+### Fixed
+- **远程同步后模型文件可能缺失**：远端缓存 checkout 改为 hard reset，确保被清理过的 `models/` 等目录在同步前完整恢复，避免个别环境下 daemon 启动时报“未找到任何 WPL 规则”。
+
 ## [0.32.0-alpha] - 2026-10-22
 
 ### Changed

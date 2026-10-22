@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 
 use crate::compat::UvsFrom;
-use git2::{build::CheckoutBuilder, ErrorCode, FetchOptions, Oid, Remote, Repository};
+use git2::{ErrorCode, FetchOptions, Oid, Remote, Repository, ResetType};
 use orion_error::conversion::ToStructError;
 use semver::Version;
 use wp_error::run_error::RunResult;
@@ -244,9 +244,12 @@ pub(super) fn checkout_commit(repo: &Repository, commit_id: Oid, tag: &str) -> R
     let commit = repo
         .find_commit(commit_id)
         .map_err(|e| conf_err_source(format!("load target commit {} failed", commit_id), e))?;
-    repo.checkout_tree(commit.as_object(), Some(CheckoutBuilder::new().force()))
-        .map_err(|e| conf_err_source(format!("checkout tag {} failed", tag), e))?;
     repo.set_head_detached(commit_id)
         .map_err(|e| conf_err_source("set detached HEAD failed", e))?;
+    // Use a hard reset instead of `checkout_tree(force)`: it also restores
+    // tracked files that disappeared from the cache working tree, which would
+    // otherwise be copied as missing into the project during sync.
+    repo.reset(commit.as_object(), ResetType::Hard, None)
+        .map_err(|e| conf_err_source(format!("checkout tag {} failed", tag), e))?;
     Ok(())
 }

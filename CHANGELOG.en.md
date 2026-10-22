@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.32.1-alpha] - 2026-10-22
+
+### Fixed
+- **Model files could be missing after a remote sync**: the remote cache checkout now uses a hard reset, so directories such as `models/` are fully restored before syncing. This fixes daemon startup reporting "no WPL rules found" on some environments.
+
 ## [0.32.0-alpha] - 2026-10-22
 
 ### Changed
