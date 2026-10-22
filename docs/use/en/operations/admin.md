@@ -14,7 +14,23 @@ There is no separate runtime restart API at the moment. Remote rule updates are 
 
 ## Enable The Admin API
 
-Configure `conf/wparse.toml`:
+Configure `wparse.local.toml` in the project root:
+
+> `wparse.local.toml` is the site-local overlay and lives outside `conf/`.
+> `project_remote` only replaces `conf/`, `models/`, `topology/` and
+> `connectors/`, so a remote publish cannot overwrite the bind address, TLS or
+> token path configured here.
+>
+> Backward compatibility: when `wparse.local.toml` is absent, `[admin_api]` in
+> `conf/wparse.toml` is still honored with a warning. `wproj init` and
+> `wproj conf update` migrate it automatically. If the file exists but has no
+> `[admin_api]` section (or is invalid TOML), startup fails instead of falling
+> back silently.
+>
+> Add `wparse.local.toml` to the project `.gitignore` so it is not committed to
+> the publish repository by accident.
+
+Example (`wparse.local.toml`):
 
 ```toml
 [admin_api]

@@ -36,7 +36,12 @@ Before rollout, confirm:
 
 ## Enable The Runtime Admin API
 
-Hot reload depends on the runtime admin API. Configure `conf/wparse.toml` as described in [admin.md](admin.md):
+Hot reload depends on the runtime admin API. Configure `wparse.local.toml` in the project root as described in [admin.md](admin.md):
+
+> `wparse.local.toml` is not a managed directory entry, so remote publishes
+> never overwrite it. Do not move `[admin_api]` back into `conf/wparse.toml`,
+> and do not commit the overlay to the infra publish repo; infra sync would
+> otherwise propagate one site's port to every other site.
 
 ```toml
 [admin_api]
@@ -153,6 +158,9 @@ connectors/  ┘                    config, topology, connectors
 |-------|-------------------|---------|
 | `models` | `models/` | Parse rules (wpl), model definitions (oml), knowledge base |
 | `infra` | `conf/`, `topology/`, `connectors/` | Main config, source/sink topology, connector configs |
+
+`wparse.local.toml`, `runtime/` and `data/` are outside the managed directories
+and are preserved by sync.
 
 Each repo has independent versioning. Upgrading models does not affect infra config, and vice versa.
 

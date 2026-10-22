@@ -14,7 +14,19 @@
 
 ## 启用管理面
 
-在 `conf/wparse.toml` 中配置：
+在项目根目录的 `wparse.local.toml` 中配置：
+
+> `wparse.local.toml` 是站点本地覆盖层，位于 `conf/` 之外。`project_remote`
+> 只会替换 `conf/`、`models/`、`topology/`、`connectors/`，因此远程发布不会
+> 覆盖这里的端口、TLS 和 token 路径。
+>
+> 兼容旧工程：若 `wparse.local.toml` 不存在，仍会读取 `conf/wparse.toml` 中的
+> `[admin_api]`，并输出一条告警。`wproj init` / `wproj conf update` 会自动迁移。
+> 若文件存在但缺少 `[admin_api]` 段（或 TOML 非法），会直接报错，不会静默回退。
+>
+> 建议把 `wparse.local.toml` 加入项目 `.gitignore`，避免误提交到发布仓库。
+
+示例（`wparse.local.toml`）：
 
 ```toml
 [admin_api]

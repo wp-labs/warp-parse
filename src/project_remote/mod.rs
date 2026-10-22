@@ -666,6 +666,11 @@ mod tests {
             fs::read_to_string(work_root.path().join("data/local.dat")).expect("read local data"),
             "local\n"
         );
+        assert_eq!(
+            fs::read_to_string(work_root.path().join("wparse.local.toml"))
+                .expect("read local admin overlay"),
+            "[admin_api]\nenabled = true\nbind = \"127.0.0.1:19999\"\n"
+        );
     }
 
     #[test]
@@ -1102,6 +1107,11 @@ mod tests {
         assert_eq!(
             fs::read_to_string(work_root.path().join("data/local.dat")).expect("read local data"),
             "local\n"
+        );
+        assert_eq!(
+            fs::read_to_string(work_root.path().join("wparse.local.toml"))
+                .expect("read local admin overlay"),
+            "[admin_api]\nenabled = true\nbind = \"127.0.0.1:19999\"\n"
         );
     }
 

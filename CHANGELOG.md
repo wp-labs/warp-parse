@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.0-alpha] - 2026-10-22
+
+### Changed
+- **管理面配置移出远程托管目录**：`[admin_api]` 从 `conf/wparse.toml` 拆到项目根目录 `wparse.local.toml`。`project_remote` 的 infra 同步会整体替换 `conf/`，旧写法会在每次远程发布后把 `admin_api.bind` 重置为远端模板值，导致远程控制端口失效。
+  - 优先级：`wparse.local.toml` > `conf/wparse.toml` 中遗留的 `[admin_api]`。
+  - `wproj init` 自动创建本地覆盖文件；`wproj conf update` 在同步前自动迁移遗留配置。
+  - 旧工程未迁移时仍可读取 `conf/wparse.toml`，启动时输出告警。
+
+### Dependencies
+- 升级 `wp-motor` `v1.32.0` → `v1.33.0`（`wproj init` 不再把 `[admin_api]` 写进 `conf/wparse.toml`）。
+
 ## [0.31.1] - 2026-10-21
 
 ### Fixed

@@ -248,7 +248,8 @@ fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
         (None, Some(profile)) => profile.base_url.trim_end_matches('/').to_string(),
         (None, None) => {
             return Err(engine_target_err(format!(
-                "admin API is not enabled in {} and --admin-url was not provided",
+                "admin API is not enabled in {} (or legacy {}) and --admin-url was not provided",
+                work_root.join(warp_parse::LOCAL_CONF_FILE).display(),
                 work_root.join("conf/wparse.toml").display()
             )));
         }

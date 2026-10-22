@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.32.0-alpha] - 2026-10-22
+
+### Changed
+- **Admin API config moved out of the remote-managed tree**: `[admin_api]` now lives in `wparse.local.toml` at the project root instead of `conf/wparse.toml`. Infra sync replaces `conf/` wholesale, which used to reset `admin_api.bind` to the remote template value on every publish and break remote control.
+  - Precedence: `wparse.local.toml` > legacy `[admin_api]` in `conf/wparse.toml`.
+  - `wproj init` creates the local overlay; `wproj conf update` migrates legacy settings before syncing.
+  - Unmigrated projects still work with a startup warning.
+
+### Dependencies
+- Upgraded `wp-motor` `v1.32.0` → `v1.33.0` (`wproj init` no longer writes `[admin_api]` into `conf/wparse.toml`).
+
 ## [0.31.1] - 2026-10-21
 
 ### Fixed

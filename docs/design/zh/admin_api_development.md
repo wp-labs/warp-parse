@@ -39,7 +39,7 @@
 
 ### Base URL
 
-由 `conf/wparse.toml` 中的 `[admin_api]` 决定，例如：
+由项目根目录 `wparse.local.toml` 中的 `[admin_api]` 决定，例如：
 
 ```toml
 [admin_api]
@@ -54,6 +54,10 @@ http://127.0.0.1:19090
 ```
 
 如果启用了 TLS，则改为 `https://`。
+
+`wparse.local.toml` 是站点本地覆盖层，不在 `project_remote` 的托管目录内，
+远程发布不会覆盖它。若该文件不存在，仍会回退读取 `conf/wparse.toml` 中的
+`[admin_api]`（兼容旧工程，会输出告警）。
 
 ### Content-Type
 

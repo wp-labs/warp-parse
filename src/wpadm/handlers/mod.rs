@@ -7,6 +7,7 @@ pub mod cli;
 //pub mod init;
 pub mod engine;
 pub mod engine_config;
+pub mod local_conf;
 pub mod rescue;
 pub mod rule;
 pub mod self_update;

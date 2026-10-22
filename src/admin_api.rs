@@ -1,11 +1,12 @@
 use std::convert::Infallible;
 use std::fs;
 use std::net::SocketAddr;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use crate::compat::UvsFrom;
+use crate::LOCAL_CONF_FILE as LOCAL_ADMIN_API_CONF;
 use chrono::{DateTime, Utc};
 use http_body_util::{BodyExt, Full};
 use hyper::body::{Bytes, Incoming};
@@ -15,6 +16,7 @@ use hyper::service::service_fn;
 use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
+use orion_conf::EnvTomlLoad;
 use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
@@ -28,6 +30,7 @@ use tokio::task::JoinHandle;
 use tokio::time::timeout;
 use tokio_rustls::TlsAcceptor;
 use uuid::Uuid;
+use wp_config::engine::AdminApiConf;
 use wp_engine::facade::{
     RuntimeCommandResp, RuntimeCommandResult, RuntimeCommandSendError, RuntimeControlHandle,
 };
@@ -136,7 +139,7 @@ pub struct AdminApiClientProfile {
 
 fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdminApiConfig>> {
     let parsed = load_engine_config(work_root, dict)?;
-    let admin_api = parsed.admin_api();
+    let admin_api = effective_admin_api(work_root, dict, &parsed)?;
     if !admin_api.enabled {
         return Ok(None);
     }
@@ -211,7 +214,7 @@ pub fn resolve_client_profile(
     dict: &EnvDict,
 ) -> RunResult<Option<AdminApiClientProfile>> {
     let parsed = load_engine_config(work_root, dict)?;
-    let admin_api = parsed.admin_api();
+    let admin_api = effective_admin_api(work_root, dict, &parsed)?;
     if !admin_api.enabled {
         return Ok(None);
     }
@@ -246,6 +249,100 @@ fn load_engine_config(
     wp_config::engine::EngineConfig::load(work_root, dict)
         .source_err(RunReason::from_conf(), "load engine config failed")
         .map(|conf| conf.env_eval(dict).conf_absolutize(work_root))
+}
+
+/// Resolve the effective admin API config.
+///
+/// `wparse.local.toml` is a site-local overlay outside `conf/`; when present it
+/// fully replaces `[admin_api]` from `conf/wparse.toml`. This keeps the remote
+/// control port out of the directories that `project_remote` rewrites.
+fn effective_admin_api(
+    work_root: &Path,
+    dict: &EnvDict,
+    parsed: &wp_config::engine::EngineConfig,
+) -> RunResult<AdminApiConf> {
+    let local_path = work_root.join(LOCAL_ADMIN_API_CONF);
+    if let Some(mut local) = load_local_admin_api(work_root, dict)? {
+        absolutize_admin_api_paths(&mut local, work_root);
+        info_ctrl!("admin api config source={}", local_path.display());
+        return Ok(local);
+    }
+
+    let engine_path = work_root.join("conf/wparse.toml");
+    info_ctrl!("admin api config source={}", engine_path.display());
+    let admin_api = parsed.admin_api();
+    if admin_api.enabled {
+        warn_ctrl!(
+            "[admin_api] in {} is used because {} is missing; create the local overlay so project_remote sync cannot overwrite it",
+            engine_path.display(),
+            local_path.display()
+        );
+    }
+    Ok(admin_api.clone())
+}
+
+fn load_local_admin_api(work_root: &Path, dict: &EnvDict) -> RunResult<Option<AdminApiConf>> {
+    let path = work_root.join(LOCAL_ADMIN_API_CONF);
+    if !path.is_file() {
+        return Ok(None);
+    }
+
+    let body = fs::read_to_string(&path)
+        .map_err(|e| conf_err_source(format!("read {} failed", path.display()), e))?;
+    let raw: toml::Value = toml::from_str(&body).map_err(|e| {
+        RunReason::from_conf().to_err().with_detail(format!(
+            "parse {} failed: {}",
+            path.display(),
+            e
+        ))
+    })?;
+    let Some(section) = raw.get("admin_api") else {
+        return Err(admin_api_validation_err(format!(
+            "{} exists but has no [admin_api] section; add it or remove the file",
+            path.display()
+        )));
+    };
+    // Evaluate env vars only for the admin section so future local overrides
+    // in other sections cannot break admin API loading.
+    let section_body = toml::to_string(section).map_err(|e| {
+        RunReason::from_conf().to_err().with_detail(format!(
+            "serialize [admin_api] from {} failed: {}",
+            path.display(),
+            e
+        ))
+    })?;
+    let conf = AdminApiConf::env_parse_toml(&section_body, dict).map_err(|e| {
+        RunReason::from_conf().to_err().with_detail(format!(
+            "parse [admin_api] in {} failed: {}",
+            path.display(),
+            e
+        ))
+    })?;
+    Ok(Some(conf))
+}
+
+fn absolutize_admin_api_paths(conf: &mut AdminApiConf, work_root: &Path) {
+    conf.tls.cert_file = resolve_against(work_root, &conf.tls.cert_file);
+    conf.tls.key_file = resolve_against(work_root, &conf.tls.key_file);
+    conf.auth.token_file = resolve_against(work_root, &conf.auth.token_file);
+}
+
+fn resolve_against(work_root: &Path, value: &str) -> String {
+    let path = Path::new(value);
+    if value.is_empty() || path.is_absolute() {
+        return value.to_string();
+    }
+    let mut resolved = PathBuf::new();
+    for component in work_root.join(path).components() {
+        match component {
+            Component::CurDir => {}
+            Component::ParentDir => {
+                resolved.pop();
+            }
+            other => resolved.push(other.as_os_str()),
+        }
+    }
+    resolved.to_string_lossy().to_string()
 }
 
 fn validate_token_file(path: &Path) -> RunResult<()> {
@@ -1533,6 +1630,131 @@ token_file = "{token_file}"
         let mut perms = fs::metadata(&token_path).expect("stat token").permissions();
         perms.set_mode(mode);
         fs::set_permissions(&token_path, perms).expect("chmod token");
+    }
+
+    #[test]
+    fn admin_api_local_overlay_overrides_engine_config() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19090", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            r#"
+[admin_api]
+enabled = true
+bind = "127.0.0.1:19191"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+"#,
+        )
+        .expect("write local overlay");
+
+        let profile = resolve_client_profile(temp.path(), &EnvDict::default())
+            .expect("resolve profile")
+            .expect("admin api enabled");
+        assert_eq!(profile.base_url, "http://127.0.0.1:19191");
+        assert_eq!(
+            profile.token_file,
+            temp.path().join("runtime/admin_api.token")
+        );
+    }
+
+    #[test]
+    fn resolve_against_normalizes_relative_paths() {
+        let root = Path::new("/work");
+        assert_eq!(
+            resolve_against(root, "runtime/token"),
+            "/work/runtime/token"
+        );
+        assert_eq!(
+            resolve_against(root, "./tls/cert.pem"),
+            "/work/tls/cert.pem"
+        );
+        assert_eq!(
+            resolve_against(root, "../shared/cert.pem"),
+            "/shared/cert.pem"
+        );
+        assert_eq!(resolve_against(root, "/abs/cert.pem"), "/abs/cert.pem");
+        assert_eq!(resolve_against(root, ""), "");
+    }
+
+    #[test]
+    fn admin_api_local_overlay_without_section_errors() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19092", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            "[other]\nkey = \"value\"\n",
+        )
+        .expect("write local overlay");
+
+        let err = resolve_client_profile(temp.path(), &EnvDict::default())
+            .expect_err("missing [admin_api] must not fall back silently");
+        assert!(err.to_string().contains("no [admin_api] section"));
+    }
+
+    #[test]
+    fn admin_api_local_overlay_malformed_toml_errors() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19093", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            "[admin_api]\nenabled = true\nbind = \n",
+        )
+        .expect("write malformed overlay");
+
+        let err = resolve_client_profile(temp.path(), &EnvDict::default())
+            .expect_err("malformed overlay must fail");
+        assert!(err.to_string().contains("parse"));
+    }
+
+    #[test]
+    fn admin_api_local_overlay_disables_legacy_config() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19094", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            "[admin_api]\nenabled = false\n",
+        )
+        .expect("write local overlay");
+
+        let profile =
+            resolve_client_profile(temp.path(), &EnvDict::default()).expect("resolve profile");
+        assert!(
+            profile.is_none(),
+            "local overlay must win over legacy config"
+        );
+    }
+
+    #[test]
+    fn admin_api_local_overlay_drives_server_bind() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19090", "runtime/admin_api.token");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            r#"
+[admin_api]
+enabled = true
+bind = "127.0.0.1:0"
+request_timeout_ms = 15000
+max_body_bytes = 4096
+
+[admin_api.auth]
+mode = "bearer_token"
+token_file = "runtime/admin_api.token"
+"#,
+        )
+        .expect("write local overlay");
+
+        let conf = load_config(temp.path(), &EnvDict::default())
+            .expect("load server config")
+            .expect("admin api enabled");
+        assert_eq!(conf.bind.port(), 0);
+        assert_eq!(conf.bearer_token, "test-token");
     }
 
     fn shared_control_handle() -> RuntimeControlHandle {
