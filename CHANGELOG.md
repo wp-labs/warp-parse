@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.2-alpha] - 2026-10-22
+
+### Fixed
+- **默认示例 WPL 规则不可解析**：`docker/default_setting/models/wpl/parse.wpl` 使用了当前解析器不支持的旧语法，默认工程启动后没有任何 WPL 规则；已更新为可解析的 nginx 示例。daemon 集成测试的启动等待放宽到 60s，避免慢速 CI 误判。
+
 ## [0.32.1-alpha] - 2026-10-22
 
 ### Fixed

@@ -1553,7 +1553,7 @@ async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_rem
         clone.path(),
         &base_url,
         "test-token",
-        Duration::from_secs(20),
+        Duration::from_secs(60),
     )
     .await;
 

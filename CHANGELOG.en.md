@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.32.2-alpha] - 2026-10-22
+
+### Fixed
+- **Default sample WPL rule was unparsable**: `docker/default_setting/models/wpl/parse.wpl` used legacy syntax that the current parser rejects, so the default project started with no WPL rules. It now uses a valid nginx example. The daemon integration test readiness timeout was raised to 60s to avoid slow-CI false negatives.
+
 ## [0.32.1-alpha] - 2026-10-22
 
 ### Fixed
