@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.32.3-alpha] - 2026-10-22
+
+### Fixed
+- Fixed a port-reservation race in the daemon integration tests so the admin API and the TCP source always use different ports in CI.
+
 ## [0.32.2-alpha] - 2026-10-22
 
 ### Fixed

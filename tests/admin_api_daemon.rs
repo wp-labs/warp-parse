@@ -21,11 +21,19 @@ struct FixtureOptions {
     invalid_conf_release: bool,
 }
 
-fn reserve_local_addr() -> SocketAddr {
-    let listener = TcpListener::bind("127.0.0.1:0").expect("bind ephemeral port");
-    let addr = listener.local_addr().expect("read local addr");
-    drop(listener);
-    addr
+fn reserve_two_local_addrs() -> (SocketAddr, SocketAddr) {
+    // Keep both listeners alive while reserving: releasing them one by one lets
+    // the kernel hand out the same ephemeral port twice, which makes the admin
+    // API and the TCP source fight over it and the daemon never becomes ready.
+    let admin = TcpListener::bind("127.0.0.1:0").expect("bind admin ephemeral port");
+    let source = TcpListener::bind("127.0.0.1:0").expect("bind source ephemeral port");
+    let addrs = (
+        admin.local_addr().expect("read admin local addr"),
+        source.local_addr().expect("read source local addr"),
+    );
+    drop(admin);
+    drop(source);
+    addrs
 }
 
 fn write_file(work_root: &Path, rel_path: &str, content: &str) {
@@ -566,8 +574,7 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture(work_root, bind, source_bind);
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
@@ -646,8 +653,7 @@ async fn daemon_admin_api_rejects_wrong_bearer_token() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture(work_root, bind, source_bind);
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
@@ -683,8 +689,7 @@ async fn daemon_admin_api_reload_wait_false_returns_accepted_and_finishes_async(
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture(work_root, bind, source_bind);
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
@@ -735,8 +740,7 @@ async fn daemon_admin_api_rejects_parallel_reload_with_conflict() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture_with_options(
         work_root,
         bind,
@@ -814,8 +818,7 @@ async fn daemon_admin_api_reports_force_replace_when_drain_times_out() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture_with_options(
         work_root,
         bind,
@@ -889,8 +892,7 @@ async fn wproj_engine_status_and_reload_work_against_admin_api() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture(work_root, bind, source_bind);
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "daemon");
@@ -964,8 +966,7 @@ async fn wproj_engine_status_and_reload_work_against_admin_api() {
 #[tokio::test]
 #[serial]
 async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo(bind, source_bind);
     let clone = clone_project_repo(remote.path());
     checkout_tag(clone.path(), "v1.4.2");
@@ -1035,8 +1036,7 @@ async fn daemon_admin_api_reload_with_update_moves_project_to_target_version() {
 #[tokio::test]
 #[serial]
 async fn daemon_admin_api_reload_with_update_rolls_back_on_reload_failure() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo_with_options(
         bind,
         source_bind,
@@ -1115,8 +1115,7 @@ async fn daemon_admin_api_reload_with_update_rolls_back_on_reload_failure() {
 #[tokio::test]
 #[serial]
 async fn daemon_admin_api_rejects_busy_update_without_changing_project_version() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo_with_options(
         bind,
         source_bind,
@@ -1203,8 +1202,7 @@ async fn daemon_admin_api_rejects_busy_update_without_changing_project_version()
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo_with_options(
         bind,
         source_bind,
@@ -1290,8 +1288,7 @@ async fn wproj_conf_update_rejects_when_runtime_reload_holds_project_remote_lock
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_rolls_back_when_project_check_fails() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo_with_options(
         bind,
         source_bind,
@@ -1335,8 +1332,7 @@ async fn wproj_conf_update_rolls_back_when_project_check_fails() {
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo(bind, source_bind);
     let clone = clone_project_repo(remote.path());
     checkout_tag(clone.path(), "v1.4.2");
@@ -1375,8 +1371,7 @@ async fn wproj_conf_update_rolls_back_when_sec_dict_load_fails() {
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo_with_options(
         bind,
         source_bind,
@@ -1415,8 +1410,7 @@ async fn wproj_conf_update_rolls_back_when_runtime_load_check_fails() {
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo(bind, source_bind);
     let clone = clone_project_repo(remote.path());
     checkout_tag(clone.path(), "v1.4.2");
@@ -1459,8 +1453,7 @@ async fn wproj_conf_update_uses_work_root_for_sec_dict_lookup() {
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo(bind, source_bind);
     let clone = clone_project_repo(remote.path());
     checkout_tag(clone.path(), "v1.4.2");
@@ -1498,8 +1491,7 @@ async fn wproj_conf_update_preserves_runtime_rule_mapping_after_success() {
 #[tokio::test]
 #[serial]
 async fn wproj_conf_update_and_reload_update_flow_work_against_local_project_remote() {
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let remote = create_remote_project_repo(bind, source_bind);
     let clone = clone_project_repo(remote.path());
     checkout_tag(clone.path(), "v1.4.2");
@@ -1596,8 +1588,7 @@ async fn batch_mode_does_not_expose_admin_http_service() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();
 
-    let bind = reserve_local_addr();
-    let source_bind = reserve_local_addr();
+    let (bind, source_bind) = reserve_two_local_addrs();
     let _token_path = write_fixture(work_root, bind, source_bind);
     let base_url = format!("http://{}", bind);
     let mut child = spawn_wparse(work_root, "batch");

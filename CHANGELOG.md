@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.3-alpha] - 2026-10-22
+
+### Fixed
+- 修复 daemon 集成测试中端口预留可能复用的竞态，确保 CI 里 admin API 与 TCP source 使用不同端口。
+
 ## [0.32.2-alpha] - 2026-10-22
 
 ### Fixed
