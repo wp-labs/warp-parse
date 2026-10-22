@@ -121,20 +121,12 @@ pub(crate) fn migrate_local_admin_api_conf(work_root: &Path) -> RunResult<bool> 
             e
         ))
     })?;
-    normalize_token_path(&mut admin, home_available());
+    // Preserve the existing token path verbatim. A project-local
+    // `runtime/admin_api.token` must not be rewritten to `${HOME}/...` during
+    // migration, or the daemon would read a different token after the upgrade.
     let rendered = render_admin_api_section(&admin)?;
     write_overlay(&overlay_path, &rendered)?;
     Ok(true)
-}
-
-fn normalize_token_path(admin: &mut AdminApiConf, home_available: bool) {
-    if home_available {
-        if admin.auth.token_file == PROJECT_ADMIN_API_TOKEN_FILE {
-            admin.auth.token_file = HOME_ADMIN_API_TOKEN_FILE.to_string();
-        }
-    } else if admin.auth.token_file == HOME_ADMIN_API_TOKEN_FILE {
-        admin.auth.token_file = PROJECT_ADMIN_API_TOKEN_FILE.to_string();
-    }
 }
 
 fn strip_legacy_admin_api(work_root: &Path) -> RunResult<()> {
@@ -281,24 +273,6 @@ mod tests {
     }
 
     #[test]
-    fn normalize_token_path_switches_both_ways() {
-        let mut home = AdminApiConf::default();
-        home.auth.token_file = PROJECT_ADMIN_API_TOKEN_FILE.to_string();
-        normalize_token_path(&mut home, true);
-        assert_eq!(home.auth.token_file, HOME_ADMIN_API_TOKEN_FILE);
-
-        let mut project = AdminApiConf::default();
-        project.auth.token_file = HOME_ADMIN_API_TOKEN_FILE.to_string();
-        normalize_token_path(&mut project, false);
-        assert_eq!(project.auth.token_file, PROJECT_ADMIN_API_TOKEN_FILE);
-
-        let mut custom = AdminApiConf::default();
-        custom.auth.token_file = "custom.token".to_string();
-        normalize_token_path(&mut custom, true);
-        assert_eq!(custom.auth.token_file, "custom.token");
-    }
-
-    #[test]
     fn ensure_is_noop_without_engine_config() {
         let temp = tempdir().expect("tempdir");
         ensure_local_admin_api_conf(temp.path()).expect("ensure overlay");
@@ -382,7 +356,11 @@ token_file = "runtime/admin_api.token"
         let body = read(&local_conf_path(temp.path()));
         assert!(body.contains("enabled = true"));
         assert!(body.contains("bind = \"0.0.0.0:19999\""));
-        assert!(body.contains(expected_token_path()));
+        assert!(body.contains(&format!(
+            "token_file = \"{}\"",
+            PROJECT_ADMIN_API_TOKEN_FILE
+        )));
+        assert!(!body.contains(HOME_ADMIN_API_TOKEN_FILE));
     }
 
     #[test]

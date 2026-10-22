@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.32.4-alpha] - 2026-10-22
+
+### Fixed
+- **Migration no longer rewrites the admin API token path**: when moving legacy `[admin_api]` into `wparse.local.toml`, `wproj conf update` now preserves the original `token_file` (for example a project-local `runtime/admin_api.token`), so the daemon does not read a different token and return 401.
+
 ## [0.32.3-alpha] - 2026-10-22
 
 ### Fixed

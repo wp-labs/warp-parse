@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.4-alpha] - 2026-10-22
+
+### Fixed
+- **迁移时不再改写 admin API token 路径**：`wproj conf update` 把遗留 `[admin_api]` 搬到 `wparse.local.toml` 时保留原 `token_file`（例如项目内 `runtime/admin_api.token`），避免 daemon 启动后读取另一个 token 并返回 401。
+
 ## [0.32.3-alpha] - 2026-10-22
 
 ### Fixed
