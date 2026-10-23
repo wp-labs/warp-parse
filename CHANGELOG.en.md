@@ -8,6 +8,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.33.0-alpha] - 2026-10-23
+
+### Added
+- **Configurable runtime state directory**: new `[runtime].state_dir` (in `wparse.local.toml` or `conf/wparse.toml`) and a `--state-dir` flag. The default is still `<work_root>/.run`, so existing projects need no change.
+  - The pid file, single-instance lock, `rule_mapping.dat`, `authority.sqlite`, and the `project_remote` cache/backup/state all follow that directory; the work root can be mounted read-only and containers can keep state on a dedicated volume.
+  - Precedence: `--state-dir` > `wparse.local.toml` > `conf/wparse.toml` > `.run`. The daemon logs the effective directory at startup.
+  - Invalid values fail at startup: the work root itself, an ancestor of it, a `project_remote`-managed directory (`conf`/`models`/`topology`/`connectors`), or an unresolved `${VAR}`.
+- **Admin API token tools**: `wpadm token generate|show|check`; clients can read the token from `--token-env` or `$WPARSE_ADMIN_TOKEN`, which fits containers and CI.
+
+### Changed
+- **Token file permissions use a security floor**: `0600`/`0640`/`0440`/`0444` are accepted, so read-only Docker/Kubernetes secret mounts work; group/other-writable files are still rejected. Symlinks are followed but the resolved target is validated (Kubernetes projected secrets).
+- **`/admin/v1/runtime/status` now returns `token_fp`** (first 8 hex chars of the token's SHA-256, never the token). The daemon also logs it at startup so operators can confirm both sides use the same token.
+- **Upgraded to wp-motor 1.34.0**.
+
+### Fixed
+- An empty or multi-line token file is now a startup error; previously it silently produced a token that could never match.
+- Unauthorized-request logging is rate limited (10s window) so an unauthenticated scanner cannot flood the log.
+
 ## [0.32.4-alpha] - 2026-10-22
 
 ### Fixed

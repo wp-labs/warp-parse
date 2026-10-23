@@ -14,6 +14,7 @@ pub mod self_update;
 pub mod sinks;
 pub mod sources;
 pub mod stat;
+pub mod token;
 pub mod validate;
 
 // Keep project doctor at top-level

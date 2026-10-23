@@ -18,6 +18,8 @@ struct EngineStatusResponse {
     instance_id: String,
     version: String,
     #[serde(default)]
+    token_fp: Option<String>,
+    #[serde(default)]
     project_version: Option<serde_json::Value>,
     accepting_commands: bool,
     reloading: bool,
@@ -92,6 +94,19 @@ pub async fn run_engine_status(args: EngineStatusArgs) -> RunResult<()> {
         println!("  Endpoint   : {}", profile.base_url);
         println!("  Instance   : {}", status.instance_id);
         println!("  Version    : {}", status.version);
+        println!(
+            "  Token FP   : {}",
+            status.token_fp.as_deref().unwrap_or("-")
+        );
+        println!("  Token Src  : {}", profile.token_source);
+        if let Some(engine_fp) = status.token_fp.as_deref() {
+            if engine_fp != profile.token_fp {
+                eprintln!(
+                    "warning: engine token fingerprint {engine_fp} differs from local {} ({})",
+                    profile.token_fp, profile.token_source
+                );
+            }
+        }
         println!(
             "  Project V  : {}",
             status
@@ -231,17 +246,29 @@ pub async fn run_engine_reload(args: EngineReloadArgs) -> RunResult<()> {
 struct ResolvedTarget {
     base_url: String,
     token: String,
+    token_source: String,
+    token_fp: String,
     request_timeout: Duration,
 }
 
 fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
     let work_root = resolve_work_root(&args.work_root)?;
     let dict = load_sec_dict()?;
-    let need_local_profile = args.admin_url.is_none() || args.token_file.is_none();
-    let local_profile = if need_local_profile {
-        admin_api::resolve_client_profile(&work_root, &dict)?
-    } else {
-        None
+    let local_profile = match admin_api::resolve_client_profile(&work_root, &dict) {
+        Ok(profile) => profile,
+        Err(err) => {
+            // A broken local profile must not block CI usage that provides both
+            // `--admin-url` and a token source explicitly.
+            let has_explicit_target = args.admin_url.is_some()
+                && (args.token_file.is_some()
+                    || args.token_env.is_some()
+                    || std::env::var_os(warp_parse::token::TOKEN_ENV_VAR).is_some());
+            if has_explicit_target {
+                None
+            } else {
+                return Err(err);
+            }
+        }
     };
     let base_url = match (&args.admin_url, &local_profile) {
         (Some(url), _) => url.trim_end_matches('/').to_string(),
@@ -255,30 +282,16 @@ fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
         }
     };
 
-    let token_path = match (&args.token_file, &local_profile) {
-        (Some(path), _) => resolve_override_path(&work_root, path),
-        (None, Some(profile)) => profile.token_file.clone(),
-        (None, None) => {
-            return Err(engine_target_err(
-                "token file is not configured locally and --token-file was not provided",
-            ));
-        }
-    };
-    let token = std::fs::read_to_string(&token_path)
-        .map_err(|e| {
-            conf_err_source(
-                format!("read token file {} failed", token_path.display()),
-                e,
-            )
-        })?
-        .trim()
-        .to_string();
-    if token.is_empty() {
-        return Err(engine_target_err(format!(
-            "token file {} is empty",
-            token_path.display()
-        )));
-    }
+    let token_override = args
+        .token_file
+        .as_deref()
+        .map(|raw| resolve_override_path(&work_root, raw));
+    let resolved = crate::handlers::token::resolve_token(
+        token_override.as_deref(),
+        args.token_env.as_deref(),
+        &dict,
+        local_profile.as_ref(),
+    )?;
 
     let request_timeout = local_profile
         .as_ref()
@@ -287,7 +300,9 @@ fn resolve_target(args: &EngineTargetArgs) -> RunResult<ResolvedTarget> {
 
     Ok(ResolvedTarget {
         base_url,
-        token,
+        token_source: resolved.source.to_string(),
+        token_fp: resolved.fingerprint(),
+        token: resolved.token,
         request_timeout,
     })
 }
@@ -317,7 +332,7 @@ async fn decode_error_response(response: reqwest::Response) -> RunResult<EngineE
         .map_err(|e| conf_err_source(format!("decode error response failed (HTTP {})", status), e))
 }
 
-fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
+pub(crate) fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
     let path = PathBuf::from(raw);
     if path.is_absolute() {
         return Ok(path);
@@ -327,7 +342,7 @@ fn resolve_work_root(raw: &str) -> RunResult<PathBuf> {
         .map_err(|e| conf_err_source("resolve current dir failed", e))
 }
 
-fn resolve_override_path(work_root: &Path, raw: &str) -> PathBuf {
+pub(crate) fn resolve_override_path(work_root: &Path, raw: &str) -> PathBuf {
     let path = PathBuf::from(raw);
     if path.is_absolute() {
         path
@@ -523,6 +538,7 @@ token_file = "{token_file}"
                 work_root: temp.path().to_string_lossy().to_string(),
                 admin_url: None,
                 token_file: None,
+                token_env: None,
                 insecure: false,
             },
             json: true,
@@ -540,6 +556,7 @@ token_file = "{token_file}"
                 work_root: ".".to_string(),
                 admin_url: None,
                 token_file: None,
+                token_env: None,
                 insecure: false,
             },
             wait: true,
@@ -568,6 +585,7 @@ token_file = "{token_file}"
                 work_root: ".".to_string(),
                 admin_url: None,
                 token_file: None,
+                token_env: None,
                 insecure: false,
             },
             wait: true,

@@ -1,11 +1,13 @@
 use std::convert::Infallible;
 use std::fs;
+use std::io::Read;
 use std::net::SocketAddr;
 use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use crate::compat::UvsFrom;
+use crate::token::{self, TokenAuth};
 use crate::LOCAL_CONF_FILE as LOCAL_ADMIN_API_CONF;
 use chrono::{DateTime, Utc};
 use http_body_util::{BodyExt, Full};
@@ -16,7 +18,6 @@ use hyper::service::service_fn;
 use hyper::{Method, Request, Response};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as AutoBuilder;
-use orion_conf::EnvTomlLoad;
 use orion_error::conversion::{SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
 use rustls::pki_types::pem::PemObject;
@@ -76,12 +77,18 @@ pub async fn start_if_enabled(
         .local_addr()
         .map_err(|e| conf_err_source("read admin api local addr failed", e))?;
     let instance_id = format!("{}:{}", hostname_for_instance(), std::process::id());
+    info_ctrl!(
+        "admin api auth source=file path={} token_fp={}",
+        config.token_path.display(),
+        config.token.fingerprint()
+    );
     let state = Arc::new(AppState {
         control_handle,
         work_root: work_root.to_path_buf(),
         dict: dict.clone(),
         reload_gate: Mutex::new(()),
-        bearer_token: config.bearer_token,
+        token: config.token,
+        auth_log: std::sync::Mutex::new(AuthFailureLog::default()),
         request_timeout: config.request_timeout,
         max_body_bytes: config.max_body_bytes,
         instance_id,
@@ -126,7 +133,8 @@ struct ResolvedAdminApiConfig {
     bind: SocketAddr,
     request_timeout: Duration,
     max_body_bytes: usize,
-    bearer_token: String,
+    token: TokenAuth,
+    token_path: PathBuf,
     tls: Option<ServerConfig>,
 }
 
@@ -167,22 +175,7 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
         ));
     }
     let token_path = PathBuf::from(&admin_api.auth.token_file);
-    validate_token_file(&token_path)?;
-    let bearer_token = fs::read_to_string(&token_path)
-        .map_err(|e| {
-            conf_err_source(
-                format!("read token file {} failed", token_path.display()),
-                e,
-            )
-        })?
-        .trim()
-        .to_string();
-    if bearer_token.is_empty() {
-        return Err(token_file_validation_err(format!(
-            "token file {} is empty",
-            token_path.display()
-        )));
-    }
+    let token = load_token_file(&token_path)?;
 
     let tls = if admin_api.tls.enabled {
         Some(load_tls_config(
@@ -204,7 +197,8 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
         bind,
         request_timeout: Duration::from_millis(admin_api.request_timeout_ms),
         max_body_bytes: admin_api.max_body_bytes,
-        bearer_token,
+        token,
+        token_path,
         tls,
     }))
 }
@@ -262,7 +256,9 @@ fn effective_admin_api(
     parsed: &wp_config::engine::EngineConfig,
 ) -> RunResult<AdminApiConf> {
     let local_path = work_root.join(LOCAL_ADMIN_API_CONF);
-    if let Some(mut local) = load_local_admin_api(work_root, dict)? {
+    let overlay = crate::local_conf::load_site_overlay(work_root, dict)?;
+    let overlay_present = overlay.is_some();
+    if let Some(mut local) = overlay.and_then(|overlay| overlay.admin_api) {
         absolutize_admin_api_paths(&mut local, work_root);
         info_ctrl!("admin api config source={}", local_path.display());
         return Ok(local);
@@ -272,53 +268,21 @@ fn effective_admin_api(
     info_ctrl!("admin api config source={}", engine_path.display());
     let admin_api = parsed.admin_api();
     if admin_api.enabled {
-        warn_ctrl!(
-            "[admin_api] in {} is used because {} is missing; create the local overlay so project_remote sync cannot overwrite it",
-            engine_path.display(),
-            local_path.display()
-        );
+        if overlay_present {
+            warn_ctrl!(
+                "[admin_api] in {} is used because {} has no [admin_api] section",
+                engine_path.display(),
+                local_path.display()
+            );
+        } else {
+            warn_ctrl!(
+                "[admin_api] in {} is used because {} is missing; create the local overlay so project_remote sync cannot overwrite it",
+                engine_path.display(),
+                local_path.display()
+            );
+        }
     }
     Ok(admin_api.clone())
-}
-
-fn load_local_admin_api(work_root: &Path, dict: &EnvDict) -> RunResult<Option<AdminApiConf>> {
-    let path = work_root.join(LOCAL_ADMIN_API_CONF);
-    if !path.is_file() {
-        return Ok(None);
-    }
-
-    let body = fs::read_to_string(&path)
-        .map_err(|e| conf_err_source(format!("read {} failed", path.display()), e))?;
-    let raw: toml::Value = toml::from_str(&body).map_err(|e| {
-        RunReason::from_conf().to_err().with_detail(format!(
-            "parse {} failed: {}",
-            path.display(),
-            e
-        ))
-    })?;
-    let Some(section) = raw.get("admin_api") else {
-        return Err(admin_api_validation_err(format!(
-            "{} exists but has no [admin_api] section; add it or remove the file",
-            path.display()
-        )));
-    };
-    // Evaluate env vars only for the admin section so future local overrides
-    // in other sections cannot break admin API loading.
-    let section_body = toml::to_string(section).map_err(|e| {
-        RunReason::from_conf().to_err().with_detail(format!(
-            "serialize [admin_api] from {} failed: {}",
-            path.display(),
-            e
-        ))
-    })?;
-    let conf = AdminApiConf::env_parse_toml(&section_body, dict).map_err(|e| {
-        RunReason::from_conf().to_err().with_detail(format!(
-            "parse [admin_api] in {} failed: {}",
-            path.display(),
-            e
-        ))
-    })?;
-    Ok(Some(conf))
 }
 
 fn absolutize_admin_api_paths(conf: &mut AdminApiConf, work_root: &Path) {
@@ -345,9 +309,52 @@ fn resolve_against(work_root: &Path, value: &str) -> String {
     resolved.to_string_lossy().to_string()
 }
 
-fn validate_token_file(path: &Path) -> RunResult<()> {
-    let meta = fs::metadata(path)
+/// Read and validate the bearer token file.
+///
+/// Security floor (no configuration knob):
+///
+/// * the path must resolve to a regular file (symlinks are followed so
+///   Kubernetes `..data` secret links work);
+/// * group/other must not be able to write it (`mode & 0o022 == 0`), which
+///   accepts `0600/0640/0440/0444` and rejects `0660/0664/0777`;
+/// * the file must contain exactly one non-empty line.
+///
+/// Validation runs on the opened file descriptor (`fstat`) and content is read
+/// from that same descriptor, so the file cannot be swapped between the check
+/// and the read.
+fn load_token_file(path: &Path) -> RunResult<TokenAuth> {
+    let mut file = fs::File::open(path)
+        .map_err(|e| conf_err_source(format!("open token file {} failed", path.display()), e))?;
+    let meta = file
+        .metadata()
         .map_err(|e| conf_err_source(format!("stat token file {} failed", path.display()), e))?;
+    validate_token_metadata(path, &meta)?;
+
+    let mut body = String::new();
+    file.read_to_string(&mut body)
+        .map_err(|e| conf_err_source(format!("read token file {} failed", path.display()), e))?;
+    let token = token::parse_single_line(&body).map_err(|err| {
+        token_file_validation_err(format!("token file {}: {err}", path.display()))
+    })?;
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        let mode = meta.permissions().mode() & 0o777;
+        if mode & 0o077 != 0 {
+            warn_ctrl!(
+                "token file {} mode {:o} is readable by group/other; prefer 0600 for host files",
+                path.display(),
+                mode
+            );
+        }
+    }
+
+    Ok(TokenAuth::from_token(token))
+}
+
+fn validate_token_metadata(path: &Path, meta: &fs::Metadata) -> RunResult<()> {
     if !meta.is_file() {
         return Err(token_file_validation_err(format!(
             "token file {} is not a regular file",
@@ -359,9 +366,9 @@ fn validate_token_file(path: &Path) -> RunResult<()> {
         use std::os::unix::fs::PermissionsExt;
 
         let mode = meta.permissions().mode() & 0o777;
-        if mode & 0o077 != 0 {
+        if mode & 0o022 != 0 {
             return Err(token_file_validation_err(format!(
-                "token file {} permissions {:o} are too permissive; require owner-only access",
+                "token file {} permissions {:o} are too permissive; group/other must not be able to write it (chmod 600 or 640)",
                 path.display(),
                 mode
             )));
@@ -482,11 +489,47 @@ struct AppState {
     work_root: PathBuf,
     dict: EnvDict,
     reload_gate: Mutex<()>,
-    bearer_token: String,
+    token: TokenAuth,
+    auth_log: std::sync::Mutex<AuthFailureLog>,
     request_timeout: Duration,
     max_body_bytes: usize,
     instance_id: String,
     version: String,
+}
+
+/// Rate limit for unauthenticated-request logging.
+///
+/// Every 401 used to emit one log line, which lets an unauthenticated scanner
+/// flood the control-plane log. At most one line per window is kept, with the
+/// number of suppressed lines appended.
+#[derive(Default)]
+struct AuthFailureLog {
+    last: Option<std::time::Instant>,
+    suppressed: u64,
+}
+
+impl AuthFailureLog {
+    const WINDOW: Duration = Duration::from_secs(10);
+
+    /// Return the suffix for the next log line, or `None` if it must be suppressed.
+    fn record(&mut self, now: std::time::Instant) -> Option<String> {
+        let due = self
+            .last
+            .map(|last| now.duration_since(last) >= Self::WINDOW)
+            .unwrap_or(true);
+        if !due {
+            self.suppressed += 1;
+            return None;
+        }
+        let suffix = if self.suppressed > 0 {
+            format!(" suppressed={}", self.suppressed)
+        } else {
+            String::new()
+        };
+        self.suppressed = 0;
+        self.last = Some(now);
+        Some(suffix)
+    }
 }
 
 struct ProjectRemoteReloadContext {
@@ -538,6 +581,8 @@ struct ReloadResponse {
 struct RuntimeStatusResponse {
     instance_id: String,
     version: String,
+    /// Public fingerprint of the loaded bearer token; never the value itself.
+    token_fp: String,
     project_version: Option<serde_json::Value>,
     accepting_commands: bool,
     reloading: bool,
@@ -565,14 +610,26 @@ async fn handle_request(
     let path = req.uri().path().to_string();
     let method = req.method().clone();
 
-    if !authorized(req.headers(), &state.bearer_token) {
-        warn_ctrl!(
-            "admin api unauthorized request_id={} remote={} method={} path={}",
-            request_id,
-            remote_addr,
-            method,
-            path
-        );
+    if !authorized(req.headers(), &state.token) {
+        let presented_fp = bearer_token(req.headers())
+            .map(token::fingerprint)
+            .unwrap_or_else(|| "-".to_string());
+        let log_line = state
+            .auth_log
+            .lock()
+            .ok()
+            .and_then(|mut log| log.record(std::time::Instant::now()));
+        if let Some(suffix) = log_line {
+            warn_ctrl!(
+                "admin api unauthorized request_id={} remote={} method={} path={} token_fp={}{}",
+                request_id,
+                remote_addr,
+                method,
+                path,
+                presented_fp,
+                suffix
+            );
+        }
         return Ok(json_response(
             StatusCode::UNAUTHORIZED,
             &ErrorResponse {
@@ -635,6 +692,7 @@ fn status_response(
         &RuntimeStatusResponse {
             instance_id: state.instance_id.clone(),
             version: state.version.clone(),
+            token_fp: state.token.fingerprint().to_string(),
             project_version,
             accepting_commands: snapshot.accepting_commands,
             reloading: snapshot.reloading,
@@ -1431,17 +1489,13 @@ where
         .map_err(|e| ReadBodyError::InvalidJson(format!("invalid JSON body: {}", e)))
 }
 
-fn authorized(headers: &hyper::HeaderMap<HeaderValue>, token: &str) -> bool {
-    let Some(value) = headers.get(AUTHORIZATION) else {
-        return false;
-    };
-    let Ok(value) = value.to_str() else {
-        return false;
-    };
-    let Some(token_part) = value.strip_prefix("Bearer ") else {
-        return false;
-    };
-    token_part == token
+fn bearer_token(headers: &hyper::HeaderMap<HeaderValue>) -> Option<&str> {
+    let value = headers.get(AUTHORIZATION)?.to_str().ok()?;
+    value.strip_prefix("Bearer ")
+}
+
+fn authorized(headers: &hyper::HeaderMap<HeaderValue>, token: &TokenAuth) -> bool {
+    bearer_token(headers).is_some_and(|presented| token.verify(presented))
 }
 
 fn request_id(headers: &hyper::HeaderMap<HeaderValue>) -> String {
@@ -1622,14 +1676,30 @@ token_file = "{token_file}"
     }
 
     fn write_token(dir: &Path, rel_path: &str, mode: u32) {
+        write_token_body(dir, rel_path, "test-token\n", mode);
+    }
+
+    fn write_token_body(dir: &Path, rel_path: &str, body: &str, mode: u32) {
         let token_path = dir.join(rel_path);
         if let Some(parent) = token_path.parent() {
             fs::create_dir_all(parent).expect("create token dir");
         }
-        fs::write(&token_path, "test-token\n").expect("write token");
-        let mut perms = fs::metadata(&token_path).expect("stat token").permissions();
+        fs::write(&token_path, body).expect("write token");
+        set_mode(&token_path, mode);
+    }
+
+    fn set_mode(path: &Path, mode: u32) {
+        let mut perms = fs::metadata(path).expect("stat token").permissions();
         perms.set_mode(mode);
-        fs::set_permissions(&token_path, perms).expect("chmod token");
+        fs::set_permissions(path, perms).expect("chmod token");
+    }
+
+    fn load_enabled_config(dir: &Path) -> RunResult<ResolvedAdminApiConfig> {
+        match load_config(dir, &EnvDict::default()) {
+            Ok(Some(conf)) => Ok(conf),
+            Ok(None) => panic!("admin api should be enabled"),
+            Err(err) => Err(err),
+        }
     }
 
     #[test]
@@ -1682,7 +1752,7 @@ token_file = "runtime/admin_api.token"
     }
 
     #[test]
-    fn admin_api_local_overlay_without_section_errors() {
+    fn admin_api_local_overlay_without_known_section_errors() {
         let temp = tempdir().expect("tempdir");
         write_test_work_root(temp.path(), "127.0.0.1:19092", "runtime/admin_api.token");
         fs::write(
@@ -1692,8 +1762,28 @@ token_file = "runtime/admin_api.token"
         .expect("write local overlay");
 
         let err = resolve_client_profile(temp.path(), &EnvDict::default())
-            .expect_err("missing [admin_api] must not fall back silently");
-        assert!(err.to_string().contains("no [admin_api] section"));
+            .expect_err("an overlay without a known section must not be ignored");
+        assert!(
+            err.to_string()
+                .contains("neither [admin_api] nor [runtime]"),
+            "{err}"
+        );
+    }
+
+    #[test]
+    fn admin_api_falls_back_when_overlay_has_only_runtime() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19192", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            "[runtime]\nstate_dir = \"state\"\n",
+        )
+        .expect("write local overlay");
+
+        let profile = resolve_client_profile(temp.path(), &EnvDict::default())
+            .expect("resolve profile")
+            .expect("admin api enabled");
+        assert_eq!(profile.base_url, "http://127.0.0.1:19192");
     }
 
     #[test]
@@ -1754,7 +1844,7 @@ token_file = "runtime/admin_api.token"
             .expect("load server config")
             .expect("admin api enabled");
         assert_eq!(conf.bind.port(), 0);
-        assert_eq!(conf.bearer_token, "test-token");
+        assert!(conf.token.verify("test-token"));
     }
 
     fn shared_control_handle() -> RuntimeControlHandle {
@@ -1816,16 +1906,156 @@ token_file = "runtime/admin_api.token"
         }
     }
 
-    #[tokio::test]
-    async fn admin_api_requires_safe_token_permissions() {
+    #[test]
+    fn token_file_permission_matrix_accepts_read_only_secrets() {
+        for mode in [0o600u32, 0o400, 0o640, 0o440, 0o444] {
+            let temp = tempdir().expect("tempdir");
+            write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+            write_token(temp.path(), "runtime/admin_api.token", mode);
+
+            let conf = load_enabled_config(temp.path())
+                .unwrap_or_else(|err| panic!("mode {mode:o} should be accepted: {err}"));
+            assert!(conf.token.verify("test-token"), "mode {mode:o}");
+        }
+    }
+
+    #[test]
+    fn token_file_permission_matrix_rejects_group_or_other_write() {
+        for mode in [0o660u32, 0o664, 0o777, 0o622] {
+            let temp = tempdir().expect("tempdir");
+            write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+            write_token(temp.path(), "runtime/admin_api.token", mode);
+
+            let err = match load_config(temp.path(), &EnvDict::default()) {
+                Ok(_) => panic!("mode {mode:o} should be rejected"),
+                Err(err) => err,
+            };
+            assert!(
+                err.to_string().contains("too permissive"),
+                "mode {mode:o}: {err}"
+            );
+        }
+    }
+
+    #[test]
+    fn token_file_must_contain_one_non_empty_line() {
+        let cases = [
+            ("", "token file is empty"),
+            ("\n\r\n", "token file is empty"),
+            ("one\ntwo\n", "exactly one token"),
+        ];
+        for (body, expected) in cases {
+            let temp = tempdir().expect("tempdir");
+            write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+            write_token_body(temp.path(), "runtime/admin_api.token", body, 0o600);
+
+            let err = match load_config(temp.path(), &EnvDict::default()) {
+                Ok(_) => panic!("body {body:?} should be rejected"),
+                Err(err) => err,
+            };
+            assert!(err.to_string().contains(expected), "body {body:?}: {err}");
+        }
+    }
+
+    #[test]
+    fn token_file_directory_is_rejected() {
         let temp = tempdir().expect("tempdir");
         write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
-        write_token(temp.path(), "runtime/admin_api.token", 0o644);
+        fs::create_dir_all(temp.path().join("runtime/admin_api.token")).expect("create dir");
+
+        let err = match load_config(temp.path(), &EnvDict::default()) {
+            Ok(_) => panic!("directory should be rejected"),
+            Err(err) => err,
+        };
+        assert!(
+            err.to_string().contains("not a regular file"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn token_file_symlink_to_secret_target_is_accepted() {
+        use std::os::unix::fs::symlink;
+
+        // Mirrors the Kubernetes projected-secret layout: `token` is a symlink
+        // into a versioned data directory.
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        let data_dir = temp.path().join("runtime/..2026_10_23_data");
+        fs::create_dir_all(&data_dir).expect("create data dir");
+        fs::write(data_dir.join("token"), "test-token\n").expect("write token");
+        set_mode(&data_dir.join("token"), 0o444);
+        symlink(
+            data_dir.join("token"),
+            temp.path().join("runtime/admin_api.token"),
+        )
+        .expect("create symlink");
+
+        let conf = load_enabled_config(temp.path()).expect("symlinked secret should be accepted");
+        assert!(conf.token.verify("test-token"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn token_file_symlink_to_writable_target_is_rejected() {
+        use std::os::unix::fs::symlink;
+
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        fs::create_dir_all(temp.path().join("runtime")).expect("create runtime dir");
+        let target = temp.path().join("runtime/real.token");
+        fs::write(&target, "test-token\n").expect("write token");
+        set_mode(&target, 0o666);
+        symlink(&target, temp.path().join("runtime/admin_api.token")).expect("create symlink");
+
+        let err = match load_config(temp.path(), &EnvDict::default()) {
+            Ok(_) => panic!("writable symlink target should be rejected"),
+            Err(err) => err,
+        };
+        assert!(
+            err.to_string().contains("too permissive"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn auth_failure_log_is_rate_limited() {
+        let mut log = AuthFailureLog::default();
+        let t0 = std::time::Instant::now();
+        assert_eq!(log.record(t0), Some(String::new()));
+        assert_eq!(log.record(t0 + Duration::from_secs(1)), None);
+        assert_eq!(log.record(t0 + Duration::from_secs(2)), None);
+        assert_eq!(
+            log.record(t0 + Duration::from_secs(11)),
+            Some(" suppressed=2".to_string())
+        );
+    }
+
+    #[tokio::test]
+    async fn admin_api_accepts_read_only_secret_permissions() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        write_token(temp.path(), "runtime/admin_api.token", 0o444);
+
+        let dict = EnvDict::default();
+        let runtime = start_if_enabled(temp.path(), &dict, shared_control_handle())
+            .await
+            .expect("read-only secret must be accepted")
+            .expect("admin api enabled");
+        runtime.shutdown().await;
+    }
+
+    #[tokio::test]
+    async fn admin_api_rejects_writable_token_permissions() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:0", "runtime/admin_api.token");
+        write_token(temp.path(), "runtime/admin_api.token", 0o666);
 
         let dict = EnvDict::default();
         let err = start_if_enabled(temp.path(), &dict, shared_control_handle())
             .await
-            .expect_err("should reject unsafe token file");
+            .expect_err("should reject writable token file");
         assert!(
             err.to_string().contains("too permissive"),
             "unexpected error: {}",
@@ -1856,7 +2086,7 @@ token_file = "runtime/admin_api.token"
             loaded.bind,
             "127.0.0.1:0".parse().expect("parse socket addr")
         );
-        assert_eq!(loaded.bearer_token, "test-token");
+        assert!(loaded.token.verify("test-token"));
     }
 
     #[tokio::test]
@@ -1895,6 +2125,11 @@ token_file = "runtime/admin_api.token"
         assert!(body["project_version"].is_null());
         assert_eq!(body["accepting_commands"], false);
         assert_eq!(body["reloading"], false);
+        assert_eq!(
+            body["token_fp"],
+            serde_json::Value::String(token::fingerprint("test-token")),
+            "status must expose the token fingerprint, never the token"
+        );
 
         let reload = client
             .post(format!("{}/admin/v1/reloads/model", base))

@@ -8,6 +8,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.33.0-alpha] - 2026-10-23
+
+### Added
+- **运行状态目录可配置**：新增 `[runtime].state_dir`（写在 `wparse.local.toml` 或 `conf/wparse.toml`）和 `--state-dir` 参数。默认仍是 `<work_root>/.run`，现有工程无需改动。
+  - pid、单实例锁、`rule_mapping.dat`、`authority.sqlite` 以及 `project_remote` 的缓存/备份/state 全部跟随该目录；work root 可以挂成只读，容器可以把状态放到独立卷。
+  - 优先级：`--state-dir` > `wparse.local.toml` > `conf/wparse.toml` > `.run`。daemon 启动日志会打印实际生效的目录。
+  - 非法值直接启动失败：不能是 work root 本身、它的上级目录，或 `project_remote` 托管目录（`conf`/`models`/`topology`/`connectors`）内部；未展开的 `${VAR}` 同样报错。
+- **admin API token 工具**：新增 `wpadm token generate|show|check`；客户端支持 `--token-env` 和 `$WPARSE_ADMIN_TOKEN`，便于容器与 CI 使用。
+
+### Changed
+- **token 文件权限改为安全下限**：`0600`/`0640`/`0440`/`0444` 均可使用，支持 Docker/Kubernetes 只读 secret 挂载；group/other 可写仍拒绝。允许符号链接但校验解析后的目标（Kubernetes projected secret）。
+- **`/admin/v1/runtime/status` 新增 `token_fp`**（token 的 SHA-256 指纹前 8 位，不含 token 本身），引擎启动日志也会打印，便于确认客户端与引擎是否使用同一个 token。
+- **升级 wp-motor 1.34.0**。
+
+### Fixed
+- token 文件为空或包含多行时直接报错；此前会静默产生一个永远无法匹配的 token。
+- 未授权请求日志限流（10 秒窗口），避免扫描器刷日志。
+
 ## [0.32.4-alpha] - 2026-10-22
 
 ### Fixed

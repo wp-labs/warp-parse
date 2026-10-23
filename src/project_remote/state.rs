@@ -11,16 +11,16 @@ use wp_log::info_ctrl;
 
 use super::managed::{managed_dirs_for, restore_managed_dirs};
 use super::{
-    conf_err_source, GroupState, ProjectRemoteLockGuard, ProjectRemoteSnapshot, ProjectRemoteState,
-    ProjectRemoteUpdateResult, ProjectRuntimeArtifactSnapshot, RemoteGroup, AUTHORITY_DB_PATH,
-    ENGINE_CONF_PATH, LOCK_PATH, RULE_MAPPING_PATH, STATE_PATH,
+    conf_err_source, state_path, GroupState, ProjectRemoteLockGuard, ProjectRemoteSnapshot,
+    ProjectRemoteState, ProjectRemoteUpdateResult, ProjectRuntimeArtifactSnapshot, RemoteGroup,
+    AUTHORITY_DB_FILE, ENGINE_CONF_PATH, LOCK_FILE, RULE_MAPPING_FILE, STATE_FILE,
 };
 
 pub fn acquire_project_remote_lock<P: AsRef<Path>>(
     work_root: P,
 ) -> RunResult<ProjectRemoteLockGuard> {
     let work_root = work_root.as_ref();
-    let lock_path = work_root.join(LOCK_PATH);
+    let lock_path = state_path(work_root, LOCK_FILE)?;
     if let Some(parent) = lock_path.parent() {
         fs::create_dir_all(parent)
             .map_err(|e| conf_err_source(format!("create {} failed", parent.display()), e))?;
@@ -52,13 +52,13 @@ pub fn capture_project_remote_snapshot_with_group<P: AsRef<Path>>(
     group: Option<RemoteGroup>,
 ) -> RunResult<ProjectRemoteSnapshot> {
     let work_root = work_root.as_ref();
-    let state_path = work_root.join(STATE_PATH);
-    let state_file = match fs::read(&state_path) {
+    let path = state_path(work_root, STATE_FILE)?;
+    let state_file = match fs::read(&path) {
         Ok(bytes) => Some(bytes),
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
         Err(err) => {
             return Err(conf_err_source(
-                format!("read {} failed", state_path.display()),
+                format!("read {} failed", path.display()),
                 err,
             ))
         }
@@ -92,8 +92,8 @@ pub fn capture_runtime_artifact_snapshot<P: AsRef<Path>>(
 ) -> RunResult<ProjectRuntimeArtifactSnapshot> {
     let work_root = work_root.as_ref();
     Ok(ProjectRuntimeArtifactSnapshot {
-        rule_mapping: read_optional_file(&work_root.join(RULE_MAPPING_PATH))?,
-        authority_db: read_optional_file(&work_root.join(AUTHORITY_DB_PATH))?,
+        rule_mapping: read_optional_file(&state_path(work_root, RULE_MAPPING_FILE)?)?,
+        authority_db: read_optional_file(&state_path(work_root, AUTHORITY_DB_FILE)?)?,
     })
 }
 
@@ -103,11 +103,11 @@ pub fn restore_runtime_artifact_snapshot<P: AsRef<Path>>(
 ) -> RunResult<()> {
     let work_root = work_root.as_ref();
     restore_optional_file(
-        &work_root.join(RULE_MAPPING_PATH),
+        &state_path(work_root, RULE_MAPPING_FILE)?,
         snapshot.rule_mapping.as_deref(),
     )?;
     restore_optional_file(
-        &work_root.join(AUTHORITY_DB_PATH),
+        &state_path(work_root, AUTHORITY_DB_FILE)?,
         snapshot.authority_db.as_deref(),
     )?;
     Ok(())
@@ -123,7 +123,7 @@ pub(super) fn load_engine_config(work_root: &Path, dict: &EnvDict) -> RunResult<
 }
 
 pub(super) fn load_state(work_root: &Path) -> RunResult<Option<ProjectRemoteState>> {
-    let path = work_root.join(STATE_PATH);
+    let path = state_path(work_root, STATE_FILE)?;
     let bytes = match fs::read(&path) {
         Ok(bytes) => bytes,
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(None),
@@ -154,8 +154,8 @@ pub(super) fn restore_project_remote_state(
 }
 
 fn restore_state_file_bytes(work_root: &Path, bytes: Option<&[u8]>) -> RunResult<()> {
-    let state_path = work_root.join(STATE_PATH);
-    restore_optional_file(&state_path, bytes)
+    let path = state_path(work_root, STATE_FILE)?;
+    restore_optional_file(&path, bytes)
 }
 
 fn atomic_write_file(path: &Path, bytes: &[u8]) -> RunResult<()> {
@@ -260,7 +260,7 @@ pub(super) fn persist_state(work_root: &Path, result: &ProjectRemoteUpdateResult
         resolved_tag: result.resolved_tag.clone(),
         revision: result.to_revision.clone(),
     };
-    let path = work_root.join(STATE_PATH);
+    let path = state_path(work_root, STATE_FILE)?;
     let body = serde_json::to_vec_pretty(&state)
         .map_err(|e| conf_err_source("encode project remote state failed", e))?;
     atomic_write_file(&path, &body)
@@ -298,7 +298,7 @@ pub(super) fn persist_group_state(
             },
         },
     };
-    let path = work_root.join(STATE_PATH);
+    let path = state_path(work_root, STATE_FILE)?;
     let body = serde_json::to_vec_pretty(&state)
         .map_err(|e| conf_err_source("encode project remote state failed", e))?;
     atomic_write_file(&path, &body)

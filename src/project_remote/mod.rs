@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::compat::UvsFrom;
 use git2::Oid;
@@ -34,15 +34,23 @@ use self::state::{
 };
 
 const ENGINE_CONF_PATH: &str = "conf/wparse.toml";
-const STATE_PATH: &str = ".run/project_remote_state.json";
-const REMOTE_CACHE_PATH: &str = ".run/project_remote/remote";
-const REMOTE_CACHE_PATH_MODELS: &str = ".run/project_remote/remote-models";
-const REMOTE_CACHE_PATH_INFRA: &str = ".run/project_remote/remote-infra";
-const BACKUP_PATH: &str = ".run/project_remote/backup";
-const BACKUP_MANIFEST_PATH: &str = ".run/project_remote/backup/manifest.json";
-const LOCK_PATH: &str = ".run/project_remote.lock";
-const RULE_MAPPING_PATH: &str = ".run/rule_mapping.dat";
-const AUTHORITY_DB_PATH: &str = ".run/authority.sqlite";
+const STATE_FILE: &str = "project_remote_state.json";
+const REMOTE_CACHE_DIR: &str = "project_remote/remote";
+const REMOTE_CACHE_DIR_MODELS: &str = "project_remote/remote-models";
+const REMOTE_CACHE_DIR_INFRA: &str = "project_remote/remote-infra";
+const BACKUP_DIR: &str = "project_remote/backup";
+const BACKUP_MANIFEST_FILE: &str = "project_remote/backup/manifest.json";
+const LOCK_FILE: &str = "project_remote.lock";
+const RULE_MAPPING_FILE: &str = "rule_mapping.dat";
+const AUTHORITY_DB_FILE: &str = "authority.sqlite";
+
+/// Resolve a path inside the engine state directory.
+///
+/// The state directory follows `[runtime].state_dir` (site overlay first, then
+/// `conf/wparse.toml`, then `.run`); see [`crate::state`].
+pub(super) fn state_path(work_root: &Path, rel: &str) -> RunResult<PathBuf> {
+    Ok(crate::state::resolve_state_dir_maintenance(work_root)?.file(rel))
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ProjectRemoteUpdateResult {
@@ -301,9 +309,9 @@ pub(crate) fn resolve_project_remote_mode(
 
 fn remote_cache_path_for(group: Option<RemoteGroup>) -> &'static str {
     match group {
-        Some(RemoteGroup::Models) => REMOTE_CACHE_PATH_MODELS,
-        Some(RemoteGroup::Infra) => REMOTE_CACHE_PATH_INFRA,
-        None => REMOTE_CACHE_PATH,
+        Some(RemoteGroup::Models) => REMOTE_CACHE_DIR_MODELS,
+        Some(RemoteGroup::Infra) => REMOTE_CACHE_DIR_INFRA,
+        None => REMOTE_CACHE_DIR,
     }
 }
 
@@ -327,7 +335,7 @@ fn sync_project_remote_with_repo_inner(
         group_label.unwrap_or("-")
     );
 
-    let remote_root = work_root.join(remote_cache_path_for(group));
+    let remote_root = state_path(work_root, remote_cache_path_for(group))?;
     let repo = prepare_remote_repo(&remote_root, repo_url)?;
     fetch_remote_tags(&repo, repo_url)?;
 
@@ -580,7 +588,8 @@ mod tests {
         );
 
         let state: serde_json::Value = serde_json::from_slice(
-            &fs::read(work_root.path().join(STATE_PATH)).expect("read state file"),
+            &fs::read(state_path(work_root.path(), STATE_FILE).expect("state dir"))
+                .expect("read state file"),
         )
         .expect("parse state json");
         assert_eq!(state["current_version"], "1.4.3");
@@ -685,9 +694,8 @@ mod tests {
         assert_eq!(result.current_version, "1.4.2");
         assert_eq!(result.resolved_tag, "v1.4.2");
         assert!(!work_root.path().join(".git").exists());
-        assert!(work_root
-            .path()
-            .join(REMOTE_CACHE_PATH)
+        assert!(state_path(work_root.path(), REMOTE_CACHE_DIR)
+            .expect("state dir")
             .join(".git")
             .exists());
         assert_eq!(
@@ -727,11 +735,15 @@ mod tests {
         let snapshot = capture_project_remote_snapshot(work_root.path()).expect("capture snapshot");
         let result = sync_project_remote(work_root.path(), Some("1.4.2")).expect("sync remote");
         assert!(!result.changed);
-        assert!(work_root.path().join(STATE_PATH).exists());
+        assert!(state_path(work_root.path(), STATE_FILE)
+            .expect("state dir")
+            .exists());
 
         restore_project_remote_snapshot(work_root.path(), &snapshot).expect("restore snapshot");
 
-        assert!(!work_root.path().join(STATE_PATH).exists());
+        assert!(!state_path(work_root.path(), STATE_FILE)
+            .expect("state dir")
+            .exists());
         assert_eq!(
             fs::read_to_string(work_root.path().join("models/version.txt")).expect("read version"),
             "1.4.2\n"
@@ -773,7 +785,7 @@ mod tests {
         // to persist, persist_state will refuse to downgrade Dual → Single,
         // triggering the rollback path.
         fs::write(
-            work_root.path().join(STATE_PATH),
+            state_path(work_root.path(), STATE_FILE).expect("state dir"),
             r#"{"models":{"version":"1.4.2","tag":"v1.4.2","revision":"old-revision"},"infra":{"version":"1.0.0","tag":"v1.0.0","revision":"infra-rev"}}"#,
         )
         .expect("write dual state");
@@ -791,7 +803,8 @@ mod tests {
             "1.4.2\n"
         );
         let state: serde_json::Value = serde_json::from_slice(
-            &fs::read(work_root.path().join(STATE_PATH)).expect("read state file"),
+            &fs::read(state_path(work_root.path(), STATE_FILE).expect("state dir"))
+                .expect("read state file"),
         )
         .expect("parse state json");
         assert_eq!(state["models"]["version"], "1.4.2");
@@ -966,7 +979,8 @@ mod tests {
         .expect("sync infra");
 
         let state_json: serde_json::Value = serde_json::from_slice(
-            &fs::read(work_root.path().join(STATE_PATH)).expect("read state"),
+            &fs::read(state_path(work_root.path(), STATE_FILE).expect("state dir"))
+                .expect("read state"),
         )
         .expect("parse state");
         assert_eq!(state_json["models"]["version"], "1.4.2");
@@ -1017,7 +1031,7 @@ mod tests {
         let run_dir = work_root.path().join(".run");
         fs::create_dir_all(&run_dir).expect("create .run");
         fs::write(
-            work_root.path().join(STATE_PATH),
+            state_path(work_root.path(), STATE_FILE).expect("state dir"),
             r#"{"current_version":"1.4.2","resolved_tag":"v1.4.2","revision":"abc123"}"#,
         )
         .expect("write old state");
@@ -1182,18 +1196,18 @@ mod tests {
         )
         .expect("sync infra");
 
-        assert!(work_root
-            .path()
-            .join(REMOTE_CACHE_PATH_MODELS)
+        assert!(state_path(work_root.path(), REMOTE_CACHE_DIR_MODELS)
+            .expect("state dir")
             .join(".git")
             .exists());
-        assert!(work_root
-            .path()
-            .join(REMOTE_CACHE_PATH_INFRA)
+        assert!(state_path(work_root.path(), REMOTE_CACHE_DIR_INFRA)
+            .expect("state dir")
             .join(".git")
             .exists());
         // old single cache path should not exist
-        assert!(!work_root.path().join(REMOTE_CACHE_PATH).exists());
+        assert!(!state_path(work_root.path(), REMOTE_CACHE_DIR)
+            .expect("state dir")
+            .exists());
     }
 
     #[test]
@@ -1231,8 +1245,8 @@ mod tests {
     fn restore_managed_dirs_cleans_up_dirs_created_during_failed_update() {
         let work_root = tempdir().expect("tempdir");
         let dirs: &[&str] = &["models", "conf"];
-        let backup_root = work_root.path().join(BACKUP_PATH);
-        let manifest_path = work_root.path().join(BACKUP_MANIFEST_PATH);
+        let backup_root = state_path(work_root.path(), BACKUP_DIR).expect("state dir");
+        let manifest_path = state_path(work_root.path(), BACKUP_MANIFEST_FILE).expect("state dir");
 
         // Simulate pre-update state: only models/ exists
         fs::create_dir_all(work_root.path().join("models")).expect("create models");

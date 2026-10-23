@@ -114,7 +114,7 @@ pub(crate) fn migrate_local_admin_api_conf(work_root: &Path) -> RunResult<bool> 
         return Ok(false);
     };
 
-    let mut admin: AdminApiConf = admin.try_into().map_err(|e| {
+    let admin: AdminApiConf = admin.try_into().map_err(|e| {
         RunReason::from_conf().to_err().with_detail(format!(
             "parse [admin_api] in {} failed: {}",
             engine_path.display(),

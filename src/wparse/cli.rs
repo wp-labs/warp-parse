@@ -54,6 +54,10 @@ pub struct CliParseArgs {
     pub log_profile: Option<String>,
     #[clap(long = "wpl")]
     pub wpl_dir: Option<String>,
+    /// Override the engine state directory (pid/lock/rule mapping/authority DB);
+    /// takes precedence over `[runtime].state_dir`
+    #[clap(long = "state-dir")]
+    pub state_dir: Option<String>,
 }
 
 impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
@@ -71,6 +75,7 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
             stat_print: value.stat_print,
             log_profile: value.log_profile,
             wpl_dir: value.wpl_dir,
+            state_dir: value.state_dir,
         }
     }
 }

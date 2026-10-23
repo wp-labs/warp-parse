@@ -10,7 +10,8 @@ use wp_error::RunReason;
 
 use super::managed::remove_path;
 use super::{
-    conf_err_source, requested_version_not_found_err, RemoteGroup, ResolvedTag, STATE_PATH,
+    conf_err_source, requested_version_not_found_err, state_path, RemoteGroup, ResolvedTag,
+    STATE_FILE,
 };
 
 pub(super) fn prepare_remote_repo(remote_root: &Path, repo_url: &str) -> RunResult<Repository> {
@@ -149,7 +150,7 @@ fn is_first_initialization(work_root: &Path, group: Option<RemoteGroup>) -> RunR
             };
             Ok(!has_group)
         }
-        None => Ok(!work_root.join(STATE_PATH).exists()),
+        None => Ok(!state_path(work_root, STATE_FILE)?.exists()),
     }
 }
 

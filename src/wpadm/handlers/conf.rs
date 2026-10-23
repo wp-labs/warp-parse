@@ -96,6 +96,10 @@ where
             })
             .unwrap_or("-")
     );
+    // Resolve and cache the state directory before `conf/` can be replaced by
+    // the remote sync: the rollback path must keep using the same directory.
+    let state_dir = warp_parse::state::resolve_state_dir_maintenance(&work_root)?;
+    info_ctrl!("wpadm conf update state_dir={}", state_dir.path().display());
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
     // `conf/` is replaced wholesale by infra sync. Move the site-local admin
     // API settings out of it before that happens. Keep this inside the lock so

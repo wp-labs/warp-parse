@@ -52,17 +52,60 @@ token_file = "${HOME}/.warp_parse/admin_api.token"
 Create the token file before starting the daemon:
 
 ```bash
-mkdir -p runtime
-mkdir -p "${HOME}/.warp_parse"
-printf 'replace-with-a-secret-token\n' > "${HOME}/.warp_parse/admin_api.token"
-chmod 600 "${HOME}/.warp_parse/admin_api.token"
+wpadm token generate --out "${HOME}/.warp_parse/admin_api.token"
 ```
+
+`wpadm token generate` writes 32 random bytes (64 hex characters), creates the
+file atomically with mode `0600`, and prints only the path. It refuses to
+overwrite an existing file unless `--force` is passed, and it never follows a
+symlink at the output path.
 
 Constraints:
 
-- on Unix, the token file must be owner-only
+- the token file must be a regular file that group/other cannot write
+  (`0600`, `0640`, `0440` and `0444` are accepted; `0660`, `0664`, `0777` are
+  rejected) — this allows read-only Docker/Kubernetes secret mounts
+- symlinks are followed and the resolved target is validated, so Kubernetes
+  projected secrets (`token -> ..data/token`) work
+- the file must contain exactly one non-empty line
 - non-loopback bind addresses require TLS
 - the only supported auth mode is `bearer_token`
+
+The engine reads the token once at startup. Rotating a token therefore requires
+replacing the file and restarting the daemon.
+
+## Token Tools
+
+```bash
+# Generate a token (prints only the path)
+wpadm token generate --out /run/secrets/wparse_admin_token
+
+# Inspect a token file: type, symlink target, mode, owner, content, fingerprint
+wpadm token check --file /run/secrets/wparse_admin_token
+
+# Stricter check for host files / CI
+wpadm token check --file "${HOME}/.warp_parse/admin_api.token" --require-owner-only
+
+# Print the effective token (value on stdout, diagnostics on stderr)
+wpadm token show --token-file /run/secrets/wparse_admin_token
+```
+
+`wpadm` resolves the token in this order, which lets it run inside a container or
+in CI where the engine's `wparse.local.toml` is not available:
+
+1. `--token-file <path>`
+2. `--token-env <NAME>`
+3. `$WPARSE_ADMIN_TOKEN`
+4. `token_file` from the local admin API profile
+
+Every diagnostic prints an 8-character `token_fp` (`sha256(token)` prefix), never
+the token itself. Compare the engine's startup log line
+(`admin api auth source=file path=... token_fp=...`) with the client-side
+fingerprint to confirm both sides hold the same token.
+
+For container deployments mount the **directory** rather than a single file
+(`-v ./secrets:/run/secrets:ro`); renaming a file over a single-file bind mount
+does not propagate into the container.
 
 ## Start The Daemon
 

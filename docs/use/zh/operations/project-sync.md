@@ -130,6 +130,9 @@ init_version = "0.1.6"       # 首次初始化时使用的版本
 
 ### 同步流程
 
+> 本页所有 `.run/…` 路径均以 `[runtime].state_dir` 为前缀（默认 `.run`）。
+> 配置独立状态卷的写法见运行时指南。
+
 `wproj conf update --group <group>` 执行步骤：
 
 1. 将远端仓库 clone/update 到本地缓存（`.run/project_remote/remote-<group>/`）

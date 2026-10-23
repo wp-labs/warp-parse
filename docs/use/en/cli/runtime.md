@@ -73,3 +73,32 @@ Prefer `batch` when:
 - CLI usage guide: [index.md](index.md)
 - Runtime admin usage: [../operations/admin.md](../operations/admin.md)
 - Project tool usage: [project.md](project.md)
+
+## State Directory
+
+Engine state (pid file, single-instance lock, `rule_mapping.dat`,
+`authority.sqlite`, and the `project_remote` cache) lives in one directory:
+`<work_root>/.run` by default.
+
+Move it when the work root is mounted read-only, or when state should live on a
+dedicated volume:
+
+```toml
+# wparse.local.toml (site-local, not overwritten by project_remote)
+[runtime]
+state_dir = "/state"
+```
+
+Precedence: `--state-dir` > `wparse.local.toml` `[runtime]` > `conf/wparse.toml`
+`[runtime]` > `<work_root>/.run`.
+
+The daemon logs the effective directory at startup (`runtime state_dir: ...`).
+Constraints:
+
+- the value must not be the work root itself, an ancestor of it, or inside a
+  `project_remote`-managed directory (`conf`, `models`, `topology`, `connectors`)
+- for container deployments mount a dedicated volume at that path and keep it on
+  the same host/kernel as the engine (`flock` is the single-instance guard)
+- changing the directory does not migrate existing state; move the files before
+  switching, otherwise a fresh `authority.sqlite` / `project_remote_state.json`
+  is built at the new location

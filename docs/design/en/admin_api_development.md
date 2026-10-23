@@ -504,8 +504,11 @@ Recommended integration order:
 
 Current automated coverage includes:
 
-- Bearer token validation
-- token-file permission checks
+- Bearer token validation (constant-time, stored as a SHA-256 digest)
+- token-file permission floor: `0600`/`0640`/`0440`/`0444` accepted, group/other-writable rejected
+- token-file symlink resolution (Kubernetes projected secrets)
+- single-line token content enforcement
+- `token_fp` exposure in the status response (never the token value)
 - rejection of non-loopback bind without TLS
 - invalid request path where `version` is provided without `update`
 - synchronous reload

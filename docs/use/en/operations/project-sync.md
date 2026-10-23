@@ -63,16 +63,14 @@ token_file = "${HOME}/.warp_parse/admin_api.token"
 Prepare the token file before startup:
 
 ```bash
-mkdir -p runtime
-mkdir -p "${HOME}/.warp_parse"
-printf 'replace-with-a-secret-token\n' > "${HOME}/.warp_parse/admin_api.token"
-chmod 600 "${HOME}/.warp_parse/admin_api.token"
+wpadm token generate --out "${HOME}/.warp_parse/admin_api.token"
 ```
 
 Constraints:
 
 - `batch` mode does not expose the admin API
-- on Unix, the token file must be owner-only
+- the token file must be a regular file that group/other cannot write
+  (`0600`/`0640`/`0440`/`0444` are accepted; see `docs/use/en/operations/admin.md`)
 - non-loopback binds require TLS
 
 ## First Deployment
@@ -203,6 +201,9 @@ How `wproj conf update --group <group>` resolves the target version:
 This ensures sensible defaults for both initial deployment and subsequent updates.
 
 ### Sync Flow
+
+> All `.run/…` paths on this page follow `[runtime].state_dir` (default `.run`).
+> See the runtime guide for configuring a dedicated state volume.
 
 `wproj conf update --group <group>` steps:
 

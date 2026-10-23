@@ -649,6 +649,48 @@ async fn daemon_admin_api_status_and_reload_work_end_to_end() {
 
 #[tokio::test]
 #[serial]
+async fn daemon_uses_state_dir_from_site_overlay() {
+    let temp = tempdir().expect("tempdir");
+    let work_root = temp.path();
+
+    let (bind, source_bind) = reserve_two_local_addrs();
+    let _token_path = write_fixture(work_root, bind, source_bind);
+    fs::write(
+        work_root.join("wparse.local.toml"),
+        "[runtime]\nstate_dir = \"state\"\n",
+    )
+    .expect("write site overlay");
+
+    let base_url = format!("http://{}", bind);
+    let mut child = spawn_wparse(work_root, "daemon");
+    wait_until_ready(
+        &mut child,
+        work_root,
+        &base_url,
+        "test-token",
+        Duration::from_secs(20),
+    )
+    .await;
+
+    let state_dir = work_root.join("state");
+    assert!(
+        state_dir.join("wparse.pid").exists(),
+        "pid file must live in the configured state dir"
+    );
+    assert!(
+        state_dir.join(".lock").exists(),
+        "single-instance lock must live in the configured state dir"
+    );
+    assert!(
+        !work_root.join(".run").exists(),
+        "the legacy .run directory must not be created"
+    );
+
+    shutdown_child(&mut child);
+}
+
+#[tokio::test]
+#[serial]
 async fn daemon_admin_api_rejects_wrong_bearer_token() {
     let temp = tempdir().expect("tempdir");
     let work_root = temp.path();

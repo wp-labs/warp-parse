@@ -8,7 +8,9 @@ use walkdir::WalkDir;
 use wp_error::run_error::RunResult;
 use wp_error::RunReason;
 
-use super::{conf_err_source, BackupManifest, RemoteGroup, BACKUP_MANIFEST_PATH, BACKUP_PATH};
+use super::{
+    conf_err_source, state_path, BackupManifest, RemoteGroup, BACKUP_DIR, BACKUP_MANIFEST_FILE,
+};
 
 const DIRS_MODELS: &[&str] = &["models"];
 const DIRS_INFRA: &[&str] = &["conf", "topology", "connectors"];
@@ -36,7 +38,7 @@ pub(super) fn managed_dirs_differ(
 }
 
 pub(super) fn backup_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<()> {
-    let backup_root = work_root.join(BACKUP_PATH);
+    let backup_root = state_path(work_root, BACKUP_DIR)?;
     remove_path(&backup_root)?;
     fs::create_dir_all(&backup_root)
         .map_err(|e| conf_err_source(format!("create {} failed", backup_root.display()), e))?;
@@ -52,7 +54,7 @@ pub(super) fn backup_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<
     }
 
     let manifest = BackupManifest { existing_dirs };
-    let manifest_path = work_root.join(BACKUP_MANIFEST_PATH);
+    let manifest_path = state_path(work_root, BACKUP_MANIFEST_FILE)?;
     let body = serde_json::to_vec_pretty(&manifest)
         .map_err(|e| conf_err_source("encode backup manifest failed", e))?;
     fs::write(&manifest_path, body)
@@ -77,7 +79,7 @@ pub(super) fn sync_managed_dirs(
 }
 
 pub(super) fn restore_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult<()> {
-    let manifest_path = work_root.join(BACKUP_MANIFEST_PATH);
+    let manifest_path = state_path(work_root, BACKUP_MANIFEST_FILE)?;
     let body = match fs::read(&manifest_path) {
         Ok(body) => body,
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => return Ok(()),
@@ -99,7 +101,7 @@ pub(super) fn restore_managed_dirs(work_root: &Path, dirs: &[&str]) -> RunResult
             )));
         }
     }
-    let backup_root = work_root.join(BACKUP_PATH);
+    let backup_root = state_path(work_root, BACKUP_DIR)?;
 
     // Remove all managed dirs in scope first, then restore backed-up ones.
     // This ensures dirs created during a failed update are cleaned up, not
