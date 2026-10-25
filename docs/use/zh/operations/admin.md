@@ -41,7 +41,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "${HOME}/.warp_parse/admin_api.token"
 ```
 
@@ -63,7 +62,7 @@ wpadm token generate --out "${HOME}/.warp_parse/admin_api.token"
   （`token -> ..data/token`）可以正常使用
 - 文件必须恰好包含一个非空行
 - 非回环地址绑定必须启用 TLS
-- 当前只支持 `bearer_token` 鉴权模式
+- 鉴权固定为 `bearer_token`，没有 auth mode 配置项
 
 引擎只在启动时读取一次 token，因此轮转需要替换文件并重启 daemon。
 

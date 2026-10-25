@@ -39,7 +39,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "{token}"
 "#;
 
@@ -250,6 +249,10 @@ mod tests {
         assert_eq!(body.matches("[admin_api]").count(), 1);
         assert!(body.contains("bind = \"127.0.0.1:19090\""));
         assert!(body.contains(expected_token_path()));
+        assert!(
+            !body.contains("mode"),
+            "auth mode is not configurable and must not be generated: {body}"
+        );
     }
 
     #[test]
@@ -344,7 +347,6 @@ enabled = true
 bind = "0.0.0.0:19999"
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#,
         )

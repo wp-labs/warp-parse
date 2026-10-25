@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.34.0-alpha] - 2026-10-25
+
+### Changed
+- **Removed `[admin_api.auth].mode` from the admin API config**: bearer token is the only auth scheme, so the field carried no information. Generated and migrated configs no longer write `mode`, and `[admin_api.auth]` now contains only `token_file`.
+  - Configs that still contain `mode = "bearer_token"` fail to load with an `unknown field` error; delete the line.
+- **Upgraded to wp-motor 1.35.0**.
+
 ## [0.33.0-alpha] - 2026-10-23
 
 ### Added

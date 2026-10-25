@@ -38,8 +38,6 @@ use wp_engine::facade::{
 use wp_error::run_error::{RunReason, RunResult};
 use wp_log::{info_ctrl, warn_ctrl};
 
-const DEFAULT_AUTH_MODE: &str = "bearer_token";
-
 #[derive(Debug)]
 pub struct AdminApiRuntime {
     local_addr: SocketAddr,
@@ -162,13 +160,6 @@ fn load_config(work_root: &Path, dict: &EnvDict) -> RunResult<Option<ResolvedAdm
         ));
     }
 
-    let auth_mode = admin_api.auth.mode.trim().to_ascii_lowercase();
-    if auth_mode != DEFAULT_AUTH_MODE {
-        return Err(admin_api_validation_err(format!(
-            "unsupported admin_api.auth.mode '{}', expected '{}'",
-            admin_api.auth.mode, DEFAULT_AUTH_MODE
-        )));
-    }
     if admin_api.auth.token_file.trim().is_empty() {
         return Err(admin_api_validation_err(
             "admin_api.auth.token_file must be set when admin_api is enabled",
@@ -1668,7 +1659,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "{token_file}"
 "#
         ));
@@ -1716,7 +1706,6 @@ request_timeout_ms = 15000
 max_body_bytes = 4096
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#,
         )
@@ -1834,7 +1823,6 @@ request_timeout_ms = 15000
 max_body_bytes = 4096
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#,
         )
@@ -2032,6 +2020,43 @@ token_file = "runtime/admin_api.token"
         );
     }
 
+    #[test]
+    fn admin_api_loads_config_without_auth_mode() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        fs::write(
+            conf_dir.join("wparse.toml"),
+            "version = \"1.0\"\n\n[admin_api]\nenabled = true\nbind = \"127.0.0.1:0\"\n\n[admin_api.auth]\ntoken_file = \"runtime/admin_api.token\"\n",
+        )
+        .expect("write config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        let conf =
+            load_enabled_config(temp.path()).expect("config without mode should be accepted");
+        assert!(conf.token.verify("test-token"));
+    }
+
+    #[test]
+    fn admin_api_rejects_removed_auth_mode_field() {
+        let temp = tempdir().expect("tempdir");
+        let conf_dir = temp.path().join("conf");
+        fs::create_dir_all(&conf_dir).expect("create conf dir");
+        fs::write(
+            conf_dir.join("wparse.toml"),
+            "version = \"1.0\"\n\n[admin_api]\nenabled = true\nbind = \"127.0.0.1:0\"\n\n[admin_api.auth]\nmode = \"bearer_token\"\ntoken_file = \"runtime/admin_api.token\"\n",
+        )
+        .expect("write config");
+        write_token(temp.path(), "runtime/admin_api.token", 0o600);
+
+        // `mode` is gone from the schema entirely; `deny_unknown_fields` in
+        // wp-config rejects legacy configs that still carry it.
+        assert!(
+            load_config(temp.path(), &EnvDict::default()).is_err(),
+            "configs with the removed admin_api.auth.mode field must be rejected"
+        );
+    }
+
     #[tokio::test]
     async fn admin_api_accepts_read_only_secret_permissions() {
         let temp = tempdir().expect("tempdir");
@@ -2186,7 +2211,6 @@ cert_file = "{cert_file}"
 key_file = "{key_file}"
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "{token_file}"
 "#
         ));
@@ -2377,7 +2401,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 
 [project_remote]
@@ -2452,7 +2475,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 
 [project_remote]

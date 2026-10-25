@@ -45,7 +45,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "${HOME}/.warp_parse/admin_api.token"
 ```
 
@@ -69,7 +68,7 @@ Constraints:
   projected secrets (`token -> ..data/token`) work
 - the file must contain exactly one non-empty line
 - non-loopback bind addresses require TLS
-- the only supported auth mode is `bearer_token`
+- Bearer token is the only auth scheme; there is no auth-mode setting
 
 The engine reads the token once at startup. Rotating a token therefore requires
 replacing the file and restarting the daemon.

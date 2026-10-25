@@ -275,7 +275,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "runtime/admin_api.token"
 "#,
         reload_timeout_ms = options.reload_timeout_ms.unwrap_or(10_000),

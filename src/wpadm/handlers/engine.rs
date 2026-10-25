@@ -504,7 +504,6 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "{token_file}"
 "#
             ),

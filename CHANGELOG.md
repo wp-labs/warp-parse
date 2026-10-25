@@ -8,6 +8,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.34.0-alpha] - 2026-10-25
+
+### Changed
+- **移除 admin API 配置里的 `[admin_api.auth].mode`**：鉴权方式固定为 Bearer Token，该字段没有实际作用。`wpadm conf` 生成和迁移的配置不再写入 `mode`，`[admin_api.auth]` 现在只剩 `token_file`。
+  - 手工保留 `mode = "bearer_token"` 的旧配置在加载时会报 `unknown field`，删掉该行即可。
+
 ## [0.33.0-alpha] - 2026-10-23
 
 ### Added
