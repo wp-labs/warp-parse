@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.34.1-alpha] - 2026-10-26
+
+### Added
+- **Upgraded to wp-motor v1.37.0**, which carries the two rescue-path fixes below.
+
+### Fixed
+- **Rescue replay could target the wrong sink group**: replay matched targets by sink name only, so same-named sinks in different groups (all named `[0]` by default) became candidates and rescue data was diverted to another group depending on channel headroom. The group is now parsed from the rescue file path and matched together with the name.
+- **Replay treated backpressure as a sink failure**: a full dispatcher channel was reported as a send failure and triggered candidate failover, which amplified the misrouting above and could abort the whole rescue file. It is now retried on the same candidate; only real errors (e.g. a closed channel) fail over.
+- **Rescue lifecycle logs were invisible**: `rescue file finalized`, `recovered from send failures` and `breaker open, skipped` are now WARN level and emitted once per outage instead of being swallowed by the 60s rate limit.
+
 ## [0.34.0-alpha] - 2026-10-25
 
 ### Changed

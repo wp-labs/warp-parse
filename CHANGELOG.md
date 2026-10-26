@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.34.1-alpha] - 2026-10-26
+
+### Added
+- **升级到 wp-motor v1.37.0**，带上救援链路的两处修复（见下）。
+
+### Fixed
+- **救援回放投错 sink 组**：回放原先只按 sink 名匹配目标，自动命名时不同组的同名 sink（都是 `[0]`）都会被当成候选，救援数据按通道余量被分流到别的组。现在从救援文件路径解析组名，按「组 + 名」精确匹配。
+- **回放把背压当成 sink 故障**：分发通道满原先被当成发送失败并切换候选，既放大上面的错投，也可能让整份救援文件回放中断。现在改为在同一个候选上等待重试，只有通道关闭等真实错误才换候选。
+- **救援生命周期日志看不见**：`rescue file finalized`、`recovered from send failures`、`breaker open, skipped` 统一为 WARN，且每次故障各一条（原来会被 60s 限流吞掉）。
+
 ## [0.34.0-alpha] - 2026-10-25
 
 ### Changed
