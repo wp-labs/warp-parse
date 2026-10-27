@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.34.2-alpha] - 2026-10-27
+
+### Added
+- **升级到 wp-motor v1.37.1**，修复 OML 工程里实例级全局 tag 丢失的问题（见下）。
+
+### Fixed
+- **配了 `sink_group.oml` 之后 `WP_GLOBAL_TAGS` 丢失**：OML 会用模型输出重建记录，解析阶段盖上的实例级全局 tag 不再出现在输出里。现在在变换后补盖，`oml = ["..."]` 与不配 OML 的字段集一致。
+- **全局 tag 优先级最高**：与模型里写死的同名字段或 sink `tags` 同名时，最终只保留一份并使用 `WP_GLOBAL_TAGS` 的值，不再出现重复键；OML 转换失败进入 error sink 的记录也会带上全局 tag。
+
 ## [0.34.1-alpha] - 2026-10-26
 
 ### Added

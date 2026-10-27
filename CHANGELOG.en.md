@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.34.2-alpha] - 2026-10-27
+
+### Added
+- **Upgraded to wp-motor v1.37.1**, which fixes the loss of instance-level global tags in projects that use OML (see below).
+
+### Fixed
+- **`WP_GLOBAL_TAGS` was lost when `sink_group.oml` was configured**: OML rebuilds records from the model output, so tags stamped during parsing disappeared from the output. Global tags are now re-applied after the transform, making `oml = ["..."]` projects produce the same field set as projects without OML.
+- **Global tags now take precedence**: when a tag name collides with a model constant or a sink `tags` entry, exactly one field is kept and it carries the `WP_GLOBAL_TAGS` value (no duplicate keys). OML failure records sent to the error sink also carry global tags.
+
 ## [0.34.1-alpha] - 2026-10-26
 
 ### Added
