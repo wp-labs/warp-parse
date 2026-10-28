@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.35.3-alpha] - 2026-10-28
+
+### Fixed
+- **`max_size = "10MB"` no longer fails with a type error**: upgraded to wp-motor v1.38.3. The built-in `file_*` connector templates no longer ship default values for `max_size` / `roll_compress` (they stay in `allow_override` only), so the merge-time type check no longer rejects the documented string size form.
+
 ## [0.35.2-alpha] - 2026-10-28
 
 ### Fixed

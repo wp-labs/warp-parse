@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.3-alpha] - 2026-10-28
+
+### Fixed
+- **文件 Sink 的 `max_size = "10MB"` 不再报类型错误**：升级到 wp-motor v1.38.3，内置 `file_*` connector 模板不再给 `max_size` / `roll_compress` 配默认值（仅保留在 `allow_override`），避免配置合并的类型一致性校验把文档推荐的字符串容量判错。
+
 ## [0.35.2-alpha] - 2026-10-28
 
 ### Fixed
