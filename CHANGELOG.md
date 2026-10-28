@@ -8,6 +8,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.0-alpha] - 2026-10-28
+
+### Added
+- **文件 Sink 支持按容量滚动与归档压缩**（升级到 wp-motor v1.38.0）：新增 `max_size`（单文件最大字节数，支持 `10MB` / `1GiB` 写法，`0` = 不限）、`max_rolls`（保留历史文件个数，默认 `3`）与 `roll_compress`（`none` / `gzip` / `zip`）。
+  - 超限时先滚动再写，历史文件按 `out.dat.1` / `out.dat.1.gz` / `out.dat.1.zip` 编号，超出保留个数的自动删除最旧文件。
+  - 滚动时收尾并重建压缩/加密流，每个历史文件都能独立解压解密；归档压缩在阻塞线程执行，失败自动回退为不压缩归档，不丢数据。
+  - `protocol = "arrow"` 不支持滚动，配置 `max_size` / `max_rolls` / `roll_compress` 会直接报配置错误。
+
+### Note
+- 现有项目的 connector 定义需把 `max_size` / `max_rolls` / `roll_compress` 加入 `allow_override` 才能覆盖。
+
 ## [0.34.2-alpha] - 2026-10-27
 
 ### Added

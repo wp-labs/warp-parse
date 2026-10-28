@@ -8,6 +8,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.35.0-alpha] - 2026-10-28
+
+### Added
+- **File sinks can roll by size and compress archives** (upgraded to wp-motor v1.38.0): new `max_size` (max bytes per file, accepts `10MB` / `1GiB`, `0` disables rolling), `max_rolls` (number of rotated files to keep, default `3`) and `roll_compress` (`none` / `gzip` / `zip`).
+  - When a write would exceed the limit the sink rotates first; rotated files are named `out.dat.1` / `out.dat.1.gz` / `out.dat.1.zip`, and the oldest file beyond `max_rolls` is deleted.
+  - Rotation flushes and rebuilds the compression/encryption stream, so every rotated file can be unpacked independently. Archive compression runs on a blocking thread and falls back to an uncompressed archive on failure, so no data is lost.
+  - `protocol = "arrow"` does not support rolling; setting `max_size` / `max_rolls` / `roll_compress` is a configuration error.
+
+### Note
+- Existing projects must add `max_size` / `max_rolls` / `roll_compress` to the connector `allow_override` list to use them.
+
 ## [0.34.2-alpha] - 2026-10-27
 
 ### Added
