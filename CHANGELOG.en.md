@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.35.1-alpha] - 2026-10-28
+
+### Changed
+- **Upgraded to wp-motor v1.38.1**: the `zip` dependency used for rotated-file archives is now 9.1, clearing `RUSTSEC-2026-0367` / `0368` / `0369` (extraction-only, and this project only writes archives), and dropping the `zopfli` dependency.
+
 ## [0.35.0-alpha] - 2026-10-28
 
 ### Added

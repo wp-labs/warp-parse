@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.1-alpha] - 2026-10-28
+
+### Changed
+- **升级到 wp-motor v1.38.1**：文件 Sink 的滚动归档 `zip` 依赖升到 9.1，消除 `RUSTSEC-2026-0367` / `0368` / `0369` 三条公告（仅影响解压路径，本项目只写归档），并移除 `zopfli` 依赖。
+
 ## [0.35.0-alpha] - 2026-10-28
 
 ### Added
