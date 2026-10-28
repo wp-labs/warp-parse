@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.35.2-alpha] - 2026-10-28
+
+### Fixed
+- **Cleared the `zstd` advisories**: upgraded to wp-motor v1.38.2 (`wp-connector-utils 0.5.1`) plus `include-flate 0.3.5`, so the dependency tree now uses only `zstd 0.14.3` / `zstd-safe 8.2.0` (no 0.13.x); this covers `RUSTSEC-2026-0391` / `0398` / `0403`.
+
 ## [0.35.1-alpha] - 2026-10-28
 
 ### Changed

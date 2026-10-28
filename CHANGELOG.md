@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.2-alpha] - 2026-10-28
+
+### Fixed
+- **清除 `zstd` 安全公告**：升级到 wp-motor v1.38.2（`wp-connector-utils 0.5.1`）+ `include-flate 0.3.5`，依赖树里 `zstd` 统一为 0.14.3 / `zstd-safe` 8.2.0，不再存在 0.13.x；覆盖 `RUSTSEC-2026-0391` / `0398` / `0403`。
+
 ## [0.35.1-alpha] - 2026-10-28
 
 ### Changed
