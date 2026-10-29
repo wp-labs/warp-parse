@@ -44,10 +44,13 @@ pub fn check_knowdb(a: &KnowdbCheckArgs, dict: &EnvDict) -> RunResult<()> {
 }
 
 pub fn clean_knowdb(a: &KnowdbCleanArgs) -> RunResult<()> {
-    let rep = wp_cli_core::knowdb::clean(&a.work_root)
+    let wr = PathBuf::from(&a.work_root);
+    // Maintenance commands tolerate a missing engine config but must honour the
+    // site overlay's state directory when one is configured.
+    let state_dir = warp_parse::state::resolve_state_dir_maintenance(&wr)?;
+    let rep = wp_cli_core::knowdb::clean_with_state(&a.work_root, &state_dir)
         .source_err(RunReason::from_conf(), "clean knowdb failed")?;
 
-    let wr = PathBuf::from(&a.work_root);
     let models_dir = wr.join("models").join("knowledge");
     if rep.removed_models_dir {
         println!("removed '{}'", models_dir.display());
@@ -55,7 +58,7 @@ pub fn clean_knowdb(a: &KnowdbCleanArgs) -> RunResult<()> {
         println!("'{}' not found (skip)", models_dir.display());
     }
     if rep.removed_authority_cache {
-        let auth = wr.join(".run").join("authority.sqlite");
+        let auth = state_dir.file("authority.sqlite");
         println!("wpadm removed '{}'", auth.display());
     }
     Ok(())

@@ -13,9 +13,15 @@ shadow_rs::shadow!(build);
 pub mod admin_api;
 pub mod compat;
 pub mod feats;
+pub mod local_conf;
 pub mod project_remote;
+pub mod state;
+pub mod token;
 pub const SEK_KEY_FILE: &str = "sec_key.toml";
 pub const WP_DOT_DIR: &str = ".warp_parse";
+/// Site-local overlay at the project root. It stays outside the directories
+/// managed by `project_remote`, so remote publishes cannot overwrite it.
+pub const LOCAL_CONF_FILE: &str = "wparse.local.toml";
 
 pub fn init_rustls_crypto_provider() {
     static RUSTLS_PROVIDER_ONCE: Once = Once::new();

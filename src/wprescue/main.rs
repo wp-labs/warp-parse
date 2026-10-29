@@ -50,6 +50,9 @@ struct CliParseArgs {
     log_profile: Option<String>,
     #[clap(long = "wpl")]
     wpl_dir: Option<String>,
+    /// Override the engine state directory; takes precedence over `[runtime].state_dir`
+    #[clap(long = "state-dir")]
+    state_dir: Option<String>,
 }
 
 impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
@@ -67,6 +70,7 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
             stat_print: value.stat_print,
             log_profile: value.log_profile,
             wpl_dir: value.wpl_dir,
+            state_dir: value.state_dir,
         }
     }
 }
@@ -91,7 +95,15 @@ async fn do_main() -> RunResult<()> {
             .to_err()
             .with_detail("wprescue only supports batch mode; use 'wprescue batch'"))?,
         WpRescueCli::Batch(args) => {
-            let mut app = WpRescueApp::try_from(args.into(), env_dict).conv_err()?;
+            let mut engine_args: wp_engine::facade::args::ParseArgs = args.into();
+            let work_root = wp_engine::facade::args::resolve_run_work_root(&engine_args.work_root)?;
+            let state_dir = warp_parse::state::resolve_effective_state_dir(
+                std::path::Path::new(&work_root),
+                &env_dict,
+                engine_args.state_dir.as_deref(),
+            )?;
+            engine_args.state_dir = Some(state_dir.to_path_buf().to_string_lossy().to_string());
+            let mut app = WpRescueApp::try_from(engine_args, env_dict).conv_err()?;
             app.run_batch().await?;
         }
     }

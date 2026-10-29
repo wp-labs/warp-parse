@@ -8,6 +8,107 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.35.3-alpha] - 2026-10-28
+
+### Fixed
+- **`max_size = "10MB"` no longer fails with a type error**: upgraded to wp-motor v1.38.3. The built-in `file_*` connector templates no longer ship default values for `max_size` / `roll_compress` (they stay in `allow_override` only), so the merge-time type check no longer rejects the documented string size form.
+
+## [0.35.2-alpha] - 2026-10-28
+
+### Fixed
+- **Cleared the `zstd` advisories**: upgraded to wp-motor v1.38.2 (`wp-connector-utils 0.5.1`) plus `include-flate 0.3.5`, so the dependency tree now uses only `zstd 0.14.3` / `zstd-safe 8.2.0` (no 0.13.x); this covers `RUSTSEC-2026-0391` / `0398` / `0403`.
+
+## [0.35.1-alpha] - 2026-10-28
+
+### Changed
+- **Upgraded to wp-motor v1.38.1**: the `zip` dependency used for rotated-file archives is now 9.1, clearing `RUSTSEC-2026-0367` / `0368` / `0369` (extraction-only, and this project only writes archives), and dropping the `zopfli` dependency.
+
+## [0.35.0-alpha] - 2026-10-28
+
+### Added
+- **File sinks can roll by size and compress archives** (upgraded to wp-motor v1.38.0): new `max_size` (max bytes per file, accepts `10MB` / `1GiB`, `0` disables rolling), `max_rolls` (number of rotated files to keep, default `3`) and `roll_compress` (`none` / `gzip` / `zip`).
+  - When a write would exceed the limit the sink rotates first; rotated files are named `out.dat.1` / `out.dat.1.gz` / `out.dat.1.zip`, and the oldest file beyond `max_rolls` is deleted.
+  - Rotation flushes and rebuilds the compression/encryption stream, so every rotated file can be unpacked independently. Archive compression runs on a blocking thread and falls back to an uncompressed archive on failure, so no data is lost.
+  - `protocol = "arrow"` does not support rolling; setting `max_size` / `max_rolls` / `roll_compress` is a configuration error.
+
+### Note
+- Existing projects must add `max_size` / `max_rolls` / `roll_compress` to the connector `allow_override` list to use them.
+
+## [0.34.2-alpha] - 2026-10-27
+
+### Added
+- **Upgraded to wp-motor v1.37.1**, which fixes the loss of instance-level global tags in projects that use OML (see below).
+
+### Fixed
+- **`WP_GLOBAL_TAGS` was lost when `sink_group.oml` was configured**: OML rebuilds records from the model output, so tags stamped during parsing disappeared from the output. Global tags are now re-applied after the transform, making `oml = ["..."]` projects produce the same field set as projects without OML.
+- **Global tags now take precedence**: when a tag name collides with a model constant or a sink `tags` entry, exactly one field is kept and it carries the `WP_GLOBAL_TAGS` value (no duplicate keys). OML failure records sent to the error sink also carry global tags.
+
+## [0.34.1-alpha] - 2026-10-26
+
+### Added
+- **Upgraded to wp-motor v1.37.0**, which carries the two rescue-path fixes below.
+
+### Fixed
+- **Rescue replay could target the wrong sink group**: replay matched targets by sink name only, so same-named sinks in different groups (all named `[0]` by default) became candidates and rescue data was diverted to another group depending on channel headroom. The group is now parsed from the rescue file path and matched together with the name.
+- **Replay treated backpressure as a sink failure**: a full dispatcher channel was reported as a send failure and triggered candidate failover, which amplified the misrouting above and could abort the whole rescue file. It is now retried on the same candidate; only real errors (e.g. a closed channel) fail over.
+- **Rescue lifecycle logs were invisible**: `rescue file finalized`, `recovered from send failures` and `breaker open, skipped` are now WARN level and emitted once per outage instead of being swallowed by the 60s rate limit.
+
+## [0.34.0-alpha] - 2026-10-25
+
+### Changed
+- **Removed `[admin_api.auth].mode` from the admin API config**: bearer token is the only auth scheme, so the field carried no information. Generated and migrated configs no longer write `mode`, and `[admin_api.auth]` now contains only `token_file`.
+  - Configs that still contain `mode = "bearer_token"` fail to load with an `unknown field` error; delete the line.
+- **Upgraded to wp-motor 1.35.0**.
+
+## [0.33.0-alpha] - 2026-10-23
+
+### Added
+- **Configurable runtime state directory**: new `[runtime].state_dir` (in `wparse.local.toml` or `conf/wparse.toml`) and a `--state-dir` flag. The default is still `<work_root>/.run`, so existing projects need no change.
+  - The pid file, single-instance lock, `rule_mapping.dat`, `authority.sqlite`, and the `project_remote` cache/backup/state all follow that directory; the work root can be mounted read-only and containers can keep state on a dedicated volume.
+  - Precedence: `--state-dir` > `wparse.local.toml` > `conf/wparse.toml` > `.run`. The daemon logs the effective directory at startup.
+  - Invalid values fail at startup: the work root itself, an ancestor of it, a `project_remote`-managed directory (`conf`/`models`/`topology`/`connectors`), or an unresolved `${VAR}`.
+- **Admin API token tools**: `wpadm token generate|show|check`; clients can read the token from `--token-env` or `$WPARSE_ADMIN_TOKEN`, which fits containers and CI.
+
+### Changed
+- **Token file permissions use a security floor**: `0600`/`0640`/`0440`/`0444` are accepted, so read-only Docker/Kubernetes secret mounts work; group/other-writable files are still rejected. Symlinks are followed but the resolved target is validated (Kubernetes projected secrets).
+- **`/admin/v1/runtime/status` now returns `token_fp`** (first 8 hex chars of the token's SHA-256, never the token). The daemon also logs it at startup so operators can confirm both sides use the same token.
+- **Upgraded to wp-motor 1.34.0**.
+
+### Fixed
+- An empty or multi-line token file is now a startup error; previously it silently produced a token that could never match.
+- Unauthorized-request logging is rate limited (10s window) so an unauthenticated scanner cannot flood the log.
+
+## [0.32.4-alpha] - 2026-10-22
+
+### Fixed
+- **Migration no longer rewrites the admin API token path**: when moving legacy `[admin_api]` into `wparse.local.toml`, `wproj conf update` now preserves the original `token_file` (for example a project-local `runtime/admin_api.token`), so the daemon does not read a different token and return 401.
+
+## [0.32.3-alpha] - 2026-10-22
+
+### Fixed
+- Fixed a port-reservation race in the daemon integration tests so the admin API and the TCP source always use different ports in CI.
+
+## [0.32.2-alpha] - 2026-10-22
+
+### Fixed
+- **Default sample WPL rule was unparsable**: `docker/default_setting/models/wpl/parse.wpl` used legacy syntax that the current parser rejects, so the default project started with no WPL rules. It now uses a valid nginx example. The daemon integration test readiness timeout was raised to 60s to avoid slow-CI false negatives.
+
+## [0.32.1-alpha] - 2026-10-22
+
+### Fixed
+- **Model files could be missing after a remote sync**: the remote cache checkout now uses a hard reset, so directories such as `models/` are fully restored before syncing. This fixes daemon startup reporting "no WPL rules found" on some environments.
+
+## [0.32.0-alpha] - 2026-10-22
+
+### Changed
+- **Admin API config moved out of the remote-managed tree**: `[admin_api]` now lives in `wparse.local.toml` at the project root instead of `conf/wparse.toml`. Infra sync replaces `conf/` wholesale, which used to reset `admin_api.bind` to the remote template value on every publish and break remote control.
+  - Precedence: `wparse.local.toml` > legacy `[admin_api]` in `conf/wparse.toml`.
+  - `wproj init` creates the local overlay; `wproj conf update` migrates legacy settings before syncing.
+  - Unmigrated projects still work with a startup warning.
+
+### Dependencies
+- Upgraded `wp-motor` `v1.32.0` → `v1.33.0` (`wproj init` no longer writes `[admin_api]` into `conf/wparse.toml`).
+
 ## [0.31.1] - 2026-10-21
 
 ### Fixed

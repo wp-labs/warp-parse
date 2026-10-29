@@ -1,5 +1,6 @@
 use crate::args::{
-    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, ValidateCmd, Wpadm, WpadmCli,
+    ConfCmd, EngineCmd, KnowdbCmd, ModelCmd, SelfCmd, StatCmd, TokenCmd, ValidateCmd, Wpadm,
+    WpadmCli,
 };
 use crate::handlers::conf::run_conf_update;
 use crate::handlers::engine::{run_engine_reload, run_engine_status};
@@ -9,6 +10,7 @@ use crate::handlers::self_update::{run_self_check, run_self_update};
 use crate::handlers::sinks::{list_sinks, show_sink_routes};
 use crate::handlers::sources::list_sources_for_cli;
 use crate::handlers::stat::{run_combined_stat, run_sink_stat, run_src_stat};
+use crate::handlers::token::{run_token_check, run_token_generate, run_token_show};
 use crate::handlers::validate::run_sink_validation;
 use crate::handlers::{data, knowdb, project};
 use orion_variate::EnvDict;
@@ -20,6 +22,7 @@ pub async fn dispatch_cli(cli: WpadmCli) -> RunResult<()> {
         Wpadm::SelfUpdate(sub) => dispatch_self_cmd(sub).await?,
         Wpadm::Engine(sub) => dispatch_engine_cmd(sub).await?,
         Wpadm::Conf(sub) => dispatch_conf_cmd(sub).await?,
+        Wpadm::Token(sub) => dispatch_token_cmd(sub)?,
         other => {
             let dict = load_sec_dict()?;
             match other {
@@ -32,6 +35,7 @@ pub async fn dispatch_cli(cli: WpadmCli) -> RunResult<()> {
                 Wpadm::SelfUpdate(_) => unreachable!("self command handled above"),
                 Wpadm::Engine(_) => unreachable!("engine command handled above"),
                 Wpadm::Conf(_) => unreachable!("conf command handled above"),
+                Wpadm::Token(_) => unreachable!("token command handled above"),
             }
         }
     }
@@ -55,6 +59,14 @@ async fn dispatch_engine_cmd(cmd: EngineCmd) -> RunResult<()> {
 async fn dispatch_conf_cmd(cmd: ConfCmd) -> RunResult<()> {
     match cmd {
         ConfCmd::Update(args) => run_conf_update(args).await,
+    }
+}
+
+fn dispatch_token_cmd(cmd: TokenCmd) -> RunResult<()> {
+    match cmd {
+        TokenCmd::Generate(args) => run_token_generate(args),
+        TokenCmd::Show(args) => run_token_show(args),
+        TokenCmd::Check(args) => run_token_check(args),
     }
 }
 

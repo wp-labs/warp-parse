@@ -39,7 +39,7 @@
 
 ### Base URL
 
-由 `conf/wparse.toml` 中的 `[admin_api]` 决定，例如：
+由项目根目录 `wparse.local.toml` 中的 `[admin_api]` 决定，例如：
 
 ```toml
 [admin_api]
@@ -54,6 +54,10 @@ http://127.0.0.1:19090
 ```
 
 如果启用了 TLS，则改为 `https://`。
+
+`wparse.local.toml` 是站点本地覆盖层，不在 `project_remote` 的托管目录内，
+远程发布不会覆盖它。若该文件不存在，仍会回退读取 `conf/wparse.toml` 中的
+`[admin_api]`（兼容旧工程，会输出告警）。
 
 ### Content-Type
 
@@ -499,8 +503,11 @@ X-Request-Id: manual-http-reload-001
 
 当前自动化测试已覆盖：
 
-- Bearer token 校验
-- token 文件权限检查
+- Bearer token 校验（常量时间比较，内存中只保存 SHA-256 摘要）
+- token 文件权限下限：接受 `0600`/`0640`/`0440`/`0444`，拒绝 group/other 可写
+- token 文件符号链接解析（Kubernetes projected secret）
+- 强制单行 token 内容
+- status 响应暴露 `token_fp`（不返回 token 本身）
 - 非回环地址绑定未启用 TLS 的拒绝路径
 - `version` 缺少 `update` 的非法请求
 - 同步 reload

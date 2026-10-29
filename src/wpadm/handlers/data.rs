@@ -6,6 +6,7 @@ use crate::handlers::cli::{dispatch_stat_cmd, dispatch_validate_cmd};
 use orion_conf::{EnvTomlLoad, TomlIO};
 use orion_error::conversion::{ErrorWith, SourceErr, ToStructError};
 use orion_variate::{EnvDict, EnvEvaluable};
+use std::path::PathBuf;
 use warp_parse::compat::UvsFrom;
 use wp_config::sources::types::{WarpSources, WpSource};
 use wp_engine::facade::config as constants;
@@ -51,6 +52,21 @@ pub async fn dispatch_data_cmd(sub: DataCmd, dict: &EnvDict) -> RunResult<()> {
 
 async fn do_clean(args: DataArgs, dict: &EnvDict) -> RunResult<()> {
     let project = WarpProject::load(&args.work_root, PrjScope::Normal, dict)?;
+    // `data_clean` resolves the state directory from `conf/wparse.toml` only.
+    // Clear the site-overlay value explicitly as well, so an overlay-based
+    // state directory is cleaned too (clearing a missing directory is a no-op).
+    let work_root = PathBuf::from(&args.work_root);
+    let state_dir = warp_parse::state::resolve_state_dir_maintenance(&work_root)?;
+    if state_dir.path() != wp_config::state::StateDir::default_for(&work_root).path() {
+        state_dir.clear().map_err(|err| {
+            RunReason::from_conf().to_err().with_detail(format!(
+                "clean state dir '{}' failed: {}",
+                state_dir.path().display(),
+                err
+            ))
+        })?;
+        println!("✓ Cleaned state dir '{}'", state_dir.path().display());
+    }
     project.data_clean(dict)
 }
 

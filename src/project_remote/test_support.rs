@@ -106,6 +106,11 @@ pub(super) fn write_runtime_local_dirs(work_root: &Path) {
     fs::create_dir_all(work_root.join("data")).expect("create data");
     fs::write(work_root.join("runtime/admin_api.token"), "token\n").expect("write token");
     fs::write(work_root.join("data/local.dat"), "local\n").expect("write data");
+    fs::write(
+        work_root.join("wparse.local.toml"),
+        "[admin_api]\nenabled = true\nbind = \"127.0.0.1:19999\"\n",
+    )
+    .expect("write local admin overlay");
 }
 
 fn commit_all(repo: &Repository, message: &str) -> Oid {

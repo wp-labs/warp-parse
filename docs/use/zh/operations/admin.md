@@ -14,7 +14,19 @@
 
 ## 启用管理面
 
-在 `conf/wparse.toml` 中配置：
+在项目根目录的 `wparse.local.toml` 中配置：
+
+> `wparse.local.toml` 是站点本地覆盖层，位于 `conf/` 之外。`project_remote`
+> 只会替换 `conf/`、`models/`、`topology/`、`connectors/`，因此远程发布不会
+> 覆盖这里的端口、TLS 和 token 路径。
+>
+> 兼容旧工程：若 `wparse.local.toml` 不存在，仍会读取 `conf/wparse.toml` 中的
+> `[admin_api]`，并输出一条告警。`wproj init` / `wproj conf update` 会自动迁移。
+> 若文件存在但缺少 `[admin_api]` 段（或 TOML 非法），会直接报错，不会静默回退。
+>
+> 建议把 `wparse.local.toml` 加入项目 `.gitignore`，避免误提交到发布仓库。
+
+示例（`wparse.local.toml`）：
 
 ```toml
 [admin_api]
@@ -29,24 +41,60 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "${HOME}/.warp_parse/admin_api.token"
 ```
 
 启动前创建 token 文件：
 
 ```bash
-mkdir -p runtime
-mkdir -p "${HOME}/.warp_parse"
-printf 'replace-with-a-secret-token\n' > "${HOME}/.warp_parse/admin_api.token"
-chmod 600 "${HOME}/.warp_parse/admin_api.token"
+wpadm token generate --out "${HOME}/.warp_parse/admin_api.token"
 ```
+
+`wpadm token generate` 写入 32 字节目随机数（64 位 hex），原子创建为 `0600`，
+只打印路径。目标已存在时拒绝覆盖（需 `--force`），且不会跟随输出路径上的符号链接。
 
 约束：
 
-- Unix 下 token 文件权限必须是 owner-only
+- token 文件必须是 group/other **不可写**的普通文件
+  （`0600`、`0640`、`0440`、`0444` 均可用；`0660`、`0664`、`0777` 被拒绝）
+  ——这是为了支持只读的 Docker/Kubernetes secret 挂载
+- 允许符号链接，但校验解析后的目标，因此 Kubernetes 的 projected secret
+  （`token -> ..data/token`）可以正常使用
+- 文件必须恰好包含一个非空行
 - 非回环地址绑定必须启用 TLS
-- 当前只支持 `bearer_token` 鉴权模式
+- 鉴权固定为 `bearer_token`，没有 auth mode 配置项
+
+引擎只在启动时读取一次 token，因此轮转需要替换文件并重启 daemon。
+
+## Token 工具
+
+```bash
+# 生成 token（只打印路径）
+wpadm token generate --out /run/secrets/wparse_admin_token
+
+# 体检：类型、符号链接目标、权限、属主、内容、指纹
+wpadm token check --file /run/secrets/wparse_admin_token
+
+# 主机文件 / CI 场景可要求更严的 owner-only
+wpadm token check --file "${HOME}/.warp_parse/admin_api.token" --require-owner-only
+
+# 查看当前生效的 token（值输出到 stdout，诊断信息输出到 stderr）
+wpadm token show --token-file /run/secrets/wparse_admin_token
+```
+
+`wpadm` 的解析顺序如下，因此在容器内或 CI 中（没有 `wparse.local.toml`）也能用：
+
+1. `--token-file <path>`
+2. `--token-env <NAME>`
+3. `$WPARSE_ADMIN_TOKEN`
+4. 本地 admin API 配置中的 `token_file`
+
+所有诊断输出只打印 8 位 `token_fp`（`sha256(token)` 前缀），不打印 token 本身。
+把引擎启动日志中的
+`admin api auth source=file path=... token_fp=...` 与客户端的指纹对比，即可确认双方持有同一个 token。
+
+容器部署请挂载**目录**而不是单个文件（`-v ./secrets:/run/secrets:ro`）：
+对单文件 bind mount 做 rename 替换不会传播到容器内。
 
 ## 启动方式
 

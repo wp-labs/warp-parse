@@ -68,6 +68,10 @@ pub enum Wpadm {
     #[command(subcommand, name = "engine")]
     Engine(EngineCmd),
 
+    /// 管理面 token 工具：生成、查看、体检 | Admin API token tools: generate, show, check
+    #[command(subcommand, name = "token")]
+    Token(TokenCmd),
+
     /// 远程规则版本更新工具 | Remote rule version update tools
     #[command(subcommand, name = "conf")]
     Conf(ConfCmd),
@@ -122,6 +126,72 @@ pub enum ConfCmd {
     Update(ConfUpdateArgs),
 }
 
+#[derive(Subcommand, Debug)]
+#[command(name = "token", about = "管理面 token 工具 | Admin API token tools")]
+pub enum TokenCmd {
+    /// 生成随机 token 并写入文件 | Generate a random token file
+    #[command(name = "generate", visible_alias = "生成")]
+    Generate(TokenGenerateArgs),
+
+    /// 查看当前生效的 token | Show the effective token
+    #[command(name = "show", visible_alias = "查看")]
+    Show(TokenShowArgs),
+
+    /// 检查 token 文件的可读性与权限 | Check token file readability and permissions
+    #[command(name = "check", visible_alias = "检查")]
+    Check(TokenCheckArgs),
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct TokenGenerateArgs {
+    /// 输出路径；省略时使用 `$HOME/.warp_parse/admin_api.token`
+    /// | Output path; defaults to `$HOME/.warp_parse/admin_api.token`
+    #[clap(long = "out", visible_alias = "输出")]
+    pub out: Option<String>,
+
+    /// 覆盖已存在的普通文件 | Overwrite an existing regular file
+    #[clap(long = "force", default_value_t = false, visible_alias = "强制")]
+    pub force: bool,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct TokenShowArgs {
+    /// 工作目录（用于解析 wparse.local.toml）
+    /// | Work directory (used to resolve wparse.local.toml)
+    #[clap(short, long, default_value = ".", visible_alias = "工作目录")]
+    pub work_root: String,
+
+    /// Bearer token 文件覆盖 | Override bearer token file
+    #[clap(long = "token-file", visible_alias = "令牌文件")]
+    pub token_file: Option<String>,
+
+    /// 从该环境变量读取 token | Read the token from this environment variable
+    #[clap(long = "token-env", visible_alias = "令牌变量")]
+    pub token_env: Option<String>,
+}
+
+#[derive(Args, Debug, Clone, Default)]
+pub struct TokenCheckArgs {
+    /// 工作目录（用于解析 wparse.local.toml）
+    /// | Work directory (used to resolve wparse.local.toml)
+    #[clap(short, long, default_value = ".", visible_alias = "工作目录")]
+    pub work_root: String,
+
+    /// 待检查的 token 文件；省略时使用本地配置中的 token_file
+    /// | Token file to inspect; defaults to the configured token_file
+    #[clap(long = "file", visible_alias = "文件")]
+    pub file: Option<String>,
+
+    /// 要求 owner-only 权限（更严格的检查）
+    /// | Require owner-only permissions (stricter check)
+    #[clap(
+        long = "require-owner-only",
+        default_value_t = false,
+        visible_alias = "仅属主"
+    )]
+    pub require_owner_only: bool,
+}
+
 #[derive(Args, Debug, Clone, Default)]
 pub struct EngineTargetArgs {
     /// 工作目录（用于解析 conf/wparse.toml）| Work directory (used to resolve conf/wparse.toml)
@@ -149,6 +219,15 @@ pub struct EngineTargetArgs {
         help = "Bearer token 文件覆盖 | Override bearer token file"
     )]
     pub token_file: Option<String>,
+
+    /// 从该环境变量读取 Bearer token；未设置时尝试 WPARSE_ADMIN_TOKEN
+    /// | Read the bearer token from this environment variable; falls back to WPARSE_ADMIN_TOKEN
+    #[clap(
+        long = "token-env",
+        visible_alias = "令牌变量",
+        help = "从该环境变量读取 Bearer token；未设置时尝试 WPARSE_ADMIN_TOKEN | Read the bearer token from this environment variable; falls back to WPARSE_ADMIN_TOKEN"
+    )]
+    pub token_env: Option<String>,
 
     /// 跳过 TLS 证书校验（仅调试）| Skip TLS certificate verification (debug only)
     #[clap(

@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use crate::args::ConfUpdateArgs;
 use crate::format::print_json;
+use crate::handlers::local_conf::migrate_local_admin_api_conf;
 use orion_error::conversion::ToStructError;
 use warp_parse::compat::UvsFrom;
 use warp_parse::project_remote;
@@ -95,7 +96,20 @@ where
             })
             .unwrap_or("-")
     );
+    // Resolve and cache the state directory before `conf/` can be replaced by
+    // the remote sync: the rollback path must keep using the same directory.
+    let state_dir = warp_parse::state::resolve_state_dir_maintenance(&work_root)?;
+    info_ctrl!("wpadm conf update state_dir={}", state_dir.path().display());
     let _lock_guard = project_remote::acquire_project_remote_lock(&work_root)?;
+    // `conf/` is replaced wholesale by infra sync. Move the site-local admin
+    // API settings out of it before that happens. Keep this inside the lock so
+    // concurrent updates cannot race on the overlay file.
+    if migrate_local_admin_api_conf(&work_root)? {
+        info_ctrl!(
+            "wpadm conf update migrated [admin_api] to wparse.local.toml work_root={}",
+            work_root.display()
+        );
+    }
     let rollback_snapshot =
         project_remote::capture_project_remote_snapshot_with_group(&work_root, group)?;
     let dict = warp_parse::load_sec_dict()?;

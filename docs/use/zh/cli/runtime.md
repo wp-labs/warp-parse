@@ -87,3 +87,28 @@ wparse batch --work-root .
 - 功能与 CLI 使用指南: [index.md](index.md)
 - 运行时管理面使用说明: [../operations/admin.md](../operations/admin.md)
 - 项目工具使用指南: [project.md](project.md)
+
+## 状态目录
+
+引擎状态（pid 文件、单实例锁、`rule_mapping.dat`、`authority.sqlite`、
+`project_remote` 缓存）集中在一个目录：默认 `<work_root>/.run`。
+
+当 work root 只读，或希望把状态放到独立卷上时：
+
+```toml
+# wparse.local.toml（站点本地，不会被 project_remote 覆盖）
+[runtime]
+state_dir = "/state"
+```
+
+优先级：`--state-dir` > `wparse.local.toml` `[runtime]` > `conf/wparse.toml`
+`[runtime]` > `<work_root>/.run`。
+
+daemon 启动时会打印实际生效的目录（`runtime state_dir: ...`）。约束：
+
+- 不能是 work root 本身、它的上级目录，或 `project_remote` 托管目录
+  （`conf`、`models`、`topology`、`connectors`）内部
+- 容器部署请在该路径挂载独立卷，并保证与引擎同主机/同内核
+  （单实例互斥依赖 `flock`）
+- 修改目录不会迁移已有状态；切换前请手动搬迁，否则会在新位置重新生成
+  `authority.sqlite` / `project_remote_state.json`

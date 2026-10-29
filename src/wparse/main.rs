@@ -29,6 +29,20 @@ fn register_extension() {
     warp_parse::feats::register_for_runtime();
 }
 
+/// Apply the effective state directory (CLI `--state-dir` wins over the site
+/// overlay and the engine config) and prime the process cache used by
+/// maintenance paths.
+fn inject_state_dir(
+    work_root: &Path,
+    dict: &orion_variate::EnvDict,
+    args: &mut wp_engine::facade::args::ParseArgs,
+) -> RunResult<()> {
+    let state_dir =
+        warp_parse::state::resolve_effective_state_dir(work_root, dict, args.state_dir.as_deref())?;
+    args.state_dir = Some(state_dir.to_path_buf().to_string_lossy().to_string());
+    Ok(())
+}
+
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
     if let Err(e) = do_main().await {
@@ -57,7 +71,8 @@ async fn do_main() -> RunResult<()> {
     match cmd {
         WParseCLI::Daemon(args) => {
             let work_root = instance_root.expect("daemon work root resolved");
-            let engine_args: wp_engine::facade::args::ParseArgs = args.into();
+            let mut engine_args: wp_engine::facade::args::ParseArgs = args.into();
+            inject_state_dir(Path::new(&work_root), &env_dict, &mut engine_args)?;
 
             let mut app = WpApp::try_from(engine_args, env_dict.clone())?;
             let admin_api = warp_parse::admin_api::start_if_enabled(
@@ -74,7 +89,9 @@ async fn do_main() -> RunResult<()> {
             run_result?;
         }
         WParseCLI::Batch(args) => {
-            let engine_args: wp_engine::facade::args::ParseArgs = args.into();
+            let work_root = instance_root.expect("batch work root resolved");
+            let mut engine_args: wp_engine::facade::args::ParseArgs = args.into();
+            inject_state_dir(Path::new(&work_root), &env_dict, &mut engine_args)?;
             let mut app = WpApp::try_from(engine_args, env_dict)?;
             log_build_info_once();
             app.run_batch().await?;

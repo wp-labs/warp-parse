@@ -36,7 +36,12 @@ Before rollout, confirm:
 
 ## Enable The Runtime Admin API
 
-Hot reload depends on the runtime admin API. Configure `conf/wparse.toml` as described in [admin.md](admin.md):
+Hot reload depends on the runtime admin API. Configure `wparse.local.toml` in the project root as described in [admin.md](admin.md):
+
+> `wparse.local.toml` is not a managed directory entry, so remote publishes
+> never overwrite it. Do not move `[admin_api]` back into `conf/wparse.toml`,
+> and do not commit the overlay to the infra publish repo; infra sync would
+> otherwise propagate one site's port to every other site.
 
 ```toml
 [admin_api]
@@ -51,23 +56,20 @@ cert_file = ""
 key_file = ""
 
 [admin_api.auth]
-mode = "bearer_token"
 token_file = "${HOME}/.warp_parse/admin_api.token"
 ```
 
 Prepare the token file before startup:
 
 ```bash
-mkdir -p runtime
-mkdir -p "${HOME}/.warp_parse"
-printf 'replace-with-a-secret-token\n' > "${HOME}/.warp_parse/admin_api.token"
-chmod 600 "${HOME}/.warp_parse/admin_api.token"
+wpadm token generate --out "${HOME}/.warp_parse/admin_api.token"
 ```
 
 Constraints:
 
 - `batch` mode does not expose the admin API
-- on Unix, the token file must be owner-only
+- the token file must be a regular file that group/other cannot write
+  (`0600`/`0640`/`0440`/`0444` are accepted; see `docs/use/en/operations/admin.md`)
 - non-loopback binds require TLS
 
 ## First Deployment
@@ -154,6 +156,9 @@ connectors/  ┘                    config, topology, connectors
 | `models` | `models/` | Parse rules (wpl), model definitions (oml), knowledge base |
 | `infra` | `conf/`, `topology/`, `connectors/` | Main config, source/sink topology, connector configs |
 
+`wparse.local.toml`, `runtime/` and `data/` are outside the managed directories
+and are preserved by sync.
+
 Each repo has independent versioning. Upgrading models does not affect infra config, and vice versa.
 
 ### Configuration
@@ -195,6 +200,9 @@ How `wproj conf update --group <group>` resolves the target version:
 This ensures sensible defaults for both initial deployment and subsequent updates.
 
 ### Sync Flow
+
+> All `.run/…` paths on this page follow `[runtime].state_dir` (default `.run`).
+> See the runtime guide for configuring a dedicated state volume.
 
 `wproj conf update --group <group>` steps:
 

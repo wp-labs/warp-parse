@@ -8,6 +8,106 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.3-alpha] - 2026-10-28
+
+### Fixed
+- **文件 Sink 的 `max_size = "10MB"` 不再报类型错误**：升级到 wp-motor v1.38.3，内置 `file_*` connector 模板不再给 `max_size` / `roll_compress` 配默认值（仅保留在 `allow_override`），避免配置合并的类型一致性校验把文档推荐的字符串容量判错。
+
+## [0.35.2-alpha] - 2026-10-28
+
+### Fixed
+- **清除 `zstd` 安全公告**：升级到 wp-motor v1.38.2（`wp-connector-utils 0.5.1`）+ `include-flate 0.3.5`，依赖树里 `zstd` 统一为 0.14.3 / `zstd-safe` 8.2.0，不再存在 0.13.x；覆盖 `RUSTSEC-2026-0391` / `0398` / `0403`。
+
+## [0.35.1-alpha] - 2026-10-28
+
+### Changed
+- **升级到 wp-motor v1.38.1**：文件 Sink 的滚动归档 `zip` 依赖升到 9.1，消除 `RUSTSEC-2026-0367` / `0368` / `0369` 三条公告（仅影响解压路径，本项目只写归档），并移除 `zopfli` 依赖。
+
+## [0.35.0-alpha] - 2026-10-28
+
+### Added
+- **文件 Sink 支持按容量滚动与归档压缩**（升级到 wp-motor v1.38.0）：新增 `max_size`（单文件最大字节数，支持 `10MB` / `1GiB` 写法，`0` = 不限）、`max_rolls`（保留历史文件个数，默认 `3`）与 `roll_compress`（`none` / `gzip` / `zip`）。
+  - 超限时先滚动再写，历史文件按 `out.dat.1` / `out.dat.1.gz` / `out.dat.1.zip` 编号，超出保留个数的自动删除最旧文件。
+  - 滚动时收尾并重建压缩/加密流，每个历史文件都能独立解压解密；归档压缩在阻塞线程执行，失败自动回退为不压缩归档，不丢数据。
+  - `protocol = "arrow"` 不支持滚动，配置 `max_size` / `max_rolls` / `roll_compress` 会直接报配置错误。
+
+### Note
+- 现有项目的 connector 定义需把 `max_size` / `max_rolls` / `roll_compress` 加入 `allow_override` 才能覆盖。
+
+## [0.34.2-alpha] - 2026-10-27
+
+### Added
+- **升级到 wp-motor v1.37.1**，修复 OML 工程里实例级全局 tag 丢失的问题（见下）。
+
+### Fixed
+- **配了 `sink_group.oml` 之后 `WP_GLOBAL_TAGS` 丢失**：OML 会用模型输出重建记录，解析阶段盖上的实例级全局 tag 不再出现在输出里。现在在变换后补盖，`oml = ["..."]` 与不配 OML 的字段集一致。
+- **全局 tag 优先级最高**：与模型里写死的同名字段或 sink `tags` 同名时，最终只保留一份并使用 `WP_GLOBAL_TAGS` 的值，不再出现重复键；OML 转换失败进入 error sink 的记录也会带上全局 tag。
+
+## [0.34.1-alpha] - 2026-10-26
+
+### Added
+- **升级到 wp-motor v1.37.0**，带上救援链路的两处修复（见下）。
+
+### Fixed
+- **救援回放投错 sink 组**：回放原先只按 sink 名匹配目标，自动命名时不同组的同名 sink（都是 `[0]`）都会被当成候选，救援数据按通道余量被分流到别的组。现在从救援文件路径解析组名，按「组 + 名」精确匹配。
+- **回放把背压当成 sink 故障**：分发通道满原先被当成发送失败并切换候选，既放大上面的错投，也可能让整份救援文件回放中断。现在改为在同一个候选上等待重试，只有通道关闭等真实错误才换候选。
+- **救援生命周期日志看不见**：`rescue file finalized`、`recovered from send failures`、`breaker open, skipped` 统一为 WARN，且每次故障各一条（原来会被 60s 限流吞掉）。
+
+## [0.34.0-alpha] - 2026-10-25
+
+### Changed
+- **移除 admin API 配置里的 `[admin_api.auth].mode`**：鉴权方式固定为 Bearer Token，该字段没有实际作用。`wpadm conf` 生成和迁移的配置不再写入 `mode`，`[admin_api.auth]` 现在只剩 `token_file`。
+  - 手工保留 `mode = "bearer_token"` 的旧配置在加载时会报 `unknown field`，删掉该行即可。
+
+## [0.33.0-alpha] - 2026-10-23
+
+### Added
+- **运行状态目录可配置**：新增 `[runtime].state_dir`（写在 `wparse.local.toml` 或 `conf/wparse.toml`）和 `--state-dir` 参数。默认仍是 `<work_root>/.run`，现有工程无需改动。
+  - pid、单实例锁、`rule_mapping.dat`、`authority.sqlite` 以及 `project_remote` 的缓存/备份/state 全部跟随该目录；work root 可以挂成只读，容器可以把状态放到独立卷。
+  - 优先级：`--state-dir` > `wparse.local.toml` > `conf/wparse.toml` > `.run`。daemon 启动日志会打印实际生效的目录。
+  - 非法值直接启动失败：不能是 work root 本身、它的上级目录，或 `project_remote` 托管目录（`conf`/`models`/`topology`/`connectors`）内部；未展开的 `${VAR}` 同样报错。
+- **admin API token 工具**：新增 `wpadm token generate|show|check`；客户端支持 `--token-env` 和 `$WPARSE_ADMIN_TOKEN`，便于容器与 CI 使用。
+
+### Changed
+- **token 文件权限改为安全下限**：`0600`/`0640`/`0440`/`0444` 均可使用，支持 Docker/Kubernetes 只读 secret 挂载；group/other 可写仍拒绝。允许符号链接但校验解析后的目标（Kubernetes projected secret）。
+- **`/admin/v1/runtime/status` 新增 `token_fp`**（token 的 SHA-256 指纹前 8 位，不含 token 本身），引擎启动日志也会打印，便于确认客户端与引擎是否使用同一个 token。
+- **升级 wp-motor 1.34.0**。
+
+### Fixed
+- token 文件为空或包含多行时直接报错；此前会静默产生一个永远无法匹配的 token。
+- 未授权请求日志限流（10 秒窗口），避免扫描器刷日志。
+
+## [0.32.4-alpha] - 2026-10-22
+
+### Fixed
+- **迁移时不再改写 admin API token 路径**：`wproj conf update` 把遗留 `[admin_api]` 搬到 `wparse.local.toml` 时保留原 `token_file`（例如项目内 `runtime/admin_api.token`），避免 daemon 启动后读取另一个 token 并返回 401。
+
+## [0.32.3-alpha] - 2026-10-22
+
+### Fixed
+- 修复 daemon 集成测试中端口预留可能复用的竞态，确保 CI 里 admin API 与 TCP source 使用不同端口。
+
+## [0.32.2-alpha] - 2026-10-22
+
+### Fixed
+- **默认示例 WPL 规则不可解析**：`docker/default_setting/models/wpl/parse.wpl` 使用了当前解析器不支持的旧语法，默认工程启动后没有任何 WPL 规则；已更新为可解析的 nginx 示例。daemon 集成测试的启动等待放宽到 60s，避免慢速 CI 误判。
+
+## [0.32.1-alpha] - 2026-10-22
+
+### Fixed
+- **远程同步后模型文件可能缺失**：远端缓存 checkout 改为 hard reset，确保被清理过的 `models/` 等目录在同步前完整恢复，避免个别环境下 daemon 启动时报“未找到任何 WPL 规则”。
+
+## [0.32.0-alpha] - 2026-10-22
+
+### Changed
+- **管理面配置移出远程托管目录**：`[admin_api]` 从 `conf/wparse.toml` 拆到项目根目录 `wparse.local.toml`。`project_remote` 的 infra 同步会整体替换 `conf/`，旧写法会在每次远程发布后把 `admin_api.bind` 重置为远端模板值，导致远程控制端口失效。
+  - 优先级：`wparse.local.toml` > `conf/wparse.toml` 中遗留的 `[admin_api]`。
+  - `wproj init` 自动创建本地覆盖文件；`wproj conf update` 在同步前自动迁移遗留配置。
+  - 旧工程未迁移时仍可读取 `conf/wparse.toml`，启动时输出告警。
+
+### Dependencies
+- 升级 `wp-motor` `v1.32.0` → `v1.33.0`（`wproj init` 不再把 `[admin_api]` 写进 `conf/wparse.toml`）。
+
 ## [0.31.1] - 2026-10-21
 
 ### Fixed

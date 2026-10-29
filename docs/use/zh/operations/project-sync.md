@@ -18,7 +18,11 @@
 
 ## 启用运行时管理面
 
-规则热更新依赖运行时管理面。按 [admin.md](admin.md) 配置 `conf/wparse.toml`。
+规则热更新依赖运行时管理面。按 [admin.md](admin.md) 配置项目根目录的 `wparse.local.toml`。
+
+> `wparse.local.toml` 不属于任何托管目录，远程发布不会覆盖它。请勿把
+> `[admin_api]` 写回 `conf/wparse.toml`，也不要把它提交到 infra 发布仓库，
+> 否则 infra 同步会把远端模板值带到其他站点。
 
 ## 首次部署
 
@@ -82,6 +86,8 @@ connectors/  ┘                   管理配置、拓扑、连接器
 | `models` | `models/` | 解析规则 (wpl)、模型定义 (oml)、知识库 |
 | `infra` | `conf/`, `topology/`, `connectors/` | 主配置、数据源/汇拓扑、连接器配置 |
 
+`wparse.local.toml`、`runtime/`、`data/` 不在托管目录内，同步时保持不变。
+
 两个仓库独立版本管理，互不影响。models 升级不影响 infra 配置，反之亦然。
 
 ### 配置写法
@@ -123,6 +129,9 @@ init_version = "0.1.6"       # 首次初始化时使用的版本
 这确保首次部署和后续更新都有合理的默认行为。
 
 ### 同步流程
+
+> 本页所有 `.run/…` 路径均以 `[runtime].state_dir` 为前缀（默认 `.run`）。
+> 配置独立状态卷的写法见运行时指南。
 
 `wproj conf update --group <group>` 执行步骤：
 

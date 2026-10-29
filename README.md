@@ -57,7 +57,7 @@ Warp Parse currently supports runtime admin operations in daemon mode only.
 - Status query: `cargo run --bin wpadm -- engine status --work-root .`
 - Reload trigger: `cargo run --bin wpadm -- engine reload --work-root . --reason "manual reload"`
 
-To enable the admin API, configure `[admin_api]` in `conf/wparse.toml`, create `${HOME}/.warp_parse/admin_api.token`, and start:
+To enable the admin API, configure `[admin_api]` in `wparse.local.toml` at the project root, create `${HOME}/.warp_parse/admin_api.token`, and start:
 
 ```bash
 cargo run --bin wparse -- daemon --work-root .

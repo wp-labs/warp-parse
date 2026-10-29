@@ -39,7 +39,7 @@ There is no separate runtime restart API at the moment.
 
 ### Base URL
 
-The base URL is determined by `[admin_api]` in `conf/wparse.toml`, for example:
+The base URL is determined by `[admin_api]` in `wparse.local.toml` at the project root, for example:
 
 ```toml
 [admin_api]
@@ -54,6 +54,11 @@ http://127.0.0.1:19090
 ```
 
 If TLS is enabled, use `https://`.
+
+`wparse.local.toml` is the site-local overlay and lives outside the
+`project_remote` managed directories, so remote publishes never overwrite it.
+When the file is absent, `[admin_api]` in `conf/wparse.toml` is still honored as
+a backward-compatible fallback (with a warning).
 
 ### Content-Type
 
@@ -499,8 +504,11 @@ Recommended integration order:
 
 Current automated coverage includes:
 
-- Bearer token validation
-- token-file permission checks
+- Bearer token validation (constant-time, stored as a SHA-256 digest)
+- token-file permission floor: `0600`/`0640`/`0440`/`0444` accepted, group/other-writable rejected
+- token-file symlink resolution (Kubernetes projected secrets)
+- single-line token content enforcement
+- `token_fp` exposure in the status response (never the token value)
 - rejection of non-loopback bind without TLS
 - invalid request path where `version` is provided without `update`
 - synchronous reload
