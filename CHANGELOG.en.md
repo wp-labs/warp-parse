@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.36.0-alpha] - 2026-11-08
+
+### Added
+- **New WPL `xml(...)` structured type** (upgraded to wp-motor v1.39.0 / wp-lang 0.9.0): XML documents are parsed into fields by element path (`chars@url`, `chars@packet/sip`), independent of element order, with missing elements skipped silently. Undeclared elements are emitted as `chars` (drop them with `_@key`) and entities are decoded. This fits vendor logs that embed XML inside a JSON field (e.g. Sangfor probe, wp-labs/warp-parse#373): `chars@result | json_unescape() | (xml(...))`.
+- **Metrics gain a `tenant_id` label** (upgraded to wp-connectors v0.24.0): `wparse_receive_data`, `wparse_parse_all` and `wparse_send_to_sink` now carry the `tenant_id` from the data, so multi-tenant deployments can split and aggregate per tenant in VM / Grafana. A missing value becomes an empty string, so old data and existing dashboards keep working.
+
+### Fixed
+- **The "star + preserve marker" separator pattern works again**: `{*(key=)}` / `{*(<tag>)}` now search forward and keep `key=` in the stream (previously they only matched at the current cursor and fell back to reading to end of line), restoring rules that rely on skipping a prefix.
+
 ## [0.35.3-alpha] - 2026-10-28
 
 ### Fixed
