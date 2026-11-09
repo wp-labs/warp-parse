@@ -10,18 +10,21 @@ mod sys_ver_adm {
   #[usage(desp="add tag by version ")]
   flow tag_stable {
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
-    gx.cmd (  "git tag v${VERSION}" );
+    gx.sn( file: "./exp_sn.txt");
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}" );
     gx.cmd (  "git push --tags" );
   }
 
   flow tag_beta{
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
-    gx.cmd (  "git tag v${VERSION}-beta" );
+    gx.sn( file: "./exp_sn.txt");
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}-beta" );
     gx.cmd (  "git push --tags" );
   }
   flow tag_alpha{
     gx.ver ( file : "${GXL_START_ROOT}/version.txt" ,  inc : "null"  );
-    gx.cmd (  "git tag v${VERSION}-alpha" );
+    gx.sn( file: "./exp_sn.txt");
+    gx.cmd (  "git tag exp-v${VERSION}-${SN}-alpha" );
     gx.cmd (  "git push --tags" );
   }
 }
