@@ -8,6 +8,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.0-alpha] - 2026-11-08
+
+### Added
+- **WPL 新增 `xml(...)` 结构化类型**（升级到 wp-motor v1.39.0 / wp-lang 0.9.0）：XML 文档按元素路径解析成字段（`chars@url`、`chars@packet/sip`），与元素顺序无关，缺失元素自动跳过；未声明元素按 `chars` 输出（`_@key` 可丢弃），实体自动解码。适合 `result` 这类「JSON 字段里塞 XML」的厂商日志（如深信服探针，wp-labs/warp-parse#373）：`chars@result | json_unescape() | (xml(...))`。
+- **指标新增 `tenant_id` 标签**（升级到 wp-connectors v0.24.0）：`wparse_receive_data`、`wparse_parse_all`、`wparse_send_to_sink` 会带上数据中的 `tenant_id`，多租户部署可直接在 VM / Grafana 上按租户拆分与聚合；数据缺失时取空串，旧数据与既有看板不受影响。
+
+### Fixed
+- **分隔符模式的「星号 + 保留标记」恢复生效**：`{*(key=)}` / `{*(<tag>)}` 现在会向前搜索并保留 `key=`（此前只在当前光标位置匹配，匹配不到就退化为读到行尾），依赖该写法跳过前缀的规则恢复正常。
+
 ## [0.35.3-alpha] - 2026-10-28
 
 ### Fixed

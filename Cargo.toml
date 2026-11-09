@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.35.3-E5" # @gxl:set(version)
+version = "0.36.0" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -195,14 +195,14 @@ wp-error = "0.13"
 
 wp-knowledge  =  "0.19"
 # @gxl:block(remote_motor)
-wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.38.3" }
-wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.38.3" }
-wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.38.3" }
-wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.38.3" }
+wp-engine     = {                            git = "https://github.com/wp-labs/wp-motor", tag = "v1.39.0" }
+wp-config     = { package = "wp-config",     git = "https://github.com/wp-labs/wp-motor", tag = "v1.39.0" }
+wp-cli-core   = { package = "wp-cli-core",   git = "https://github.com/wp-labs/wp-motor", tag = "v1.39.0" }
+wp-proj       = { package = "wp-proj",       git = "https://github.com/wp-labs/wp-motor", tag = "v1.39.0" }
 # @gxl:end(remote_motor)
 
 wp-self-update =  "0.4"
-wp-connectors = { git ="https://github.com/wp-labs/wp-connectors",tag = "v0.23.0", optional = true }
+wp-connectors = { git ="https://github.com/wp-labs/wp-connectors",tag = "v0.24.0", optional = true }
 wp-connectors-labs = { git = "https://github.com/wp-labs/wp-connectors-labs.git", tag = "v0.1.14", optional = true, features = ["dmdb", "udp"] }
 # wp-connectors-labs = {package = "wp-connectors-labs", path = "../wp-connectors-exp", optional = true, features = ["dmdb", "udp"] }
 # @gxl:block(local_motor)
