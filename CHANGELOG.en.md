@@ -8,6 +8,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.36.1-alpha] - 2026-11-14
+
+### Fixed
+- **TCP/TLS sinks recover automatically after the receiver restarts** (upgraded to wp-motor v1.39.1 / wp-core-connectors 0.11.5, wp-labs/warp-parse#374): after a write failure the sender rebuilds the connection with a 1s→30s backoff (including the TLS handshake), so `wparse` no longer needs a restart once the receiver is back. Reconnects are capped at 5s, and shutdown on a broken link no longer fails on close_notify / drain.
+- **`syslog` TCP sinks also self-heal**: `syslog` over TCP reconnects automatically once the receiver is back; UDP behaviour is unchanged.
+- **TCP/TLS connections enable keepalive**: probes start after 30s idle, repeat every 10s, and three missed probes mark the link dead, so half-open connections are detected sooner.
+
+### Note
+- `drop_when_error = true` keeps its drop policy: records are still dropped and counted during the outage, but the breaker probe can now actually rebuild the link, so no manual restart is required.
+
 ## [0.36.0-alpha] - 2026-11-08
 
 ### Added

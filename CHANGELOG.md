@@ -8,6 +8,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.1-alpha] - 2026-11-14
+
+### Fixed
+- **接收端重启后 TCP/TLS sink 自动恢复**（升级到 wp-motor v1.39.1 / wp-core-connectors 0.11.5，wp-labs/warp-parse#374）：发送端写失败后按 1s→30s 退避自动重建连接（含 TLS 握手），接收端恢复后无需重启 `wparse`；重连建连有 5s 超时，坏链路下的退出不再因 close_notify / 排空失败报错。
+- **`syslog` TCP sink 同样支持断链自愈**：`syslog` + TCP 在接收端恢复后自动重连；UDP 行为不变。
+- **TCP/TLS 连接开启 keepalive**：空闲 30s 开始探测、间隔 10s、3 次无响应判定断链，更快发现半开连接。
+
+### Note
+- `drop_when_error = true` 的丢弃策略不变：故障窗口内仍按策略丢弃并计数，但接收端恢复后熔断探测可以真正重建链路，不再需要人工重启发送端。
+
 ## [0.36.0-alpha] - 2026-11-08
 
 ### Added
