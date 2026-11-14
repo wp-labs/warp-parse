@@ -8,6 +8,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.36.2-alpha] - 2026-11-14
+
+### ⚠️ BREAKING CHANGES
+- **`wp_event_id` now uses a deterministic layout** (upgraded to wp-motor v1.39.2 / wp-lang 0.9.1 / wp-model-core 0.10.2): the value is `secs(32) | instance_id(10) | per-second counter(22)`. The previous scheme was a random 63-bit seed plus a process-local counter, so two machines starting in the same second emitted identical sequences (follow-up to wp-labs/warp-parse#374). Time now sits in the high bits, so numeric comparison is time order (valid until 2106-02-07). The field is still a string, so mixed old/new rows still insert fine, but ordering is no longer meaningful across the migration boundary.
+
+### Added
+- **Instance id `WP_INS_ID`**: range `100..=1123` (1024 instances) determines the instance segment of `wp_event_id`, so ids never collide across instances. The lookup path is identical to `WP_GLOBAL_TAGS`: process environment (`docker -e` / systemd) first, then `<work_root>/.env`, then `<work_root>/.warp_parse/.env`; when unset the default `100` is used and a WARN is logged.
+- **Startup validation**: a non-numeric value, an out-of-range value (below 100 or above 1123), or a change after the first id was issued makes the process **fail to start** rather than silently fall back.
+
+```bash
+# multi-instance deployment: give every instance its own id
+docker run -e WP_INS_ID=101 ...
+# or write it into work root/.env
+WP_INS_ID=101
+```
+
+### Note
+- The per-second counter is capped at 4,194,304 (2x headroom over a single instance at 2M EPS); on exhaustion the logical second advances instead of stalling or wrapping, and a clock rollback reuses the last logical second so ids never repeat.
+- **Downstream column types**: `wp_event_id` is a `u64` throughout and is emitted as a string — no signed integer is involved on the wparse side. Only a *signed* `BIGINT` column runs out after 2038-01-19; a string column or `BIGINT UNSIGNED` works until 2106. On a `VARCHAR` column lexicographic order only matches numeric order while the digit count is constant (ids go from 19 to 20 digits around 2044), so sort with `CAST(... AS BIGINT UNSIGNED)`.
+
 ## [0.36.1-alpha] - 2026-11-14
 
 ### Fixed

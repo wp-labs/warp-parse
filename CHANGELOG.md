@@ -8,6 +8,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.2-alpha] - 2026-11-14
+
+### ⚠️ BREAKING CHANGES
+- **`wp_event_id` 改为确定性布局**（升级到 wp-motor v1.39.2 / wp-lang 0.9.1 / wp-model-core 0.10.2）：取值改为 `秒(32) | 实例号(10) | 每秒计数器(22)`。此前是「随机 63 位种子 + 进程内计数器」，两台机器同秒启动会产出相同序列（wp-labs/warp-parse#374 后续）。现在时间在 ID 高位，按**数值**比较即时间序（可用到 2106-02-07）；字段仍是字符串，新旧行混存不会插入失败，但交界处不再有序。
+
+### Added
+- **实例号 `WP_INS_ID`**：取值 `100..=1123`（共 1024 个实例），决定 `wp_event_id` 的实例段，跨实例永不重复。读取路径与 `WP_GLOBAL_TAGS` 完全一致 —— 进程环境（`docker -e` / systemd）优先，其次 work root 的 `.env`，再退到 `<work_root>/.warp_parse/.env`；未设置时回退默认值 `100` 并打 WARN。
+- **启动校验**：`WP_INS_ID` 非数字、越界（小于 100 或大于 1123）、或首次发号后被改动 → **启动失败**，不静默回退。
+
+```bash
+# 多实例部署：每台一个不同的实例号
+docker run -e WP_INS_ID=101 ...
+# 或写进 work root/.env
+WP_INS_ID=101
+```
+
+### Note
+- 每秒计数器上限 4,194,304（单实例 200 万 EPS 仍有 2 倍余量），超出时逻辑秒前进一格，不 stall、不回绕；挂钟回拨时沿用已用过的逻辑秒，不会重复。
+- **下游列类型**：`wp_event_id` 全程 `u64` 并以字符串输出，wparse 侧不涉及有符号数。只有接收端建成有符号 `BIGINT` 时，2038-01-19 之后才会超出该列范围；用字符串列或 `BIGINT UNSIGNED` 可直接用到 2106。若列是 `VARCHAR`，字典序仅在位数相同时成立（ID 约 2044 年从 19 位变 20 位），排序请用 `CAST(... AS BIGINT UNSIGNED)`。
+
 ## [0.36.1-alpha] - 2026-11-14
 
 ### Fixed
