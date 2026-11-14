@@ -15,6 +15,7 @@ This directory contains operator-facing and integration-facing documentation.
 - `operations/`
 - Runtime admin usage: [operations/admin.md](operations/admin.md)
 - Remote project sync and rule reload SOP: [operations/project-sync.md](operations/project-sync.md)
+- Instance id (WP_INS_ID) and multi-instance deployments: [operations/instance-id.md](operations/instance-id.md)
 
 ## Chinese Counterpart
 
