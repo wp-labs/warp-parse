@@ -8,6 +8,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.36.4-alpha] - 2026-11-15
+
+### Added
+- **Three relay switches** (upgraded to wp-motor v1.39.4): "keep the upstream meta" is now configurable instead of fixed, and every default equals the behaviour before the switches existed:
+
+  | Switch | Default | Scope | When `false` |
+  | --- | --- | --- | --- |
+  | `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id` | re-identify at this instance, overwriting the upstream value |
+  | `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip` | overwrite with this instance's source key / peer IP |
+  | `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5` (only when `gen_event_md5 = true`) | recompute from this instance's payload |
+
+  Together with the existing `UPSTREAM_OML_NAME_KEEP` (default `false`) the four switches cover one semantic axis each; all are read from the process environment, so a `.env` works too.
+
+### Changed
+- **Meta writes now follow upsert semantics**: append when upstream is absent, leave untouched when kept, and **remove every same-named field before appending** when overridden, so a record never carries two identically named meta fields. Overriding `wp_event_id` updates the internal handle together with the field.
+- `wp_event_md5` is no longer recomputed when the upstream digest is kept.
+
 ## [0.36.3-alpha] - 2026-11-15
 
 ### Fixed

@@ -8,6 +8,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.4-alpha] - 2026-11-15
+
+### Added
+- **三个接力开关**（升级到 wp-motor v1.39.4）：把“是否沿用上游 meta”从固定行为改为可配，默认值均等于启用开关前的行为：
+
+  | 开关 | 默认 | 范围 | `false` 时 |
+  | --- | --- | --- | --- |
+  | `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id` | 本实例重新发号，覆盖上游值 |
+  | `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip` | 用本实例的 source key / 对端 IP 覆盖 |
+  | `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5`（仅 `gen_event_md5 = true`） | 用本实例收到的 payload 重算并覆盖 |
+
+  与已有的 `UPSTREAM_OML_NAME_KEEP`（默认 `false`）一起，四个开关分别控制一条语义轴；都从进程环境读取，`.env` 同样生效。
+
+### Changed
+- **meta 落盘统一为 upsert 语义**：上游没有就追加；有且保留就不动；有但不保留则**先移除所有同名旧值再追加**，保证一条记录里不会出现两个同名 meta 字段。`wp_event_id` 被覆盖时，内部句柄与字段同时更新。
+- `wp_event_md5` 在“保留上游”时不再重算（省掉一次 md5）。
+
 ## [0.36.3-alpha] - 2026-11-15
 
 ### Fixed

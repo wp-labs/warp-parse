@@ -182,7 +182,7 @@ detail: invalid WP_INS_ID: WP_INS_ID 必须在 [100, 1123] 之间，当前为 99
 两个实例接力（A 解析完 → B 再解析 A 的输出）时，需要先确认 ID 语义：
 
 - **B 的规则不提取 `wp_event_id`**（常见）：B 会用自己的 lane 发一个新号。两跳各自唯一，但同一个事件会出现两个不同的 ID
-- **B 的规则提取了 `wp_event_id`**：本实例**不覆盖**上游值，且内部句柄同步为它，所以一条记录只有一份 ID，跨阶段能对上
+- **B 的规则提取了 `wp_event_id`**：默认**不覆盖**上游值（`UPSTREAM_EVENT_ID_KEEP=true`），内部句柄同步为它，所以一条记录只有一份 ID，跨阶段能对上；把它配成 `false` 则退回上一种行为（本阶段重新发号）
 
 第二种是“接力但不换 ID”的写法：
 
@@ -203,26 +203,32 @@ rule relay {
 | 需要逐条血缘 | 让 B 提取 `wp_event_id`（上例），ID 全程不变；或另起 `upstream_event_id` 字段保留 A 的值 |
 | 只关心“两跳数量对不对” | 不需要任何额外字段，比计数即可 |
 
-两个必须记住的限制：
+### 用开关控制四个 meta
+
+| 开关 | 默认 | 范围 |
+| --- | --- | --- |
+| `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id`：`false` 时每阶段重新发号 |
+| `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip`：`false` 时用本实例的 source 覆盖 |
+| `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5`：`false` 时用本实例收到的 payload 重算 |
+| `UPSTREAM_OML_NAME_KEEP` | `false` | `wp_oml_name`（sink 层注入）：`true` 时保留最初阶段的名字 |
+
+默认值等于“保留上游”，所以什么都不配时，接力链路会把 A 的 ID / source / md5 带下去，只把 OML 名换成本阶段的。
+
+```bash
+# 典型：每阶段独立标识，不追求跨阶段关联
+UPSTREAM_EVENT_ID_KEEP=false
+# 典型：看板要按本实例的 source 分组
+UPSTREAM_SRC_KEEP=false
+```
+
+不管开关怎么配，**一条记录里不会出现两个同名 meta 字段**：不保留时会先移除旧值再追加。
+
+### 两个仍然存在的限制
 
 - `wp_meta_disable` **不能**关闭 `wp_event_id`（只支持 `wp_oml_name` / `wp_event_md5`）
 - `gen_msg_id` 在生产路径是硬编码开启的，配置里关不掉
 
-所以“接力后只要上游 ID、不要新的”只能靠规则提取，不能靠开关。
-
-### `wp_oml_name` 不一样：有开关
-
-`wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` 是“有上游就不覆盖”，
-但 `wp_oml_name`（标记哪一份 OML 模型产出）默认**保留本阶段**的值：
-
-```bash
-# 默认 false：tcp/syslog/kafka/file sink 输出前用本实例的 OML 名覆盖同名旧字段
-# true：保留上游（最初阶段）的 OML 名，不再追加
-UPSTREAM_OML_NAME_KEEP=true
-```
-
-`false` 时会先移除同名旧字段再追加，**不会出现两个 `wp_oml_name`**；
-`true` 时记录已带该字段就原样放过。
+所以想彻底不要 `wp_event_id`，只能在 sink 输出层过滤，不能用 `wp_meta_disable`。
 
 ## 下游列类型
 

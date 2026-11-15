@@ -212,9 +212,7 @@ semantics first:
 - **B's rule does not extract `wp_event_id`** (the common case): B issues a new id
   from its own lane. Each stage is unique on its own, but the same event ends up
   with two different ids
-- **B's rule extracts `wp_event_id`**: this instance does **not** overwrite the
-  upstream value and syncs its internal handle to it, so a record keeps a single
-  id and both stages correlate
+- **B's rule extracts `wp_event_id`**: by default the upstream value is **not** overwritten (`UPSTREAM_EVENT_ID_KEEP=true`) and the internal handle is synced to it, so a record keeps a single id and both stages correlate; setting it to `false` falls back to the previous behaviour (re-identify at this stage)
 
 The second form is “relay without re-identifying”:
 
@@ -236,27 +234,33 @@ is kept unchanged, a fresh internal id is issued, and a single WARN is logged.
 | per-record lineage | let B extract `wp_event_id` (example above) so the id is stable; or keep A's value in a separate `upstream_event_id` field |
 | only “do the two stages add up?” | no extra field needed — compare counts |
 
-Two limits to remember:
+### Four switches control the meta fields
+
+| Switch | Default | Scope |
+| --- | --- | --- |
+| `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id`: `false` re-identifies at every stage |
+| `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip`: `false` overwrites with this instance's source |
+| `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5`: `false` recomputes from this instance's payload |
+| `UPSTREAM_OML_NAME_KEEP` | `false` | `wp_oml_name` (injected by the sink layer): `true` keeps the original stage's name |
+
+The defaults mean "keep upstream", so with no configuration a relay carries A's id / source / md5 forward and only swaps the OML name for the current stage's.
+
+```bash
+# typical: identify each stage independently instead of correlating
+UPSTREAM_EVENT_ID_KEEP=false
+# typical: dashboards should group by this instance's source
+UPSTREAM_SRC_KEEP=false
+```
+
+Whatever the switches say, **a record never carries two identically named meta
+fields**: when the upstream value is not kept, it is removed before appending.
+
+### Two limits that remain
 
 - `wp_meta_disable` **cannot** disable `wp_event_id` (only `wp_oml_name` / `wp_event_md5`)
 - `gen_msg_id` is hardcoded on in the production path and cannot be turned off in config
 
-So “keep only the upstream id” requires a rule that extracts it, not a switch.
-
-### `wp_oml_name` is different: it has a switch
-
-`wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` keep the upstream value,
-but `wp_oml_name` (which OML model produced the record) defaults to **this** stage's
-value:
-
-```bash
-# default false: tcp/syslog/kafka/file sinks replace any same-named field with this instance's OML name
-# true: keep the upstream (original stage) OML name instead of appending
-UPSTREAM_OML_NAME_KEEP=true
-```
-
-With `false` the existing field is removed before appending, so **two `wp_oml_name`
-fields never appear**; with `true` a record that already carries it is passed through.
+So dropping `wp_event_id` entirely requires filtering at the sink layer, not `wp_meta_disable`.
 
 ## Downstream column types
 
