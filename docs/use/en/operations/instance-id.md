@@ -233,6 +233,7 @@ is kept unchanged, a fresh internal id is issued, and a single WARN is logged.
 | cross-stage dedup / correlation | prefer a **business key** (`serialno`, `request_id`, …); do not depend on a generated id |
 | per-record lineage | let B extract `wp_event_id` (example above) so the id is stable; or keep A's value in a separate `upstream_event_id` field |
 | only “do the two stages add up?” | no extra field needed — compare counts |
+| split the downstream by **matched WPL rule** | records carry **no** rule-name field (`wp_rule_name` / `wp_package_name` are `stat` grouping dimensions only); use `WP_GLOBAL_TAGS` or an explicit field in the rule |
 
 ### Four switches control the meta fields
 

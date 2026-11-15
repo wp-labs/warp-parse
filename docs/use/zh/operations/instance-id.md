@@ -202,6 +202,7 @@ rule relay {
 | 跨阶段去重 / 关联 | 优先用**业务键**（`serialno`、`request_id` 等），不依赖任何一次生成的 ID |
 | 需要逐条血缘 | 让 B 提取 `wp_event_id`（上例），ID 全程不变；或另起 `upstream_event_id` 字段保留 A 的值 |
 | 只关心“两跳数量对不对” | 不需要任何额外字段，比计数即可 |
+| 按**命中的 WPL 规则**拆下游 | 记录里**没有**规则名字段（`wp_rule_name` / `wp_package_name` 仅用于 `stat` 分组）；要落到下游就用 `WP_GLOBAL_TAGS` 或在规则里显式加字段 |
 
 ### 用开关控制四个 meta
 
