@@ -210,6 +210,20 @@ rule relay {
 
 所以“接力后只要上游 ID、不要新的”只能靠规则提取，不能靠开关。
 
+### `wp_oml_name` 不一样：有开关
+
+`wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` 是“有上游就不覆盖”，
+但 `wp_oml_name`（标记哪一份 OML 模型产出）默认**保留本阶段**的值：
+
+```bash
+# 默认 false：tcp/syslog/kafka/file sink 输出前用本实例的 OML 名覆盖同名旧字段
+# true：保留上游（最初阶段）的 OML 名，不再追加
+UPSTREAM_OML_NAME_KEEP=true
+```
+
+`false` 时会先移除同名旧字段再追加，**不会出现两个 `wp_oml_name`**；
+`true` 时记录已带该字段就原样放过。
+
 ## 下游列类型
 
 `wp_event_id` 全程 `u64` 并以**字符串**输出，wparse 侧不涉及有符号数。剩下的只是接收端怎么建列：

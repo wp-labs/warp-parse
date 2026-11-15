@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.36.3-alpha] - 2026-11-15
+
+### Fixed
+- **Relay chains no longer overwrite upstream `wp_*` meta** (upgraded to wp-motor v1.39.3): when B's rule extracts the upstream `wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` as ordinary fields, this instance neither overwrites nor duplicates them. `wp_event_id` is adopted only as **canonical decimal** (all digits, no leading zero, non-zero); on adoption the internal handle is synced so the field matches the `id=` in logs/routing. Otherwise the field is kept and a fresh internal id is issued with one WARN. Previously upstream `wp_src_key` / `wp_event_md5` were appended a second time.
+- **`wp_oml_name` is no longer duplicated on relay** (upgraded to wp-connector-utils 0.5.2): the `tcp` / `syslog` / `kafka` / `file` sinks used to append `wp_oml_name` unconditionally; they now replace any same-named field with this instance's OML name, so exactly one survives.
+
+### Added
+- **`UPSTREAM_OML_NAME_KEEP`** environment variable (default `false`): set to `true` to keep the upstream (original stage) `wp_oml_name` instead of appending. Read from the process environment like `WP_INS_ID` / `WP_GLOBAL_TAGS`, so a `.env` works too; accepts `1/true/yes/on` and `0/false/no/off`.
+
+### Note
+- On relay, `wp_src_key` / `wp_src_ip` keep the **upstream** value (the original entry point). Record this instance's own ingress via `WP_GLOBAL_TAGS` (e.g. `stage=b`) or an explicit rule field.
+- Docs: relay semantics and the new switch are covered in `09-metadata.md`, `08-variables_and_sec_key.md` and `operations/instance-id.md`.
+
 ## [0.36.2-alpha] - 2026-11-14
 
 ### ⚠️ BREAKING CHANGES

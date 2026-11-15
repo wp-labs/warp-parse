@@ -243,6 +243,21 @@ Two limits to remember:
 
 So “keep only the upstream id” requires a rule that extracts it, not a switch.
 
+### `wp_oml_name` is different: it has a switch
+
+`wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` keep the upstream value,
+but `wp_oml_name` (which OML model produced the record) defaults to **this** stage's
+value:
+
+```bash
+# default false: tcp/syslog/kafka/file sinks replace any same-named field with this instance's OML name
+# true: keep the upstream (original stage) OML name instead of appending
+UPSTREAM_OML_NAME_KEEP=true
+```
+
+With `false` the existing field is removed before appending, so **two `wp_oml_name`
+fields never appear**; with `true` a record that already carries it is passed through.
+
 ## Downstream column types
 
 `wp_event_id` is a `u64` throughout and is emitted as a **string** — no signed

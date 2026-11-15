@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.3-alpha] - 2026-11-15
+
+### Fixed
+- **接力链路不再覆盖上游 `wp_*` meta**（升级到 wp-motor v1.39.3）：B 的规则把上游的 `wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` 当普通字段提取时，本实例不再覆盖、也不再重复追加。`wp_event_id` 只采纳**规范十进制**（全数字、无前导零、非 `0`），采纳时内部句柄同步为该值，字段与日志/路由里的 `id=` 保持一致；不可采纳时字段保留原值，内部句柄另发新号并打一次 WARN。此前上游 `wp_src_key` / `wp_event_md5` 会被追加成两个同名字段。
+- **`wp_oml_name` 在接力时不再重复**（升级到 wp-connector-utils 0.5.2）：`tcp` / `syslog` / `kafka` / `file` 四类 sink 输出前注入 `wp_oml_name` 时，以前会无条件追加；现在默认用本实例的 OML 名**覆盖**同名旧字段，保证只有一个。
+
+### Added
+- **`UPSTREAM_OML_NAME_KEEP`** 环境变量（默认 `false`）：设为 `true` 时保留上游（最初阶段）的 `wp_oml_name`，不追加。与 `WP_INS_ID` / `WP_GLOBAL_TAGS` 一样从进程环境读取，`.env` 同样生效；接受 `1/true/yes/on` 与 `0/false/no/off`。
+
+### Note
+- `wp_src_key` / `wp_src_ip` 在接力时沿用**上游**值（保留最初入口），本实例自己的入口请用 `WP_GLOBAL_TAGS`（如 `stage=b`）或规则字段。
+- 文档：`09-metadata.md`、`08-variables_and_sec_key.md` 与 `operations/instance-id.md` 均已补充接力语义与开关说明。
+
 ## [0.36.2-alpha] - 2026-11-14
 
 ### ⚠️ BREAKING CHANGES
