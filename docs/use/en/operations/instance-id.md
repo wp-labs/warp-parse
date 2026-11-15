@@ -204,6 +204,45 @@ Handled by the engine, no operator action needed:
 - **single-instance overload** (> 4,194,304 records/s): the logical second
   advances one step instead of wrapping
 
+## Relay chains (multi-stage)
+
+When two instances relay data (A parses, then B parses A's output), decide the id
+semantics first:
+
+- **B's rule does not extract `wp_event_id`** (the common case): B issues a new id
+  from its own lane. Each stage is unique on its own, but the same event ends up
+  with two different ids
+- **B's rule extracts `wp_event_id`**: this instance does **not** overwrite the
+  upstream value and syncs its internal handle to it, so a record keeps a single
+  id and both stages correlate
+
+The second form is “relay without re-identifying”:
+
+```wpl
+# B's rule: take A's wp_event_id back as an ordinary field
+rule relay {
+    (chars:wp_event_id, chars:msg)
+}
+```
+
+If the upstream value is not a positive integer (empty, `0`, prefixed, …) the field
+is kept unchanged, a fresh internal id is issued, and a single WARN is logged.
+
+### Recommendations
+
+| Need | Approach |
+| --- | --- |
+| cross-stage dedup / correlation | prefer a **business key** (`serialno`, `request_id`, …); do not depend on a generated id |
+| per-record lineage | let B extract `wp_event_id` (example above) so the id is stable; or keep A's value in a separate `upstream_event_id` field |
+| only “do the two stages add up?” | no extra field needed — compare counts |
+
+Two limits to remember:
+
+- `wp_meta_disable` **cannot** disable `wp_event_id` (only `wp_oml_name` / `wp_event_md5`)
+- `gen_msg_id` is hardcoded on in the production path and cannot be turned off in config
+
+So “keep only the upstream id” requires a rule that extracts it, not a switch.
+
 ## Downstream column types
 
 `wp_event_id` is a `u64` throughout and is emitted as a **string** — no signed
