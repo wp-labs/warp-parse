@@ -71,6 +71,7 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
             log_profile: value.log_profile,
             wpl_dir: value.wpl_dir,
             state_dir: value.state_dir,
+            deny_duplicate_oml: None,
         }
     }
 }

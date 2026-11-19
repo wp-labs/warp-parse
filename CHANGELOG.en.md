@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.37.0-alpha] - 2026-11-20
+
+### Added
+- **`wparse check`, an offline config check** (upgraded to wp-motor v1.40.0): loads the project through the same path as the daemon, starts no sinks/sources, takes no locks and writes no files; suitable for pre-deploy gating and CI.
+  - Exit codes: `0` no issues, `1` semantic errors, `2` config load failure.
+  - Checks: duplicate `sink_group` names, the same `oml`/`rule` matcher bound by multiple groups, rule/model index divergence (runtime silently falls back to passthrough), and inert bindings that match no model/rule.
+  - `--json` emits a machine-readable report; `--strict` also fails on warnings.
+- **Site-local startup fail-closed**: set `[validate] deny_duplicate_oml = true` in `wparse.local.toml` and a duplicate `oml` binding makes the engine fail to start. The file is not replaced by `project_remote`, so it works as a site policy.
+- **Startup duplicate-binding warnings**: the daemon now logs an `ERROR` with the group names and source files when route loading finds duplicate matchers or duplicate group names.
+
+### Changed
+- `wparse check` also validates `wparse.local.toml`; a malformed site overlay now exits with code `2` instead of being ignored.
+
 ## [0.36.4-alpha] - 2026-11-15
 
 ### Added

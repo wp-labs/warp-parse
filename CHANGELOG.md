@@ -8,6 +8,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.0-alpha] - 2026-11-20
+
+### Added
+- **新增 `wparse check` 离线配置校验**（升级到 wp-motor v1.40.0）：不启动 sink/source、不抢锁、不写文件，按 daemon 同一条加载链路检查配置；适合部署前与 CI 门禁。
+  - 退出码：`0` 无问题、`1` 语义错误、`2` 配置加载失败。
+  - 检查项：重复 `sink_group` 名称、同一 `oml`/`rule` matcher 被多个组绑定、规则与模型索引分叉（运行期会静默退化为 passthrough）、匹配不到模型/规则的惰性绑定。
+  - `--json` 输出机器可读报告；`--strict` 把 warning 也视为失败。
+- **站点级启动 fail-closed**：在 `wparse.local.toml` 增加 `[validate] deny_duplicate_oml = true`，重复 `oml` 绑定会让引擎启动失败。该文件不被 `project_remote` 覆盖，适合作为站点策略。
+- **启动期重复绑定告警**：daemon 加载路由时发现重复 matcher 或重复组名会打 `ERROR` 日志，包含组名与来源文件。
+
+### Changed
+- `wparse check` 同时校验 `wparse.local.toml`；站点覆盖文件写错时以退出码 `2` 报出，而不是被静默忽略。
+
 ## [0.36.4-alpha] - 2026-11-15
 
 ### Added

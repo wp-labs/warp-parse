@@ -17,6 +17,7 @@ use warp_parse::{init_rustls_crypto_provider, load_sec_dict, log_build_info_once
 
 use orion_error::conversion::ToStructError;
 use wp_cli_core::split_quiet_args;
+use wp_engine::facade::check::{run_check, CheckReport};
 use wp_engine::facade::diagnostics::{exit_code_for, print_run_error};
 use wp_engine::facade::WpApp;
 use wp_error::run_error::{RunReason, RunResult};
@@ -30,8 +31,10 @@ fn register_extension() {
 }
 
 /// Apply the effective state directory (CLI `--state-dir` wins over the site
-/// overlay and the engine config) and prime the process cache used by
-/// maintenance paths.
+/// overlay and the engine config) and the site-local startup policy.
+///
+/// Both values are resolved from `wparse.local.toml` first, because `conf/` is
+/// replaced wholesale by `project_remote`.
 fn inject_state_dir(
     work_root: &Path,
     dict: &orion_variate::EnvDict,
@@ -40,7 +43,39 @@ fn inject_state_dir(
     let state_dir =
         warp_parse::state::resolve_effective_state_dir(work_root, dict, args.state_dir.as_deref())?;
     args.state_dir = Some(state_dir.to_path_buf().to_string_lossy().to_string());
+    if let Some(deny) = warp_parse::local_conf::load_site_overlay(work_root, dict)?
+        .and_then(|overlay| overlay.deny_duplicate_oml())
+    {
+        args.deny_duplicate_oml = Some(deny);
+    }
     Ok(())
+}
+
+fn load_env_file(path: &str) -> RunResult<()> {
+    dotenvy::from_path(path).map_err(|e| {
+        RunReason::core_conf()
+            .to_err()
+            .with_detail(format!("load env file '{path}' failed"))
+            .with_source(e)
+    })?;
+    Ok(())
+}
+
+fn print_check_json(report: &CheckReport) {
+    match serde_json::to_string_pretty(report) {
+        Ok(text) => println!("{text}"),
+        Err(err) => eprintln!("error: serialize check report failed: {err}"),
+    }
+}
+
+/// Report a check-time load failure and exit with the documented code `2`.
+fn exit_check_load_error(work_root: &str, json: bool, err: &wp_error::run_error::RunError) -> ! {
+    if json {
+        print_check_json(&CheckReport::from_load_error(work_root, err));
+    } else {
+        eprintln!("error: {}", err.display_chain());
+    }
+    std::process::exit(2)
 }
 
 #[tokio::main(flavor = "multi_thread")]
@@ -62,10 +97,26 @@ async fn do_main() -> RunResult<()> {
         WParseCLI::Daemon(args) | WParseCLI::Batch(args) => Some(
             wp_engine::facade::args::resolve_run_work_root(&args.work_root)?,
         ),
+        WParseCLI::Check(args) => Some(wp_engine::facade::args::resolve_run_work_root(
+            &args.work_root,
+        )?),
         _ => None,
     };
     if let Some(root) = instance_root.as_deref() {
         warp_parse::load_instance_env(Path::new(root))?;
+    }
+    // `check --env-file`: explicit file wins over the instance .env, but never
+    // overrides values already present in the process environment.
+    if let WParseCLI::Check(args) = &cmd {
+        if let Some(path) = args.env_file.as_deref() {
+            if let Err(err) = load_env_file(path) {
+                exit_check_load_error(
+                    instance_root.as_deref().unwrap_or_default(),
+                    args.json,
+                    &err,
+                );
+            }
+        }
     }
     let env_dict = load_sec_dict()?;
     match cmd {
@@ -95,6 +146,33 @@ async fn do_main() -> RunResult<()> {
             let mut app = WpApp::try_from(engine_args, env_dict)?;
             log_build_info_once();
             app.run_batch().await?;
+        }
+        WParseCLI::Check(args) => {
+            let work_root = instance_root.expect("check work root resolved");
+            // Match the daemon: a malformed site-local overlay is a config
+            // error, not something check may silently ignore.
+            if let Err(err) =
+                warp_parse::local_conf::load_site_overlay(Path::new(&work_root), &env_dict)
+            {
+                exit_check_load_error(&work_root, args.json, &err);
+            }
+            match run_check(Path::new(&work_root), &env_dict).await {
+                Ok(mut report) => {
+                    if args.strict {
+                        report.apply_strict();
+                    }
+                    if args.json {
+                        print_check_json(&report);
+                    } else {
+                        let text = report.render_human();
+                        if !text.is_empty() {
+                            eprint!("{text}");
+                        }
+                    }
+                    std::process::exit(if report.ok { 0 } else { 1 });
+                }
+                Err(err) => exit_check_load_error(&work_root, args.json, &err),
+            }
         }
         WParseCLI::Version(args) => {
             let ver = warp_parse::build::PKG_VERSION;
