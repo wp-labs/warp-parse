@@ -213,6 +213,20 @@ mod tests {
     }
 
     #[test]
+    fn validate_only_overlay_keeps_engine_state_dir() {
+        let dir = tempdir().expect("tempdir");
+        write_engine_conf(dir.path(), "from-conf");
+        fs::write(
+            dir.path().join(crate::LOCAL_CONF_FILE),
+            "[validate]\ndeny_duplicate_oml = true\n",
+        )
+        .expect("write overlay");
+
+        let resolved = resolve_state_dir(dir.path(), &EnvDict::new()).expect("resolve");
+        assert_eq!(resolved.path(), dir.path().join("from-conf"));
+    }
+
+    #[test]
     fn default_is_dot_run() {
         let dir = tempdir().expect("tempdir");
         write_engine_conf(dir.path(), "");

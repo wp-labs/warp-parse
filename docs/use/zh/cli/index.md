@@ -58,7 +58,7 @@ wprescue --help
 
 ## 当前边界
 
-- `wparse` 当前没有单独的 `work` 子命令，只暴露 `daemon` 和 `batch`
+- `wparse` 当前没有单独的 `work` 子命令，暴露 `daemon`、`batch` 与 `check`（离线配置检查）
 - `wprescue` 当前只支持 `batch`
 - `wproj rule` 目前实际暴露的是 `parse` 能力，尚不是完整的规则工作台
 - 更细的配置字段说明，仍应以对应配置文件和专项文档为准

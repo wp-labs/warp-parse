@@ -18,6 +18,10 @@ pub enum WParseCLI {
     #[command(name = "batch")]
     Batch(CliParseArgs),
 
+    /// Offline config check: no sockets, locks or writes; exit non-zero on config errors
+    #[command(name = "check")]
+    Check(CheckArgs),
+
     /// Print version or check version constraint
     #[command(name = "version")]
     Version(VersionArgs),
@@ -28,6 +32,23 @@ pub struct VersionArgs {
     /// Exit 0 if current version >= VERSION, exit 1 otherwise
     #[clap(long = "ge", value_name = "VERSION")]
     pub ge: Option<String>,
+}
+
+#[derive(Args, Debug, Default, Clone)]
+pub struct CheckArgs {
+    /// Work root directory (absolute path); omit to use the current dir.
+    /// Loads `<dir>/conf/wparse.toml` and `<dir>/topology/sinks/**` like the daemon.
+    #[clap(long = "work-root", default_value = None)]
+    pub work_root: Option<String>,
+    /// Emit a machine-readable JSON report on stdout
+    #[clap(long = "json", default_value_t = false)]
+    pub json: bool,
+    /// Extra env file loaded before the secret dict (existing env wins)
+    #[clap(long = "env-file", value_name = "FILE")]
+    pub env_file: Option<String>,
+    /// Treat warnings as failures as well
+    #[clap(long = "strict", default_value_t = false)]
+    pub strict: bool,
 }
 
 #[derive(Args, Debug, Default, Clone)]
@@ -76,6 +97,7 @@ impl From<CliParseArgs> for wp_engine::facade::args::ParseArgs {
             log_profile: value.log_profile,
             wpl_dir: value.wpl_dir,
             state_dir: value.state_dir,
+            deny_duplicate_oml: None,
         }
     }
 }

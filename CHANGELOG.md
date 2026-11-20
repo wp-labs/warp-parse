@@ -8,6 +8,79 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.0-alpha] - 2026-11-20
+
+### Added
+- **新增 `wparse check` 离线配置校验**（升级到 wp-motor v1.40.0）：不启动 sink/source、不抢锁、不写文件，按 daemon 同一条加载链路检查配置；适合部署前与 CI 门禁。
+  - 退出码：`0` 无问题、`1` 语义错误、`2` 配置加载失败。
+  - 检查项：重复 `sink_group` 名称、同一 `oml`/`rule` matcher 被多个组绑定、规则与模型索引分叉（运行期会静默退化为 passthrough）、匹配不到模型/规则的惰性绑定。
+  - `--json` 输出机器可读报告；`--strict` 把 warning 也视为失败。
+- **站点级启动 fail-closed**：在 `wparse.local.toml` 增加 `[validate] deny_duplicate_oml = true`，重复 `oml` 绑定会让引擎启动失败。该文件不被 `project_remote` 覆盖，适合作为站点策略。
+- **启动期重复绑定告警**：daemon 加载路由时发现重复 matcher 或重复组名会打 `ERROR` 日志，包含组名与来源文件。
+
+### Changed
+- `wparse check` 同时校验 `wparse.local.toml`；站点覆盖文件写错时以退出码 `2` 报出，而不是被静默忽略。
+
+## [0.36.4-alpha] - 2026-11-15
+
+### Added
+- **三个接力开关**（升级到 wp-motor v1.39.4）：把“是否沿用上游 meta”从固定行为改为可配，默认值均等于启用开关前的行为：
+
+  | 开关 | 默认 | 范围 | `false` 时 |
+  | --- | --- | --- | --- |
+  | `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id` | 本实例重新发号，覆盖上游值 |
+  | `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip` | 用本实例的 source key / 对端 IP 覆盖 |
+  | `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5`（仅 `gen_event_md5 = true`） | 用本实例收到的 payload 重算并覆盖 |
+
+  与已有的 `UPSTREAM_OML_NAME_KEEP`（默认 `false`）一起，四个开关分别控制一条语义轴；都从进程环境读取，`.env` 同样生效。
+
+### Changed
+- **meta 落盘统一为 upsert 语义**：上游没有就追加；有且保留就不动；有但不保留则**先移除所有同名旧值再追加**，保证一条记录里不会出现两个同名 meta 字段。`wp_event_id` 被覆盖时，内部句柄与字段同时更新。
+- `wp_event_md5` 在“保留上游”时不再重算（省掉一次 md5）。
+
+## [0.36.3-alpha] - 2026-11-15
+
+### Fixed
+- **接力链路不再覆盖上游 `wp_*` meta**（升级到 wp-motor v1.39.3）：B 的规则把上游的 `wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` 当普通字段提取时，本实例不再覆盖、也不再重复追加。`wp_event_id` 只采纳**规范十进制**（全数字、无前导零、非 `0`），采纳时内部句柄同步为该值，字段与日志/路由里的 `id=` 保持一致；不可采纳时字段保留原值，内部句柄另发新号并打一次 WARN。此前上游 `wp_src_key` / `wp_event_md5` 会被追加成两个同名字段。
+- **`wp_oml_name` 在接力时不再重复**（升级到 wp-connector-utils 0.5.2）：`tcp` / `syslog` / `kafka` / `file` 四类 sink 输出前注入 `wp_oml_name` 时，以前会无条件追加；现在默认用本实例的 OML 名**覆盖**同名旧字段，保证只有一个。
+
+### Added
+- **`UPSTREAM_OML_NAME_KEEP`** 环境变量（默认 `false`）：设为 `true` 时保留上游（最初阶段）的 `wp_oml_name`，不追加。与 `WP_INS_ID` / `WP_GLOBAL_TAGS` 一样从进程环境读取，`.env` 同样生效；接受 `1/true/yes/on` 与 `0/false/no/off`。
+
+### Note
+- `wp_src_key` / `wp_src_ip` 在接力时沿用**上游**值（保留最初入口），本实例自己的入口请用 `WP_GLOBAL_TAGS`（如 `stage=b`）或规则字段。
+- 文档：`09-metadata.md`、`08-variables_and_sec_key.md` 与 `operations/instance-id.md` 均已补充接力语义与开关说明。
+
+## [0.36.2-alpha] - 2026-11-14
+
+### ⚠️ BREAKING CHANGES
+- **`wp_event_id` 改为确定性布局**（升级到 wp-motor v1.39.2 / wp-lang 0.9.1 / wp-model-core 0.10.2）：取值改为 `秒(32) | 实例号(10) | 每秒计数器(22)`。此前是「随机 63 位种子 + 进程内计数器」，两台机器同秒启动会产出相同序列（wp-labs/warp-parse#374 后续）。现在时间在 ID 高位，按**数值**比较即时间序（可用到 2106-02-07）；字段仍是字符串，新旧行混存不会插入失败，但交界处不再有序。
+
+### Added
+- **实例号 `WP_INS_ID`**：取值 `100..=1123`（共 1024 个实例），决定 `wp_event_id` 的实例段，跨实例永不重复。读取路径与 `WP_GLOBAL_TAGS` 完全一致 —— 进程环境（`docker -e` / systemd）优先，其次 work root 的 `.env`，再退到 `<work_root>/.warp_parse/.env`；未设置时回退默认值 `100` 并打 WARN。
+- **启动校验**：`WP_INS_ID` 非数字、越界（小于 100 或大于 1123）、或首次发号后被改动 → **启动失败**，不静默回退。
+
+```bash
+# 多实例部署：每台一个不同的实例号
+docker run -e WP_INS_ID=101 ...
+# 或写进 work root/.env
+WP_INS_ID=101
+```
+
+### Note
+- 每秒计数器上限 4,194,304（单实例 200 万 EPS 仍有 2 倍余量），超出时逻辑秒前进一格，不 stall、不回绕；挂钟回拨时沿用已用过的逻辑秒，不会重复。
+- **下游列类型**：`wp_event_id` 全程 `u64` 并以字符串输出，wparse 侧不涉及有符号数。只有接收端建成有符号 `BIGINT` 时，2038-01-19 之后才会超出该列范围；用字符串列或 `BIGINT UNSIGNED` 可直接用到 2106。若列是 `VARCHAR`，字典序仅在位数相同时成立（ID 约 2044 年从 19 位变 20 位），排序请用 `CAST(... AS BIGINT UNSIGNED)`。
+
+## [0.36.1-alpha] - 2026-11-14
+
+### Fixed
+- **接收端重启后 TCP/TLS sink 自动恢复**（升级到 wp-motor v1.39.1 / wp-core-connectors 0.11.5，wp-labs/warp-parse#374）：发送端写失败后按 1s→30s 退避自动重建连接（含 TLS 握手），接收端恢复后无需重启 `wparse`；重连建连有 5s 超时，坏链路下的退出不再因 close_notify / 排空失败报错。
+- **`syslog` TCP sink 同样支持断链自愈**：`syslog` + TCP 在接收端恢复后自动重连；UDP 行为不变。
+- **TCP/TLS 连接开启 keepalive**：空闲 30s 开始探测、间隔 10s、3 次无响应判定断链，更快发现半开连接。
+
+### Note
+- `drop_when_error = true` 的丢弃策略不变：故障窗口内仍按策略丢弃并计数，但接收端恢复后熔断探测可以真正重建链路，不再需要人工重启发送端。
+
 ## [0.36.0-alpha] - 2026-11-08
 
 ### Added

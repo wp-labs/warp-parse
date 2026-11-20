@@ -1752,11 +1752,7 @@ token_file = "runtime/admin_api.token"
 
         let err = resolve_client_profile(temp.path(), &EnvDict::default())
             .expect_err("an overlay without a known section must not be ignored");
-        assert!(
-            err.to_string()
-                .contains("neither [admin_api] nor [runtime]"),
-            "{err}"
-        );
+        assert!(err.to_string().contains("none of [admin_api]"), "{err}");
     }
 
     #[test]
@@ -1773,6 +1769,22 @@ token_file = "runtime/admin_api.token"
             .expect("resolve profile")
             .expect("admin api enabled");
         assert_eq!(profile.base_url, "http://127.0.0.1:19192");
+    }
+
+    #[test]
+    fn admin_api_falls_back_when_overlay_has_only_validate() {
+        let temp = tempdir().expect("tempdir");
+        write_test_work_root(temp.path(), "127.0.0.1:19193", "runtime/admin_api.token");
+        fs::write(
+            temp.path().join(LOCAL_ADMIN_API_CONF),
+            "[validate]\ndeny_duplicate_oml = true\n",
+        )
+        .expect("write local overlay");
+
+        let profile = resolve_client_profile(temp.path(), &EnvDict::default())
+            .expect("resolve profile")
+            .expect("admin api enabled");
+        assert_eq!(profile.base_url, "http://127.0.0.1:19193");
     }
 
     #[test]

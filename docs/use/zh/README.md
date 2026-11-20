@@ -23,6 +23,7 @@
 - `operations/`
 - 运行时管理面使用说明: [operations/admin.md](operations/admin.md)
 - 远程工程拉取与规则热更新 SOP: [operations/project-sync.md](operations/project-sync.md)
+- 实例号（WP_INS_ID）与多实例部署: [operations/instance-id.md](operations/instance-id.md)
 
 ## 对应英文版
 

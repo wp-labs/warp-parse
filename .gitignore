@@ -23,6 +23,8 @@ WEB
 # Generated data and temp files
 data/
 tests/*
+# Contract tests that must be tracked (like tests/admin_api_daemon.rs)
+!tests/check_cmd.rs
 tmp/
 .tmp/
 *.log

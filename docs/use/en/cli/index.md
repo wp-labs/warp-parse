@@ -57,7 +57,7 @@ Operations:
 
 ## Current Boundaries
 
-- `wparse` currently exposes `daemon` and `batch` only
+- `wparse` exposes `daemon`, `batch`, and `check` (offline config check); there is no separate `work` subcommand
 - `wprescue` currently supports `batch` only
 - `wproj rule` is not yet a full rule workbench
 - Detailed config-field behavior should still be documented in dedicated config docs

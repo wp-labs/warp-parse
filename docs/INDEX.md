@@ -24,6 +24,7 @@
 - Rescue usage guide: [use/zh/cli/rescue.md](use/zh/cli/rescue.md) | [use/en/cli/rescue.md](use/en/cli/rescue.md)
 - Runtime admin usage: [use/zh/operations/admin.md](use/zh/operations/admin.md) | [use/en/operations/admin.md](use/en/operations/admin.md)
 - Remote project sync and rule reload SOP: [use/zh/operations/project-sync.md](use/zh/operations/project-sync.md) | [use/en/operations/project-sync.md](use/en/operations/project-sync.md)
+- Instance id (WP_INS_ID) and multi-instance deployments: [use/zh/operations/instance-id.md](use/zh/operations/instance-id.md) | [use/en/operations/instance-id.md](use/en/operations/instance-id.md)
 
 ### Design Documents
 

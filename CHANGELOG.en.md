@@ -8,6 +8,79 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.37.0-alpha] - 2026-11-20
+
+### Added
+- **`wparse check`, an offline config check** (upgraded to wp-motor v1.40.0): loads the project through the same path as the daemon, starts no sinks/sources, takes no locks and writes no files; suitable for pre-deploy gating and CI.
+  - Exit codes: `0` no issues, `1` semantic errors, `2` config load failure.
+  - Checks: duplicate `sink_group` names, the same `oml`/`rule` matcher bound by multiple groups, rule/model index divergence (runtime silently falls back to passthrough), and inert bindings that match no model/rule.
+  - `--json` emits a machine-readable report; `--strict` also fails on warnings.
+- **Site-local startup fail-closed**: set `[validate] deny_duplicate_oml = true` in `wparse.local.toml` and a duplicate `oml` binding makes the engine fail to start. The file is not replaced by `project_remote`, so it works as a site policy.
+- **Startup duplicate-binding warnings**: the daemon now logs an `ERROR` with the group names and source files when route loading finds duplicate matchers or duplicate group names.
+
+### Changed
+- `wparse check` also validates `wparse.local.toml`; a malformed site overlay now exits with code `2` instead of being ignored.
+
+## [0.36.4-alpha] - 2026-11-15
+
+### Added
+- **Three relay switches** (upgraded to wp-motor v1.39.4): "keep the upstream meta" is now configurable instead of fixed, and every default equals the behaviour before the switches existed:
+
+  | Switch | Default | Scope | When `false` |
+  | --- | --- | --- | --- |
+  | `UPSTREAM_EVENT_ID_KEEP` | `true` | `wp_event_id` | re-identify at this instance, overwriting the upstream value |
+  | `UPSTREAM_SRC_KEEP` | `true` | `wp_src_key` / `wp_src_ip` | overwrite with this instance's source key / peer IP |
+  | `UPSTREAM_EVENT_MD5_KEEP` | `true` | `wp_event_md5` (only when `gen_event_md5 = true`) | recompute from this instance's payload |
+
+  Together with the existing `UPSTREAM_OML_NAME_KEEP` (default `false`) the four switches cover one semantic axis each; all are read from the process environment, so a `.env` works too.
+
+### Changed
+- **Meta writes now follow upsert semantics**: append when upstream is absent, leave untouched when kept, and **remove every same-named field before appending** when overridden, so a record never carries two identically named meta fields. Overriding `wp_event_id` updates the internal handle together with the field.
+- `wp_event_md5` is no longer recomputed when the upstream digest is kept.
+
+## [0.36.3-alpha] - 2026-11-15
+
+### Fixed
+- **Relay chains no longer overwrite upstream `wp_*` meta** (upgraded to wp-motor v1.39.3): when B's rule extracts the upstream `wp_event_id` / `wp_src_key` / `wp_src_ip` / `wp_event_md5` as ordinary fields, this instance neither overwrites nor duplicates them. `wp_event_id` is adopted only as **canonical decimal** (all digits, no leading zero, non-zero); on adoption the internal handle is synced so the field matches the `id=` in logs/routing. Otherwise the field is kept and a fresh internal id is issued with one WARN. Previously upstream `wp_src_key` / `wp_event_md5` were appended a second time.
+- **`wp_oml_name` is no longer duplicated on relay** (upgraded to wp-connector-utils 0.5.2): the `tcp` / `syslog` / `kafka` / `file` sinks used to append `wp_oml_name` unconditionally; they now replace any same-named field with this instance's OML name, so exactly one survives.
+
+### Added
+- **`UPSTREAM_OML_NAME_KEEP`** environment variable (default `false`): set to `true` to keep the upstream (original stage) `wp_oml_name` instead of appending. Read from the process environment like `WP_INS_ID` / `WP_GLOBAL_TAGS`, so a `.env` works too; accepts `1/true/yes/on` and `0/false/no/off`.
+
+### Note
+- On relay, `wp_src_key` / `wp_src_ip` keep the **upstream** value (the original entry point). Record this instance's own ingress via `WP_GLOBAL_TAGS` (e.g. `stage=b`) or an explicit rule field.
+- Docs: relay semantics and the new switch are covered in `09-metadata.md`, `08-variables_and_sec_key.md` and `operations/instance-id.md`.
+
+## [0.36.2-alpha] - 2026-11-14
+
+### ⚠️ BREAKING CHANGES
+- **`wp_event_id` now uses a deterministic layout** (upgraded to wp-motor v1.39.2 / wp-lang 0.9.1 / wp-model-core 0.10.2): the value is `secs(32) | instance_id(10) | per-second counter(22)`. The previous scheme was a random 63-bit seed plus a process-local counter, so two machines starting in the same second emitted identical sequences (follow-up to wp-labs/warp-parse#374). Time now sits in the high bits, so numeric comparison is time order (valid until 2106-02-07). The field is still a string, so mixed old/new rows still insert fine, but ordering is no longer meaningful across the migration boundary.
+
+### Added
+- **Instance id `WP_INS_ID`**: range `100..=1123` (1024 instances) determines the instance segment of `wp_event_id`, so ids never collide across instances. The lookup path is identical to `WP_GLOBAL_TAGS`: process environment (`docker -e` / systemd) first, then `<work_root>/.env`, then `<work_root>/.warp_parse/.env`; when unset the default `100` is used and a WARN is logged.
+- **Startup validation**: a non-numeric value, an out-of-range value (below 100 or above 1123), or a change after the first id was issued makes the process **fail to start** rather than silently fall back.
+
+```bash
+# multi-instance deployment: give every instance its own id
+docker run -e WP_INS_ID=101 ...
+# or write it into work root/.env
+WP_INS_ID=101
+```
+
+### Note
+- The per-second counter is capped at 4,194,304 (2x headroom over a single instance at 2M EPS); on exhaustion the logical second advances instead of stalling or wrapping, and a clock rollback reuses the last logical second so ids never repeat.
+- **Downstream column types**: `wp_event_id` is a `u64` throughout and is emitted as a string — no signed integer is involved on the wparse side. Only a *signed* `BIGINT` column runs out after 2038-01-19; a string column or `BIGINT UNSIGNED` works until 2106. On a `VARCHAR` column lexicographic order only matches numeric order while the digit count is constant (ids go from 19 to 20 digits around 2044), so sort with `CAST(... AS BIGINT UNSIGNED)`.
+
+## [0.36.1-alpha] - 2026-11-14
+
+### Fixed
+- **TCP/TLS sinks recover automatically after the receiver restarts** (upgraded to wp-motor v1.39.1 / wp-core-connectors 0.11.5, wp-labs/warp-parse#374): after a write failure the sender rebuilds the connection with a 1s→30s backoff (including the TLS handshake), so `wparse` no longer needs a restart once the receiver is back. Reconnects are capped at 5s, and shutdown on a broken link no longer fails on close_notify / drain.
+- **`syslog` TCP sinks also self-heal**: `syslog` over TCP reconnects automatically once the receiver is back; UDP behaviour is unchanged.
+- **TCP/TLS connections enable keepalive**: probes start after 30s idle, repeat every 10s, and three missed probes mark the link dead, so half-open connections are detected sooner.
+
+### Note
+- `drop_when_error = true` keeps its drop policy: records are still dropped and counted during the outage, but the breaker probe can now actually rebuild the link, so no manual restart is required.
+
 ## [0.36.0-alpha] - 2026-11-08
 
 ### Added
