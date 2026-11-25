@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.37.1-alpha] - 2026-11-25
+
+### Added
+- **New `hex_decode` OML pipe** (upgraded to wp-motor v1.41.0): decodes a hex string back to UTF-8 text, written as `pipe take(raw) | hex_decode` with no arguments. Suits vendor logs that ship a payload as hex inside a JSON field. Invalid hex, or bytes that are not valid UTF-8, keep the original value instead of aborting the parse.
+
 ## [0.37.0-alpha] - 2026-11-20
 
 ### Added

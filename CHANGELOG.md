@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.1-alpha] - 2026-11-25
+
+### Added
+- **OML 新增 `hex_decode` 管道**（升级到 wp-motor v1.41.0）：把十六进制字符串还原成 UTF-8 文本，写成 `pipe take(raw) | hex_decode` 即可，无需参数。适合「JSON 字段里的载荷被转成 hex」这类厂商日志。非法十六进制或解码结果不是合法 UTF-8 时保留原值，不中断解析。
+
 ## [0.37.0-alpha] - 2026-11-20
 
 ### Added
