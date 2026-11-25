@@ -5594,7 +5594,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.4.3",
+ "getrandom 0.3.4",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -7146,9 +7146,9 @@ dependencies = [
 
 [[package]]
 name = "wp-model-core"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84b11c54ccf20d7ead77a93d72b9d1ba3381b4c11c64e125c7bee26f3939244f"
+checksum = "5378e2af07180040108a12496bb95814cbcad4bd4dcfd91ddde4d721712eec78"
 dependencies = [
  "bytes",
  "chrono",
