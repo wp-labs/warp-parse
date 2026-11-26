@@ -47,13 +47,13 @@ jobs:
 
       - name: Install native dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install unixodbc
+        run: brew install unixodbc cyrus-sasl
 
       - name: Install native dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y unixodbc-dev
+          sudo apt-get install -y unixodbc-dev libsasl2-dev
 
       - name: Cargo build
         env:
