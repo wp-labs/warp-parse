@@ -53,6 +53,16 @@ jobs:
       - name: Build release
         run: cargo build --release
 
+      - name: Verify no Homebrew runtime deps (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          if otool -L target/release/wparse | grep -E '/opt/homebrew|/usr/local/opt'; then
+            echo "::error::macOS release binary depends on Homebrew libraries" >&2
+            otool -L target/release/wparse >&2
+            exit 1
+          fi
+
       - name: Determine wp-examples branch
         id: examples-branch
         run: |

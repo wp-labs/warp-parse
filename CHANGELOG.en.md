@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.38.1-alpha] - 2026-11-26
+
+### Fixed
+- **macOS release binaries no longer depend on Homebrew OpenSSL**: OpenSSL is now vendored and statically linked, fixing `dyld: Library not loaded: libssl.4.dylib` on machines without `/opt/homebrew/opt/openssl@4`. The official macOS binaries now only depend on macOS system libraries.
+
 ## [0.38.0-alpha] - 2026-11-26
 
 ### Added

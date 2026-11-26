@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.1-alpha] - 2026-11-26
+
+### Fixed
+- **macOS 发布包不再依赖 Homebrew OpenSSL**：改为静态链接（vendored）OpenSSL，修复在未安装 `/opt/homebrew/opt/openssl@4` 的机器上启动时报 `dyld: Library not loaded: libssl.4.dylib` 的问题。官方 macOS 二进制现在只依赖 macOS 系统库。
+
 ## [0.38.0-alpha] - 2026-11-26
 
 ### Added

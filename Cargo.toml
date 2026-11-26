@@ -16,7 +16,7 @@
 
 [package]
 name = "warp-parse"
-version = "0.38.0" # @gxl:set(version)
+version = "0.38.1" # @gxl:set(version)
 edition = "2021"
 rust-version = "1.75"
 authors = ["Warp Parse Team"]
@@ -213,3 +213,9 @@ wp-connectors = { git ="https://github.com/wp-labs/wp-connectors",tag = "v0.25.0
 # DEV-ONLY: use locally patched wp-core-connectors (adds data_format=arrow_framed
 # switch to TcpArrowSink) for streaming-case verification. Remove to revert to
 # the published 0.5.2.
+
+# macOS has no system OpenSSL. Vendoring it here unifies the `openssl-sys`
+# features pulled in by rdkafka/git2/libssh2, so release binaries statically
+# link OpenSSL instead of depending on Homebrew's openssl@3/@4 dylibs.
+[target.'cfg(target_os = "macos")'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
