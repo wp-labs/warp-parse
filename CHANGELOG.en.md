@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.38.2-alpha] - 2026-11-26
+
+### Added
+- **New `max_connection_age_secs` for TCP/TLS sinks** (upgraded to wp-motor v1.43.0 / wp-core-connectors 0.12.0): once a connection is older than this many seconds, the sink reconnects before the next write; the reconnect re-reads `tls.cert` / `tls.key` / `tls.ca`, so rotated client certificates take effect without a process restart. TLS sinks default to 24 hours, plaintext TCP stays off, and an explicit `0` disables it; per-sink override is supported. Reconnects carry a jitter to avoid a thundering herd, and the pre-reconnect graceful shutdown is bounded to 2s.
+
 ## [0.38.1-alpha] - 2026-11-26
 
 ### Fixed
