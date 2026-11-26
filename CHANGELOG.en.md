@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.38.0-alpha] - 2026-11-26
+
+### Added
+- **New `mask_text(kind)` OML operator for text scanning** (upgraded to wp-motor v1.42.0): masks only the recognized sensitive fragments inside mixed text such as log lines and HTTP payloads, leaving everything else untouched. Supports `mask_text(pii)`, `mask_text(mobile)`, `mask_text(id_card)`, `mask_text(mail)`, `mask_text(ip)`, `mask_text(domain)` and `mask_text(http_auth)`. `mask(kind)` keeps its whole-value / fail-closed semantics.
+
+### Changed
+- Upgraded `wp-connectors` to v0.25.0 (Kafka Source SASL_SSL support).
+
 ## [0.37.1-alpha] - 2026-11-25
 
 ### Added

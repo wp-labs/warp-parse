@@ -8,6 +8,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.0-alpha] - 2026-11-26
+
+### Added
+- **OML 新增 `mask_text(kind)` 文本扫描脱敏**（升级到 wp-motor v1.42.0）：在日志行、HTTP 报文这类混合文本中只替换识别到的敏感片段，其余内容原样保留。支持 `mask_text(pii)`、`mask_text(mobile)`、`mask_text(id_card)`、`mask_text(mail)`、`mask_text(ip)`、`mask_text(domain)`、`mask_text(http_auth)`。`mask(kind)` 的整值 / fail-closed 语义保持不变。
+
+### Changed
+- 升级 `wp-connectors` 到 v0.25.0（Kafka Source 支持 SASL_SSL）。
+
 ## [0.37.1-alpha] - 2026-11-25
 
 ### Added
