@@ -8,11 +8,18 @@ mod  envs {
 mod main   : ver_adm {
 
 #[auto_load(entry)]
-  flow _entry : ver.use {
+  flow _entry | ver.use {
+    gx.sn( file: "./exp_sn.txt");
   }
 
 #[auto_load(exit)]
   flow _set_ver | ver.syn_file {
+    VERSION = "${VERSION}-E${SN}";
     SYN_FILE= "${ENV_ROOT}/Cargo.toml";
+    gx.echo ("syn cargo file");
+  }
+
+  flow up_sn {
+    gx.sn( file: "./exp_sn.txt", action : "add");
   }
 }
