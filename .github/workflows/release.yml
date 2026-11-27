@@ -99,6 +99,25 @@ jobs:
             https://github.com/wp-labs/wp-examples \
             /tmp/wp-examples
 
+      - name: Prepare deterministic file-roll case
+        if: matrix.can-run == true
+        run: |
+          # 300 条输入在 16KB 阈值下可能只触发两次滚动，无法覆盖 max_rolls=2 的淘汰分支。
+          python3 - <<'PY'
+          from pathlib import Path
+
+          config_path = (
+              Path("/tmp/wp-examples/core/sink_file_roll/topology/sinks/business.d")
+              / "roll.toml"
+          )
+          config = config_path.read_text(encoding="utf-8")
+          old = 'params = { file = "roll_gz.dat", max_size = "16KB", max_rolls = 2, roll_compress = "gzip" }'
+          new = 'params = { file = "roll_gz.dat", max_size = "1KB", max_rolls = 2, roll_compress = "gzip" }'
+          if config.count(old) != 1:
+              raise SystemExit("未找到唯一的 gzip 文件滚动配置，无法准备确定性用例")
+          config_path.write_text(config.replace(old, new), encoding="utf-8")
+          PY
+
       - name: Run integration tests
         if: matrix.can-run == true
         run: |
