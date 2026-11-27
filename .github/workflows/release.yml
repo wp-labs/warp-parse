@@ -47,18 +47,29 @@ jobs:
 
       - name: Install native dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install unixodbc
+        run: brew install unixodbc cyrus-sasl
 
       - name: Install native dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y unixodbc-dev
+          sudo apt-get install -y unixodbc-dev libsasl2-dev
 
       - name: Cargo build
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ runner.os == 'macOS' && '11.0' || '' }}
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Verify no Homebrew runtime deps (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -euo pipefail
+          BIN="target/${{ matrix.target }}/release/wparse"
+          if otool -L "$BIN" | grep -E '/opt/homebrew|/usr/local/opt'; then
+            echo "::error::macOS release binary depends on Homebrew libraries" >&2
+            otool -L "$BIN" >&2
+            exit 1
+          fi
 
       - name: Show version
         if: matrix.can-run == true

@@ -33,13 +33,13 @@ jobs:
 
       - name: Install native dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install unixodbc
+        run: brew install unixodbc cyrus-sasl
 
       - name: Install native dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y unixodbc-dev
+          sudo apt-get install -y unixodbc-dev libsasl2-dev
 
       - name: Cargo build
         run: cargo build --all
@@ -53,12 +53,15 @@ jobs:
       - name: Build release
         run: cargo build --release
 
-      - name: Prepare CLI compatibility alias
+      - name: Verify no Homebrew runtime deps (macOS)
+        if: runner.os == 'macOS'
         run: |
-          # wpadm 是项目管理工具的新名称；集成用例仍使用旧入口 wproj。
-          ln -sf wpadm target/release/wproj
-          test -x target/release/wpadm
-          test -x target/release/wproj
+          set -euo pipefail
+          if otool -L target/release/wparse | grep -E '/opt/homebrew|/usr/local/opt'; then
+            echo "::error::macOS release binary depends on Homebrew libraries" >&2
+            otool -L target/release/wparse >&2
+            exit 1
+          fi
 
       - name: Determine wp-examples branch
         id: examples-branch

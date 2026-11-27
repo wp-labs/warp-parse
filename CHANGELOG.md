@@ -8,6 +8,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.2-alpha] - 2026-11-26
+
+### Added
+- **TCP/TLS sink 新增 `max_connection_age_secs`**（升级到 wp-motor v1.43.0 / wp-core-connectors 0.12.0）：连接存活超过指定秒数后，在下一次写入前先重连再写，重连会重新读取 `tls.cert` / `tls.key` / `tls.ca`，客户端证书轮换后无需重启进程。TLS sink 不写时默认 24 小时，纯文本默认关闭，显式 `0` 关闭；支持按 sink 覆盖。超龄重连带随机抖动（防多实例同步重连），重连前优雅关闭有 2s 超时。
+
+## [0.38.1-alpha] - 2026-11-26
+
+### Fixed
+- **macOS 发布包不再依赖 Homebrew OpenSSL**：改为静态链接（vendored）OpenSSL，修复在未安装 `/opt/homebrew/opt/openssl@4` 的机器上启动时报 `dyld: Library not loaded: libssl.4.dylib` 的问题。官方 macOS 二进制现在只依赖 macOS 系统库。
+
+## [0.38.0-alpha] - 2026-11-26
+
+### Added
+- **OML 新增 `mask_text(kind)` 文本扫描脱敏**（升级到 wp-motor v1.42.0）：在日志行、HTTP 报文这类混合文本中只替换识别到的敏感片段，其余内容原样保留。支持 `mask_text(pii)`、`mask_text(mobile)`、`mask_text(id_card)`、`mask_text(mail)`、`mask_text(ip)`、`mask_text(domain)`、`mask_text(http_auth)`。`mask(kind)` 的整值 / fail-closed 语义保持不变。
+
+### Changed
+- 升级 `wp-connectors` 到 v0.25.0（Kafka Source 支持 SASL_SSL）。
+
 ## [0.37.1-alpha] - 2026-11-25
 
 ### Added
